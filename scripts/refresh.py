@@ -946,6 +946,16 @@ This is a **paper-trading tracker only**. No real trades are executed. All P&L f
 New elegant HTML generation for the dashboard
 """
 
+def format_money(value: float) -> str:
+    """Format money with proper +/− signs."""
+    if value > 0:
+        return f"+${value:.2f}"
+    elif value < 0:
+        return f"−${abs(value):.2f}"
+    else:
+        return f"${value:.2f}"
+
+
 def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, full_df, df_missed, missed_a_df):
     """Generate elegant standalone HTML dashboard with modern design."""
     
@@ -954,8 +964,21 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, full_d
     total_pnl_a = results_a_df['total_pnl'].sum()
     win_rate_a = (results_a_df['total_pnl'] > 0).mean() * 100 if total_calls > 0 else 0
     roi_a = (total_pnl_a / (total_calls * 10) * 100) if total_calls > 0 else 0
-    best_call_pnl = results_a_df['total_pnl'].max() if total_calls > 0 else 0
-    active_count = (full_df['status'] == 'active').sum() if len(full_df) > 0 else 0
+    
+    # Best call: find the one with highest max_multiple
+    if total_calls > 0:
+        best_idx = results_a_df['max_multiple'].idxmax()
+        best_call_symbol = results_a_df.loc[best_idx, 'symbol']
+        best_call_multiple = results_a_df.loc[best_idx, 'max_multiple']
+    else:
+        best_call_symbol = "N/A"
+        best_call_multiple = 0
+    
+    # Active count: only truly open positions (not hit stop, not hit target, not dead)
+    active_count = 0
+    for _, row in results_a_df.iterrows():
+        if not row['hit_stop'] and not row['hit_target'] and full_df[full_df['ca'] == row['ca']]['status'].iloc[0] == 'active':
+            active_count += 1
     
     # Calculate EXC calls subtotal
     exc_mask = full_df['is_exc'] if 'is_exc' in full_df.columns else pd.Series([False] * len(full_df))
@@ -970,10 +993,13 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, full_d
     # Prepare chart data (cumulative P&L for Strategy A)
     sorted_a = results_a_df.sort_values('alert_time_utc')
     cumulative_pnl = sorted_a['total_pnl'].cumsum().tolist() if total_calls > 0 else []
-    chart_labels = [f"Call {i+1}" for i in range(len(cumulative_pnl))]
+    # Prepend 0 to start from origin
+    cumulative_pnl_with_origin = [0] + cumulative_pnl if cumulative_pnl else [0]
+    chart_labels = ["Start"] + [f"Call {i+1}" for i in range(len(cumulative_pnl))] if cumulative_pnl else ["Start"]
     
     # Per-call P&L bars
     per_call_pnl = sorted_a['total_pnl'].tolist() if total_calls > 0 else []
+    per_call_labels = [f"Call {i+1}" for i in range(len(per_call_pnl))] if per_call_pnl else []
     
     # Build calls table rows
     calls_rows = []
@@ -985,16 +1011,26 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, full_d
         is_exc_call = row.get('is_exc', False)
         exc_badge = '<span class="exc-badge" title="Exception call">EXC</span>' if is_exc_call else ''
         
-        # Determine status for pill
-        if row['status'] == 'dead':
-            status_pill = '<span class="status-pill status-dead">Dead</span>'
-        elif row['status'] == 'active':
-            status_pill = '<span class="status-pill status-active">Active</span>'
-        else:
-            status_pill = f'<span class="status-pill">{row["status"]}</span>'
-        
-        # Find corresponding P&L from Strategy A
+        # Find corresponding Strategy A result
         a_row = results_a_df[results_a_df['ca'] == ca].iloc[0] if len(results_a_df[results_a_df['ca'] == ca]) > 0 else None
+        
+        # Determine status pill based on strategy outcome
+        if a_row is not None:
+            if a_row['hit_stop']:
+                status_pill = '<span class="status-pill status-stopped">Stopped −50%</span>'
+            elif a_row['hit_target']:
+                status_pill = '<span class="status-pill status-hit-target">Hit 2x</span>'
+            elif row['status'] == 'dead':
+                status_pill = '<span class="status-pill status-dead">Dead</span>'
+            else:
+                status_pill = '<span class="status-pill status-active">Active</span>'
+        else:
+            # Fallback if no strategy A data
+            if row['status'] == 'dead':
+                status_pill = '<span class="status-pill status-dead">Dead</span>'
+            else:
+                status_pill = '<span class="status-pill status-active">Active</span>'
+        
         pnl_a = a_row['total_pnl'] if a_row is not None else 0
         pnl_class = 'positive' if pnl_a > 0 else 'negative' if pnl_a < 0 else 'neutral'
         
@@ -1025,13 +1061,13 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, full_d
             <td class="number">{current_mc_formatted}</td>
             <td class="number">{row['max_multiple']:.2f}x</td>
             <td>{status_pill}</td>
-            <td class="number pnl-{pnl_class}">${pnl_a:+.2f}</td>
+            <td class="number pnl-{pnl_class}">{format_money(pnl_a)}</td>
         </tr>
         """)
     
     calls_table_html = ''.join(calls_rows) if calls_rows else '<tr><td colspan="7" class="empty-state">No calls yet. Data will appear as alerts are tracked.</td></tr>'
     
-    # Strategy comparison data
+    # Strategy comparison data with bars
     strategies_comparison = [
         {'name': 'A: Sell ALL at 2x', 'pnl': results_a_df['total_pnl'].sum(), 'active': True},
         {'name': 'B: Sell ALL at +50%', 'pnl': results_b_df['total_pnl'].sum(), 'active': False},
@@ -1039,14 +1075,29 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, full_d
         {'name': 'D: Hold 24h', 'pnl': results_d_df['pnl'].sum(), 'active': False},
     ]
     
+    # Calculate max absolute value for bar scaling
+    max_abs_pnl = max([abs(s['pnl']) for s in strategies_comparison]) if strategies_comparison else 1
+    if max_abs_pnl == 0:
+        max_abs_pnl = 1  # Avoid division by zero
+    
     strategy_rows = []
     for s in strategies_comparison:
         active_badge = '<span class="active-badge">Active Rule</span>' if s['active'] else ''
         pnl_class = 'positive' if s['pnl'] > 0 else 'negative' if s['pnl'] < 0 else 'neutral'
+        
+        # Calculate bar width (percentage)
+        bar_width = abs(s['pnl']) / max_abs_pnl * 100
+        bar_color = '#10b981' if s['pnl'] > 0 else '#ef4444' if s['pnl'] < 0 else '#71717a'
+        
         strategy_rows.append(f"""
         <tr class="{'strategy-active' if s['active'] else ''}">
-            <td>{s['name']} {active_badge}</td>
-            <td class="number pnl-{pnl_class}">${s['pnl']:+.2f}</td>
+            <td>
+                {s['name']} {active_badge}
+                <div class="strategy-bar-container">
+                    <div class="strategy-bar" style="width: {bar_width}%; background: {bar_color};"></div>
+                </div>
+            </td>
+            <td class="number pnl-{pnl_class}">{format_money(s['pnl'])}</td>
         </tr>
         """)
     
@@ -1380,9 +1431,34 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, full_d
             color: var(--success);
         }}
         
-        .status-dead {{
+        .status-hit-target {{
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            font-weight: 600;
+        }}
+        
+        .status-stopped {{
             background: rgba(239, 68, 68, 0.1);
             color: var(--danger);
+        }}
+        
+        .status-dead {{
+            background: rgba(113, 113, 122, 0.1);
+            color: var(--text-muted);
+        }}
+        
+        .strategy-bar-container {{
+            margin-top: 6px;
+            height: 4px;
+            background: var(--bg-tertiary);
+            border-radius: 2px;
+            overflow: hidden;
+        }}
+        
+        .strategy-bar {{
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.3s ease;
         }}
         
         .number {{
@@ -1518,17 +1594,18 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, full_d
             </div>
             <div class="kpi-card">
                 <div class="kpi-label">Total P&L</div>
-                <div class="kpi-value {'positive' if total_pnl_a > 0 else 'negative' if total_pnl_a < 0 else 'neutral'}">${total_pnl_a:+.2f}</div>
-                <div class="kpi-sub">ROI: {roi_a:+.1f}%</div>
+                <div class="kpi-value {'positive' if total_pnl_a > 0 else 'negative' if total_pnl_a < 0 else 'neutral'}">{format_money(total_pnl_a)}</div>
+                <div class="kpi-sub">ROI: {format_money(roi_a) if roi_a != 0 else '0.0'}%</div>
             </div>
             <div class="kpi-card">
                 <div class="kpi-label">Best Call</div>
-                <div class="kpi-value {'positive' if best_call_pnl > 0 else 'negative' if best_call_pnl < 0 else 'neutral'}">${best_call_pnl:+.2f}</div>
+                <div class="kpi-value neutral" style="font-size: 1.5em;">{best_call_symbol}</div>
+                <div class="kpi-sub">{best_call_multiple:.2f}x multiple</div>
             </div>
             <div class="kpi-card">
                 <div class="kpi-label">Active</div>
                 <div class="kpi-value neutral">{active_count}</div>
-                <div class="kpi-sub">Currently trading</div>
+                <div class="kpi-sub">Open positions</div>
             </div>
         </div>
         
@@ -1593,7 +1670,7 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, full_d
             </p>
             <div class="kpi-card">
                 <div class="kpi-label">EXC Calls Subtotal</div>
-                <div class="kpi-value {"positive" if exc_pnl > 0 else "negative" if exc_pnl < 0 else "neutral"}">${exc_pnl:+.2f}</div>
+                <div class="kpi-value {"positive" if exc_pnl > 0 else "negative" if exc_pnl < 0 else "neutral"}">{format_money(exc_pnl)}</div>
                 <div class="kpi-sub">{exc_count} call{"s" if exc_count != 1 else ""}</div>
             </div>
         </div>
@@ -1610,7 +1687,7 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, full_d
             <div class="kpi-card" style="margin-bottom: 20px;">
                 <div class="kpi-label">Filters Impact</div>
                 <div class="kpi-value {"positive" if filters_saved > 0 else "negative" if filters_saved < 0 else "neutral"}">
-                    ${filters_saved:+.2f}
+                    {format_money(filters_saved)}
                 </div>
                 <div class="kpi-sub">{"Saved" if filters_saved > 0 else "Missed gains" if filters_saved < 0 else "Neutral"} • {missed_count} call{"s" if missed_count != 1 else ""}</div>
             </div>
@@ -1632,7 +1709,7 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, full_d
                             <td><strong>{row["symbol"]}</strong></td>
                             <td><code style="font-size: 11px;">{row["skip_reason"]}</code></td>
                             <td class="number">{row["max_multiple"]:.2f}x</td>
-                            <td class="number pnl-{"positive" if row["total_pnl"] > 0 else "negative" if row["total_pnl"] < 0 else "neutral"}">${row["total_pnl"]:+.2f}</td>
+                            <td class="number pnl-{"positive" if row["total_pnl"] > 0 else "negative" if row["total_pnl"] < 0 else "neutral"}">{format_money(row["total_pnl"])}</td>
                         </tr>
             ''' for _, row in missed_a_df.iterrows()]) + """
                     </tbody>
@@ -1680,13 +1757,16 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, full_d
                     labels: {chart_labels},
                     datasets: [{{
                         label: 'Cumulative P&L',
-                        data: {cumulative_pnl},
+                        data: {cumulative_pnl_with_origin},
                         borderColor: chartColors.primary,
                         backgroundColor: chartColors.primary + '20',
                         fill: true,
                         tension: 0.4,
-                        pointRadius: 4,
-                        pointHoverRadius: 6
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointBorderWidth: 2,
+                        pointBackgroundColor: chartColors.primary,
+                        pointBorderColor: '#fff'
                     }}]
                 }},
                 options: {{
@@ -1720,7 +1800,7 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, full_d
             new Chart(perCallCtx, {{
                 type: 'bar',
                 data: {{
-                    labels: {chart_labels},
+                    labels: {per_call_labels},
                     datasets: [{{
                         label: 'P&L',
                         data: {per_call_pnl},
