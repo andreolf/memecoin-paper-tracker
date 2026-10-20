@@ -169,6 +169,55 @@ class TestDataParsing:
             assert col in alerts[0]
 
 
+class TestBondingCurveHandling:
+    """Test proper handling of pump.fun bonding curve tokens."""
+    
+    def test_bonding_curve_token_not_dead(self):
+        """
+        Regression test: pump.fun bonding curve tokens with liq=0 
+        should be marked as 'active', not 'dead', if they have a price.
+        
+        Bug: purr (9oJvYRC2UBLbUShDBnzhNVcJaAffYANPmDHmgf9Lpump) was 
+        marked dead despite being +11% from alert and still on bonding curve.
+        """
+        # Simulate strategy C with bonding curve token that has:
+        # - liq = 0 (still on bonding curve)
+        # - price went UP (+11%)
+        # - status should be 'active' not 'dead'
+        result = calculate_strategy_c(
+            alert_price=3.036e-05,
+            ath=3.382e-05,  # +11.4% ATH
+            min_price=2.98e-05,  # -1.8% min (nowhere near -50% stop)
+            current_price=3.382e-05,  # +11.4% current
+            status='active'  # Should be active, not dead
+        )
+        
+        # Token went up, should not hit stop
+        assert not result['hit_stop'], "Should not hit -50% stop when price is +11%"
+        assert not result['hit_target'], "Should not hit 2x target at +11%"
+        
+        # Should show unrealized gain, not full loss
+        # Entry: $10 - 2.45% = $9.755 worth of tokens at 3.036e-05 = 321,300 tokens
+        # Mark at 3.382e-05: 321,300 * 3.382e-05 = $10.866
+        # Unrealized P&L: $10.866 - $10 = $0.866
+        assert result['total_pnl'] > 0, f"Should have positive P&L (+11% token), got {result['total_pnl']}"
+        assert result['total_pnl'] > 0.8, f"Expected ~$0.87 gain, got {result['total_pnl']}"
+        
+    def test_dead_token_marks_to_zero(self):
+        """Test that truly dead tokens (migrated, no liq) are handled correctly."""
+        # Migrated token with no liquidity and price near zero
+        result = calculate_strategy_c(
+            alert_price=1.0,
+            ath=1.5,
+            min_price=0.7,
+            current_price=0.0,  # Zero price
+            status='dead'  # Migrated and dead
+        )
+        
+        # Should mark remainder to zero, losing full stake
+        assert result['unrealized_pnl'] == -10.0, "Dead token with zero price should show full loss"
+
+
 class TestFormatting:
     """Test time formatting."""
     

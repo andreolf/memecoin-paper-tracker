@@ -86,8 +86,11 @@ def fetch_price_geckoterminal(ca: str) -> Optional[Tuple[float, float, float]]:
         return None
 
 
-def fetch_price_pumpfun(ca: str) -> Optional[Tuple[float, float, float]]:
-    """Fetch from pump.fun. Returns (price_usd, mc_usd, liq_usd) or None."""
+def fetch_price_pumpfun(ca: str) -> Optional[Tuple[float, float, float, bool]]:
+    """
+    Fetch from pump.fun. Returns (price_usd, mc_usd, liq_usd, on_bonding_curve) or None.
+    on_bonding_curve=True means token is still on pump.fun and hasn't migrated yet.
+    """
     data = fetch_with_retry(f"{PUMPFUN_BASE}{ca}")
     if not data:
         return None
@@ -96,7 +99,9 @@ def fetch_price_pumpfun(ca: str) -> Optional[Tuple[float, float, float]]:
         price = float(data.get("usd_market_cap", 0)) / float(data.get("total_supply", 1))
         mc = float(data.get("usd_market_cap", 0))
         liq = float(data.get("virtual_sol_reserves", 0)) * 180  # rough SOL price estimate
-        return (price, mc, liq)
+        # Check if still on bonding curve (not migrated to Raydium)
+        on_bonding_curve = not data.get("complete", False)
+        return (price, mc, liq, on_bonding_curve)
     except (ValueError, TypeError, KeyError, ZeroDivisionError):
         return None
 
@@ -138,6 +143,7 @@ def fetch_current_price(ca: str, alert_time: str) -> Dict:
         "current_mc_usd": 0.0,
         "current_liq_usd": 0.0,
         "status": "dead",
+        "on_bonding_curve": False,
     }
     
     print(f"Fetching {ca}...")
@@ -157,12 +163,35 @@ def fetch_current_price(ca: str, alert_time: str) -> Dict:
     if result["current_price_usd"] == 0:
         data = fetch_price_pumpfun(ca)
         if data:
-            result["current_price_usd"], result["current_mc_usd"], result["current_liq_usd"] = data
+            result["current_price_usd"], result["current_mc_usd"], result["current_liq_usd"], result["on_bonding_curve"] = data
+    else:
+        # Even if we got price from DexScreener/GeckoTerminal, check pump.fun for bonding curve status
+        pumpfun_data = fetch_price_pumpfun(ca)
+        if pumpfun_data:
+            # Use pump.fun bonding curve status if available
+            result["on_bonding_curve"] = pumpfun_data[3]
+            # If pump.fun has a price and we're on bonding curve, prefer pump.fun data
+            if result["on_bonding_curve"] and pumpfun_data[0] > 0:
+                result["current_price_usd"] = pumpfun_data[0]
+                result["current_mc_usd"] = pumpfun_data[1]
+                result["current_liq_usd"] = pumpfun_data[2]
     
-    # Determine status
-    if result["current_liq_usd"] >= 1000 and result["current_price_usd"] > 0:
+    # Determine status with proper bonding curve handling
+    if result["current_price_usd"] == 0:
+        # No price data from any source - definitely dead
+        result["status"] = "dead"
+    elif result["on_bonding_curve"]:
+        # Still on pump.fun bonding curve - treat as active regardless of liquidity
+        result["status"] = "active"
+    elif result["current_liq_usd"] == 0 and result["current_price_usd"] > 0:
+        # Has price but no liquidity - likely still on bonding curve (pump.fun API may have failed)
+        # Treat as active until proven otherwise
+        result["status"] = "active"
+    elif result["current_liq_usd"] >= 1000:
+        # Migrated pool with sufficient liquidity
         result["status"] = "active"
     else:
+        # Migrated but liquidity dried up (liq > 0 but < $1k)
         result["status"] = "dead"
     
     return result
