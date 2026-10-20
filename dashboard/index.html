@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PAPER TRADING Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0e27;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .warning {
+            background: #ff6b6b;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-weight: bold;
+            text-align: center;
+        }
+        .best-strategy {
+            background: #51cf66;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-weight: bold;
+            text-align: center;
+            font-size: 1.2em;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: #1a1f3a;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #2d3561;
+        }
+        .stat-card.best {
+            border: 2px solid #51cf66;
+            box-shadow: 0 0 20px rgba(81, 207, 102, 0.3);
+        }
+        .stat-card h3 {
+            color: #8b9dc3;
+            font-size: 0.85em;
+            margin-bottom: 10px;
+        }
+        .stat-card .value {
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+        .stat-card .value.profit { color: #51cf66; }
+        .stat-card .value.loss { color: #ff6b6b; }
+        .stat-card .details {
+            font-size: 0.85em;
+            color: #8b9dc3;
+            margin-top: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #1a1f3a;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+        thead {
+            background: #2d3561;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            font-weight: 600;
+            cursor: pointer;
+            user-select: none;
+        }
+        th:hover {
+            background: #3d4571;
+        }
+        tbody tr {
+            border-bottom: 1px solid #2d3561;
+        }
+        tbody tr:hover {
+            background: #232947;
+        }
+        .profit {
+            color: #51cf66;
+        }
+        .loss {
+            color: #ff6b6b;
+        }
+        a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .charts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .chart {
+            background: #1a1f3a;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #2d3561;
+        }
+        .chart img {
+            width: 100%;
+            border-radius: 5px;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #8b9dc3;
+            font-size: 0.9em;
+        }
+        .info-box {
+            background: #1a1f3a;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #2d3561;
+            margin: 20px 0;
+        }
+        .info-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .info-box ul {
+            margin-left: 20px;
+            color: #8b9dc3;
+        }
+        .info-box ul li {
+            margin: 5px 0;
+        }
+    </style>
+    <script>
+        function sortTable(n) {
+            const table = document.getElementById("dataTable");
+            let rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            switching = true;
+            dir = "asc";
+            while (switching) {
+                switching = false;
+                rows = table.rows;
+                for (i = 1; i < (rows.length - 1); i++) {
+                    shouldSwitch = false;
+                    x = rows[i].getElementsByTagName("TD")[n];
+                    y = rows[i + 1].getElementsByTagName("TD")[n];
+                    let xContent = x.textContent || x.innerText;
+                    let yContent = y.textContent || y.innerText;
+                    
+                    let xNum = parseFloat(xContent.replace(/[^0-9.-]/g, ''));
+                    let yNum = parseFloat(yContent.replace(/[^0-9.-]/g, ''));
+                    
+                    if (!isNaN(xNum) && !isNaN(yNum)) {
+                        if (dir == "asc") {
+                            if (xNum > yNum) {
+                                shouldSwitch = true;
+                                break;
+                            }
+                        } else if (dir == "desc") {
+                            if (xNum < yNum) {
+                                shouldSwitch = true;
+                                break;
+                            }
+                        }
+                    } else {
+                        if (dir == "asc") {
+                            if (xContent.toLowerCase() > yContent.toLowerCase()) {
+                                shouldSwitch = true;
+                                break;
+                            }
+                        } else if (dir == "desc") {
+                            if (xContent.toLowerCase() < yContent.toLowerCase()) {
+                                shouldSwitch = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (shouldSwitch) {
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                    switchcount++;
+                } else {
+                    if (switchcount == 0 && dir == "asc") {
+                        dir = "desc";
+                        switching = true;
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Memecoin Paper-Trading Dashboard</h1>
+            <p>Last Updated: 2026-10-20 09:53 CEST</p>
+        </header>
+        
+        <div class="warning">
+            ⚠️ PAPER TRADING - NO REAL MONEY - ALL P&L IS THEORETICAL
+        </div>
+        
+        <div class="best-strategy">
+            🏆 Current Best Performer: D: Hold 24h ($-9.76 Total P&L)
+        </div>
+        
+        <div class="info-box">
+            <h3>All Strategies Use:</h3>
+            <ul>
+                <li>$10 stake per alert</li>
+                <li>0.45% trading fee + 2% slippage per leg</li>
+                <li>-50% stop-loss (where applicable)</li>
+                <li>Conservative ordering: stop before target when uncertain</li>
+            </ul>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-card ">
+                <h3>Strategy A: Sell ALL at 2x</h3>
+                <div class="value loss">
+                    $-10.00
+                </div>
+                <div class="details">
+                    Win Rate: 0.0%<br>
+                    Avg: $-10.00
+                </div>
+            </div>
+            <div class="stat-card ">
+                <h3>Strategy B: Sell ALL at +50%</h3>
+                <div class="value loss">
+                    $-10.00
+                </div>
+                <div class="details">
+                    Win Rate: 0.0%<br>
+                    Avg: $-10.00
+                </div>
+            </div>
+            <div class="stat-card ">
+                <h3>Strategy C: Sell HALF at 2x</h3>
+                <div class="value loss">
+                    $-10.00
+                </div>
+                <div class="details">
+                    Win Rate: 0.0%<br>
+                    Avg: $-10.00
+                </div>
+            </div>
+            <div class="stat-card best">
+                <h3>Strategy D: Hold 24h</h3>
+                <div class="value loss">
+                    $-9.76
+                </div>
+                <div class="details">
+                    Win Rate: 0.0%<br>
+                    Avg: $-9.76
+                </div>
+            </div>
+        </div>
+        
+        <div class="charts">
+            <div class="chart">
+                <img src="cumulative_pnl_comparison.png" alt="Cumulative P&L">
+            </div>
+            <div class="chart">
+                <img src="max_multiple_dist.png" alt="Max Multiple Distribution">
+            </div>
+            <div class="chart">
+                <img src="strategy_comparison.png" alt="Strategy Comparison">
+            </div>
+        </div>
+        
+        <h2 style="margin-bottom: 20px;">Strategy C: Sell HALF at 2x (Click headers to sort)</h2>
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th onclick="sortTable(0)">Alert Time (CET/CEST)</th>
+                    <th onclick="sortTable(1)">Token</th>
+                    <th onclick="sortTable(2)">Type</th>
+                    <th onclick="sortTable(3)">Max Multiple</th>
+                    <th onclick="sortTable(4)">Total P&L</th>
+                    <th onclick="sortTable(5)">Realized</th>
+                    <th onclick="sortTable(6)">Unrealized</th>
+                    <th onclick="sortTable(7)">Hit 2x</th>
+                    <th onclick="sortTable(8)">Hit Stop</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr>
+            <td>2026-10-20 09:41 CEST</td>
+            <td>
+                <a href="https://pump.fun/9oJvYRC2UBLbUShDBnzhNVcJaAffYANPmDHmgf9Lpump" target="_blank">purr</a> /
+                <a href="https://dexscreener.com/solana/9oJvYRC2UBLbUShDBnzhNVcJaAffYANPmDHmgf9Lpump" target="_blank">DEX</a>
+            </td>
+            <td>new</td>
+            <td>0.98x</td>
+            <td class="loss">$-10.00</td>
+            <td>$0.00</td>
+            <td>$-10.00</td>
+            <td></td>
+            <td></td>
+        </tr>
+        
+            </tbody>
+        </table>
+        
+        <footer>
+            <p>Auto-generated by scripts/refresh.py | Paper-trading only, no real trades executed</p>
+            <p style="margin-top: 10px; font-size: 0.85em;">Includes 2% slippage + 0.45% fees per leg</p>
+        </footer>
+    </div>
+</body>
+</html>
