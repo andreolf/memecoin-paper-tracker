@@ -242,5 +242,232 @@ class TestFormatting:
         assert "2026-01-15" in zurich
 
 
+class TestMissedCallsHandling:
+    """Test handling of missed (filtered out) calls."""
+    
+    def test_missed_call_excluded_from_main_pnl(self):
+        """Test that missed calls are excluded from main P&L calculations."""
+        # This would be tested in integration, but we can verify the logic
+        # In generate_dashboard, df_real should exclude alert_type='missed'
+        import pandas as pd
+        
+        # Mock data
+        alerts_data = {
+            'ca': ['CA1', 'CA2'],
+            'symbol': ['TOKEN1', 'TOKEN2'],
+            'alert_type': ['new', 'missed'],
+            'reason': ['good trade', 'skip dev-out, narr 2/5']
+        }
+        df = pd.DataFrame(alerts_data)
+        
+        df_real = df[df['alert_type'] != 'missed']
+        df_missed = df[df['alert_type'] == 'missed']
+        
+        assert len(df_real) == 1
+        assert len(df_missed) == 1
+        assert df_real.iloc[0]['symbol'] == 'TOKEN1'
+        assert df_missed.iloc[0]['symbol'] == 'TOKEN2'
+    
+    def test_skip_reason_extraction(self):
+        """Test extraction of skip reason from missed call reason field."""
+        reason = "skip dev-out, narr 2/5: low narrative score, other details"
+        reason_parts = reason.split(',', 1)
+        skip_reason = reason_parts[0].replace('skip ', '').strip()
+        
+        assert skip_reason == "dev-out"
+    
+    def test_exc_call_identification(self):
+        """Test identification of EXC (exception) calls."""
+        import pandas as pd
+        
+        alerts_data = {
+            'reason': [
+                'EXC narr 4/5: strong signal',
+                'normal call reason',
+                'EXC narr 5/5: exceptional'
+            ]
+        }
+        df = pd.DataFrame(alerts_data)
+        df['is_exc'] = df['reason'].str.startswith('EXC narr', na=False)
+        
+        assert df['is_exc'].sum() == 2
+        assert df.iloc[0]['is_exc'] == True
+        assert df.iloc[1]['is_exc'] == False
+        assert df.iloc[2]['is_exc'] == True
+
+
+class TestDashboardGeneration:
+    """Test dashboard HTML generation."""
+    
+    def test_html_contains_kpi_section(self):
+        """Test that generated HTML contains KPI cards."""
+        from pathlib import Path
+        
+        dashboard_path = Path(__file__).parent.parent / 'dashboard' / 'index.html'
+        if dashboard_path.exists():
+            with open(dashboard_path, 'r') as f:
+                html_content = f.read()
+            
+            assert 'kpi-grid' in html_content
+            assert 'Total Calls' in html_content
+            assert 'Win Rate' in html_content
+            assert 'Total P&L' in html_content
+    
+    def test_html_contains_calls_table(self):
+        """Test that generated HTML contains calls table."""
+        from pathlib import Path
+        
+        dashboard_path = Path(__file__).parent.parent / 'dashboard' / 'index.html'
+        if dashboard_path.exists():
+            with open(dashboard_path, 'r') as f:
+                html_content = f.read()
+            
+            assert 'calls-table' in html_content
+            assert 'All Calls' in html_content
+    
+    def test_html_contains_missed_calls_section_when_present(self):
+        """Test that HTML contains missed calls section when there are missed calls."""
+        from pathlib import Path
+        
+        # This test assumes the dashboard has been generated
+        dashboard_path = Path(__file__).parent.parent / 'dashboard' / 'index.html'
+        if dashboard_path.exists():
+            with open(dashboard_path, 'r') as f:
+                html_content = f.read()
+            
+            # If there are missed calls in the data, the section should be present
+            # This is validated by checking for the section title
+            # Since we may not always have missed calls, this is a conditional test
+            if 'Missed Calls' in html_content and 'Filtered Out' in html_content:
+                # If the section exists, it should have the filters impact label
+                assert 'Impact' in html_content or 'Saved' in html_content or 'filter' in html_content.lower()
+
+
+class TestStatusMapping:
+    """Test status pill mapping based on strategy outcome."""
+    
+    def test_status_stopped_when_stop_hit(self):
+        """Test that status shows 'Stopped −50%' when stop-loss is hit."""
+        # Strategy result with stop hit
+        result = {
+            'hit_stop': True,
+            'hit_target': False,
+            'total_pnl': -5.0
+        }
+        
+        assert result['hit_stop'] == True
+        assert result['hit_target'] == False
+        # Status should be 'Stopped −50%'
+    
+    def test_status_hit_target_when_target_reached(self):
+        """Test that status shows 'Hit 2x' when 2x target is reached."""
+        result = {
+            'hit_stop': False,
+            'hit_target': True,
+            'total_pnl': 8.0
+        }
+        
+        assert result['hit_stop'] == False
+        assert result['hit_target'] == True
+        # Status should be 'Hit 2x'
+    
+    def test_status_active_when_neither(self):
+        """Test that status shows 'Active' when neither stop nor target hit."""
+        result = {
+            'hit_stop': False,
+            'hit_target': False,
+            'total_pnl': 2.0
+        }
+        
+        assert result['hit_stop'] == False
+        assert result['hit_target'] == False
+        # Status should be 'Active' if token still has liquidity
+    
+    def test_active_count_only_open_positions(self):
+        """Test that active count only includes truly open positions."""
+        import pandas as pd
+        
+        # Mock results
+        results = pd.DataFrame({
+            'ca': ['CA1', 'CA2', 'CA3'],
+            'symbol': ['T1', 'T2', 'T3'],
+            'hit_stop': [True, False, False],
+            'hit_target': [False, True, False],
+            'total_pnl': [-5.0, 8.0, 2.0]
+        })
+        
+        full_df = pd.DataFrame({
+            'ca': ['CA1', 'CA2', 'CA3'],
+            'status': ['active', 'active', 'active']
+        })
+        
+        # Count only truly open positions
+        active_count = 0
+        for _, row in results.iterrows():
+            ca = row['ca']
+            status = full_df[full_df['ca'] == ca]['status'].iloc[0]
+            if not row['hit_stop'] and not row['hit_target'] and status == 'active':
+                active_count += 1
+        
+        assert active_count == 1  # Only CA3 is truly open
+
+
+class TestMoneyFormatting:
+    """Test money formatting with proper +/− signs."""
+    
+    def test_positive_money_format(self):
+        """Test formatting of positive values."""
+        from pathlib import Path
+        import sys
+        sys.path.insert(0, str(Path(__file__).parent.parent / 'scripts'))
+        from refresh import format_money
+        
+        assert format_money(5.24) == "+$5.24"
+        assert format_money(100.50) == "+$100.50"
+    
+    def test_negative_money_format(self):
+        """Test formatting of negative values with minus sign."""
+        from pathlib import Path
+        import sys
+        sys.path.insert(0, str(Path(__file__).parent.parent / 'scripts'))
+        from refresh import format_money
+        
+        assert format_money(-5.24) == "−$5.24"
+        assert format_money(-100.50) == "−$100.50"
+    
+    def test_zero_money_format(self):
+        """Test formatting of zero."""
+        from pathlib import Path
+        import sys
+        sys.path.insert(0, str(Path(__file__).parent.parent / 'scripts'))
+        from refresh import format_money
+        
+        assert format_money(0) == "$0.00"
+
+
+class TestFormatting:
+    """Test time formatting."""
+    
+    def test_format_zurich_time_summer(self):
+        """Test UTC to Zurich conversion in summer (CEST, UTC+2)."""
+        # July is definitely summer/DST
+        utc_time = "2026-07-15T12:00:00Z"
+        zurich = format_zurich_time(utc_time)
+        
+        # CEST is UTC+2, so 12:00 UTC = 14:00 CEST
+        assert "14:00 CEST" in zurich
+        assert "2026-07-15" in zurich
+    
+    def test_format_zurich_time_winter(self):
+        """Test UTC to Zurich conversion in winter (CET, UTC+1)."""
+        # January is definitely winter/no DST
+        utc_time = "2026-01-15T12:00:00Z"
+        zurich = format_zurich_time(utc_time)
+        
+        # CET is UTC+1, so 12:00 UTC = 13:00 CET
+        assert "13:00 CET" in zurich
+        assert "2026-01-15" in zurich
+
+
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])

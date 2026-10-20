@@ -552,13 +552,20 @@ def generate_dashboard():
     # Merge
     df = alerts_df.merge(calls_df, on=['ca'], suffixes=('_alert', '_call'))
     
-    # Calculate all 4 strategies for each alert
+    # Separate missed calls from real alerts
+    df_real = df[df['alert_type'] != 'missed'].copy()
+    df_missed = df[df['alert_type'] == 'missed'].copy()
+    
+    # Identify EXC (exception) calls in real alerts
+    df_real['is_exc'] = df_real['reason'].str.startswith('EXC narr', na=False)
+    
+    # Calculate all 4 strategies for each REAL alert
     results_a = []  # Sell ALL at 2x
     results_b = []  # Sell ALL at +50%
     results_c = []  # Sell HALF at 2x
     results_d = []  # Hold 24h
     
-    for _, row in df.iterrows():
+    for _, row in df_real.iterrows():
         # Strategy A: Sell ALL at 2x
         strat_a = calculate_strategy_a(
             row['price_usd'],
@@ -631,6 +638,31 @@ def generate_dashboard():
     results_c_df = pd.DataFrame(results_c)
     results_d_df = pd.DataFrame(results_d)
     
+    # Calculate Strategy A for MISSED calls (for comparison only)
+    missed_results_a = []
+    for _, row in df_missed.iterrows():
+        strat_a = calculate_strategy_a(
+            row['price_usd'],
+            row['ath_since_alert'],
+            row['min_since_alert'],
+            row['current_price_usd'],
+            row['status']
+        )
+        # Extract skip reason (first part of reason field)
+        reason_parts = row['reason'].split(',', 1)
+        skip_reason = reason_parts[0].replace('skip ', '').strip() if reason_parts else 'unknown'
+        
+        missed_results_a.append({
+            'ca': row['ca'],
+            'symbol': row['symbol_alert'],
+            'alert_time_utc': row['alert_time_utc_alert'],
+            'max_multiple': row['max_multiple'],
+            'skip_reason': skip_reason,
+            **strat_a
+        })
+    
+    missed_a_df = pd.DataFrame(missed_results_a) if missed_results_a else pd.DataFrame()
+    
     # Create dashboard directory
     DASHBOARD_DIR.mkdir(exist_ok=True)
     
@@ -638,10 +670,10 @@ def generate_dashboard():
     generate_charts(results_a_df, results_b_df, results_c_df, results_d_df)
     
     # Generate README
-    generate_readme(results_a_df, results_b_df, results_c_df, results_d_df, df)
+    generate_readme(results_a_df, results_b_df, results_c_df, results_d_df, df_real, df_missed, missed_a_df)
     
     # Generate HTML dashboard
-    generate_html(results_a_df, results_b_df, results_c_df, results_d_df, df)
+    generate_html(results_a_df, results_b_df, results_c_df, results_d_df, df_real, df_missed, missed_a_df)
     
     print("Dashboard generation complete!")
 
@@ -736,10 +768,10 @@ def format_zurich_time(utc_str: str) -> str:
         return utc_str
 
 
-def generate_readme(results_a_df: pd.DataFrame, results_b_df: pd.DataFrame, results_c_df: pd.DataFrame, results_d_df: pd.DataFrame, full_df: pd.DataFrame):
+def generate_readme(results_a_df: pd.DataFrame, results_b_df: pd.DataFrame, results_c_df: pd.DataFrame, results_d_df: pd.DataFrame, full_df: pd.DataFrame, df_missed: pd.DataFrame, missed_a_df: pd.DataFrame):
     """Generate README.md with summary tables."""
     
-    # Calculate overall stats for all strategies
+    # Calculate overall stats for all strategies (REAL alerts only)
     total_alerts = len(results_a_df)
     
     strategies = {
@@ -783,6 +815,8 @@ def generate_readme(results_a_df: pd.DataFrame, results_b_df: pd.DataFrame, resu
 This dashboard tracks theoretical P&L from Solana memecoin alerts. **No actual trades are executed.**
 
 **Last Updated:** {format_zurich_time(datetime.now(timezone.utc).isoformat())}
+
+**Tracked:** {total_alerts} real alerts{f" + {len(df_missed)} missed (filtered out)" if len(df_missed) > 0 else ""}
 
 ---
 
@@ -908,378 +942,904 @@ This is a **paper-trading tracker only**. No real trades are executed. All P&L f
         f.write(readme)
 
 
-def generate_html(results_a_df: pd.DataFrame, results_b_df: pd.DataFrame, results_c_df: pd.DataFrame, results_d_df: pd.DataFrame, full_df: pd.DataFrame):
-    """Generate standalone HTML dashboard."""
+"""
+New elegant HTML generation for the dashboard
+"""
+
+def format_money(value: float) -> str:
+    """Format money with proper +/− signs."""
+    if value > 0:
+        return f"+${value:.2f}"
+    elif value < 0:
+        return f"−${abs(value):.2f}"
+    else:
+        return f"${value:.2f}"
+
+
+def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, full_df, df_missed, missed_a_df):
+    """Generate elegant standalone HTML dashboard with modern design."""
     
-    # Calculate best strategy
-    strategies_data = {
-        'A: Sell ALL at 2x': results_a_df['total_pnl'].sum(),
-        'B: Sell ALL at +50%': results_b_df['total_pnl'].sum(),
-        'C: Sell HALF at 2x': results_c_df['total_pnl'].sum(),
-        'D: Hold 24h': results_d_df['pnl'].sum()
-    }
-    best_strategy = max(strategies_data, key=strategies_data.get)
-    best_pnl = strategies_data[best_strategy]
+    # Calculate KPIs for Strategy A (primary strategy) - REAL alerts only
+    total_calls = len(results_a_df)
+    total_pnl_a = results_a_df['total_pnl'].sum()
+    win_rate_a = (results_a_df['total_pnl'] > 0).mean() * 100 if total_calls > 0 else 0
+    roi_a = (total_pnl_a / (total_calls * 10) * 100) if total_calls > 0 else 0
     
-    # Build table rows for Strategy C (most detailed)
-    rows = []
-    for _, row in results_c_df.iterrows():
+    # Best call: find the one with highest max_multiple
+    if total_calls > 0:
+        best_idx = results_a_df['max_multiple'].idxmax()
+        best_call_symbol = results_a_df.loc[best_idx, 'symbol']
+        best_call_multiple = results_a_df.loc[best_idx, 'max_multiple']
+    else:
+        best_call_symbol = "N/A"
+        best_call_multiple = 0
+    
+    # Active count: only truly open positions (not hit stop, not hit target, not dead)
+    active_count = 0
+    for _, row in results_a_df.iterrows():
+        if not row['hit_stop'] and not row['hit_target'] and full_df[full_df['ca'] == row['ca']]['status'].iloc[0] == 'active':
+            active_count += 1
+    
+    # Calculate EXC calls subtotal
+    exc_mask = full_df['is_exc'] if 'is_exc' in full_df.columns else pd.Series([False] * len(full_df))
+    exc_count = exc_mask.sum() if len(full_df) > 0 else 0
+    exc_pnl = results_a_df[exc_mask]['total_pnl'].sum() if exc_count > 0 and len(results_a_df) > 0 else 0
+    
+    # Calculate missed calls summary
+    missed_count = len(df_missed)
+    missed_total_pnl = missed_a_df['total_pnl'].sum() if len(missed_a_df) > 0 else 0
+    filters_saved = -missed_total_pnl  # Positive if we avoided losses
+    
+    # Prepare chart data (cumulative P&L for Strategy A)
+    sorted_a = results_a_df.sort_values('alert_time_utc')
+    cumulative_pnl = sorted_a['total_pnl'].cumsum().tolist() if total_calls > 0 else []
+    # Prepend 0 to start from origin
+    cumulative_pnl_with_origin = [0] + cumulative_pnl if cumulative_pnl else [0]
+    chart_labels = ["Start"] + [f"Call {i+1}" for i in range(len(cumulative_pnl))] if cumulative_pnl else ["Start"]
+    
+    # Per-call P&L bars
+    per_call_pnl = sorted_a['total_pnl'].tolist() if total_calls > 0 else []
+    per_call_labels = [f"Call {i+1}" for i in range(len(per_call_pnl))] if per_call_pnl else []
+    
+    # Build calls table rows
+    calls_rows = []
+    for _, row in full_df.iterrows():
         ca = row['ca']
-        pumpfun_link = f"https://pump.fun/{ca}"
-        dex_link = f"https://dexscreener.com/solana/{ca}"
+        ca_short = f"{ca[:4]}...{ca[-4:]}"
         
-        rows.append(f"""
+        # Check if this is an EXC call
+        is_exc_call = row.get('is_exc', False)
+        exc_badge = '<span class="exc-badge" title="Exception call">EXC</span>' if is_exc_call else ''
+        
+        # Find corresponding Strategy A result
+        a_row = results_a_df[results_a_df['ca'] == ca].iloc[0] if len(results_a_df[results_a_df['ca'] == ca]) > 0 else None
+        
+        # Determine status pill based on strategy outcome
+        if a_row is not None:
+            if a_row['hit_stop']:
+                status_pill = '<span class="status-pill status-stopped">Stopped −50%</span>'
+            elif a_row['hit_target']:
+                status_pill = '<span class="status-pill status-hit-target">Hit 2x</span>'
+            elif row['status'] == 'dead':
+                status_pill = '<span class="status-pill status-dead">Dead</span>'
+            else:
+                status_pill = '<span class="status-pill status-active">Active</span>'
+        else:
+            # Fallback if no strategy A data
+            if row['status'] == 'dead':
+                status_pill = '<span class="status-pill status-dead">Dead</span>'
+            else:
+                status_pill = '<span class="status-pill status-active">Active</span>'
+        
+        pnl_a = a_row['total_pnl'] if a_row is not None else 0
+        pnl_class = 'positive' if pnl_a > 0 else 'negative' if pnl_a < 0 else 'neutral'
+        
+        alert_mc_formatted = f"${row['mc_usd']:,.0f}" if 'mc_usd' in row else "N/A"
+        current_mc_formatted = f"${row['current_mc_usd']:,.0f}"
+        
+        calls_rows.append(f"""
         <tr>
-            <td>{format_zurich_time(row['alert_time_utc'])}</td>
             <td>
-                <a href="{pumpfun_link}" target="_blank">{row['symbol']}</a> /
-                <a href="{dex_link}" target="_blank">DEX</a>
+                <div class="token-cell">
+                    <strong>{row['symbol_alert'] if 'symbol_alert' in row else row.get('symbol', 'N/A')}</strong> {exc_badge}
+                    <div class="ca-container">
+                        <code class="ca-code" id="ca-{ca[:8]}">{ca_short}</code>
+                        <button class="copy-btn" onclick="copyCA('{ca}', 'ca-{ca[:8]}')" title="Copy full CA">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                        </button>
+                        <a href="https://dexscreener.com/solana/{ca}" target="_blank" class="external-link" title="DexScreener">DEX</a>
+                        <a href="https://pump.fun/{ca}" target="_blank" class="external-link" title="pump.fun">PF</a>
+                        <a href="https://gmgn.ai/sol/token/{ca}" target="_blank" class="external-link" title="GMGN">GM</a>
+                    </div>
+                </div>
             </td>
-            <td>{row['alert_type']}</td>
-            <td>{row['max_multiple']:.2f}x</td>
-            <td class="{'profit' if row['total_pnl'] > 0 else 'loss'}">${row['total_pnl']:.2f}</td>
-            <td>${row['realized_pnl']:.2f}</td>
-            <td>${row['unrealized_pnl']:.2f}</td>
-            <td>{'✓' if row['hit_target'] else ''}</td>
-            <td>{'✓' if row['hit_stop'] else ''}</td>
+            <td>{format_zurich_time(row['alert_time_utc_alert'] if 'alert_time_utc_alert' in row else row['alert_time_utc'])}</td>
+            <td class="number">{alert_mc_formatted}</td>
+            <td class="number">{current_mc_formatted}</td>
+            <td class="number">{row['max_multiple']:.2f}x</td>
+            <td>{status_pill}</td>
+            <td class="number pnl-{pnl_class}">{format_money(pnl_a)}</td>
         </tr>
         """)
     
-    table_html = ''.join(rows)
+    calls_table_html = ''.join(calls_rows) if calls_rows else '<tr><td colspan="7" class="empty-state">No calls yet. Data will appear as alerts are tracked.</td></tr>'
     
-    html = f"""<!DOCTYPE html>
+    # Strategy comparison data with bars
+    strategies_comparison = [
+        {'name': 'A: Sell ALL at 2x', 'pnl': results_a_df['total_pnl'].sum(), 'active': True},
+        {'name': 'B: Sell ALL at +50%', 'pnl': results_b_df['total_pnl'].sum(), 'active': False},
+        {'name': 'C: Sell HALF at 2x', 'pnl': results_c_df['total_pnl'].sum(), 'active': False},
+        {'name': 'D: Hold 24h', 'pnl': results_d_df['pnl'].sum(), 'active': False},
+    ]
+    
+    # Calculate max absolute value for bar scaling
+    max_abs_pnl = max([abs(s['pnl']) for s in strategies_comparison]) if strategies_comparison else 1
+    if max_abs_pnl == 0:
+        max_abs_pnl = 1  # Avoid division by zero
+    
+    strategy_rows = []
+    for s in strategies_comparison:
+        active_badge = '<span class="active-badge">Active Rule</span>' if s['active'] else ''
+        pnl_class = 'positive' if s['pnl'] > 0 else 'negative' if s['pnl'] < 0 else 'neutral'
+        
+        # Calculate bar width (percentage)
+        bar_width = abs(s['pnl']) / max_abs_pnl * 100
+        bar_color = '#10b981' if s['pnl'] > 0 else '#ef4444' if s['pnl'] < 0 else '#71717a'
+        
+        strategy_rows.append(f"""
+        <tr class="{'strategy-active' if s['active'] else ''}">
+            <td>
+                {s['name']} {active_badge}
+                <div class="strategy-bar-container">
+                    <div class="strategy-bar" style="width: {bar_width}%; background: {bar_color};"></div>
+                </div>
+            </td>
+            <td class="number pnl-{pnl_class}">{format_money(s['pnl'])}</td>
+        </tr>
+        """)
+    
+    strategy_table_html = ''.join(strategy_rows)
+    
+    html = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PAPER TRADING Dashboard</title>
+    <title>Memecoin Paper Trading Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
-        body {{
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #0a0e27;
-            color: #e0e0e0;
-            padding: 20px;
+        :root {{
+            --bg-primary: #0a0b0f;
+            --bg-secondary: #14151a;
+            --bg-tertiary: #1c1d24;
+            --text-primary: #e4e4e7;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --border: #27272a;
+            --accent: #6366f1;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
         }}
+        
+        @media (prefers-color-scheme: light) {{
+            :root {{
+                --bg-primary: #ffffff;
+                --bg-secondary: #f9fafb;
+                --bg-tertiary: #f3f4f6;
+                --text-primary: #18181b;
+                --text-secondary: #52525b;
+                --text-muted: #71717a;
+                --border: #e4e4e7;
+            }}
+        }}
+        
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+        
+        body {{
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 24px;
+        }}
+        
         .container {{
             max-width: 1400px;
             margin: 0 auto;
         }}
+        
+        /* Header */
         header {{
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 10px;
+            margin-bottom: 40px;
         }}
+        
+        .header-top {{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }}
+        
         h1 {{
-            font-size: 2.5em;
-            margin-bottom: 10px;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
         }}
-        .warning {{
-            background: #ff6b6b;
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 20px 0;
-            font-weight: bold;
-            text-align: center;
+        
+        .github-link {{
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            transition: color 0.2s;
         }}
-        .best-strategy {{
-            background: #51cf66;
-            color: white;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 20px 0;
-            font-weight: bold;
-            text-align: center;
-            font-size: 1.2em;
+        
+        .github-link:hover {{
+            color: var(--text-primary);
         }}
-        .stats {{
+        
+        .header-meta {{
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }}
+        
+        .badge {{
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+        }}
+        
+        .badge-warning {{
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }}
+        
+        .badge-info {{
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }}
+        
+        /* KPI Cards */
+        .kpi-grid {{
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
         }}
-        .stat-card {{
-            background: #1a1f3a;
+        
+        .kpi-card {{
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
             padding: 20px;
-            border-radius: 10px;
-            border: 1px solid #2d3561;
+            transition: transform 0.2s, box-shadow 0.2s;
         }}
-        .stat-card.best {{
-            border: 2px solid #51cf66;
-            box-shadow: 0 0 20px rgba(81, 207, 102, 0.3);
+        
+        .kpi-card:hover {{
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }}
-        .stat-card h3 {{
-            color: #8b9dc3;
-            font-size: 0.85em;
-            margin-bottom: 10px;
+        
+        .kpi-label {{
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
         }}
-        .stat-card .value {{
-            font-size: 1.8em;
-            font-weight: bold;
+        
+        .kpi-value {{
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
         }}
-        .stat-card .value.profit {{ color: #51cf66; }}
-        .stat-card .value.loss {{ color: #ff6b6b; }}
-        .stat-card .details {{
-            font-size: 0.85em;
-            color: #8b9dc3;
-            margin-top: 10px;
+        
+        .kpi-value.positive {{
+            color: var(--success);
         }}
-        table {{
+        
+        .kpi-value.negative {{
+            color: var(--danger);
+        }}
+        
+        .kpi-value.neutral {{
+            color: var(--text-primary);
+        }}
+        
+        .kpi-sub {{
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }}
+        
+        /* Section */
+        .section {{
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }}
+        
+        .section-title {{
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            letter-spacing: -0.01em;
+        }}
+        
+        /* Strategy Comparison Table */
+        .strategy-table {{
             width: 100%;
             border-collapse: collapse;
-            background: #1a1f3a;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-bottom: 30px;
         }}
-        thead {{
-            background: #2d3561;
+        
+        .strategy-table tr {{
+            border-bottom: 1px solid var(--border);
         }}
-        th, td {{
+        
+        .strategy-table tr:last-child {{
+            border-bottom: none;
+        }}
+        
+        .strategy-table td {{
+            padding: 16px 0;
+            font-size: 14px;
+        }}
+        
+        .strategy-table tr.strategy-active {{
+            background: rgba(99, 102, 241, 0.05);
+        }}
+        
+        .strategy-table tr.strategy-active td:first-child {{
+            font-weight: 600;
+        }}
+        
+        .active-badge {{
+            display: inline-block;
+            padding: 2px 8px;
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--accent);
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }}
+        
+        /* Calls Table */
+        .calls-table {{
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }}
+        
+        .calls-table thead {{
+            background: var(--bg-tertiary);
+        }}
+        
+        .calls-table th {{
             padding: 12px;
             text-align: left;
-        }}
-        th {{
             font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+        }}
+        
+        .calls-table td {{
+            padding: 16px 12px;
+            border-bottom: 1px solid var(--border);
+        }}
+        
+        .calls-table tbody tr:hover {{
+            background: var(--bg-tertiary);
+        }}
+        
+        .calls-table tbody tr:last-child td {{
+            border-bottom: none;
+        }}
+        
+        .token-cell {{
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }}
+        
+        .ca-container {{
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }}
+        
+        .ca-code {{
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+            font-size: 12px;
+            color: var(--text-muted);
+            padding: 2px 6px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+        }}
+        
+        .copy-btn {{
+            background: none;
+            border: none;
+            color: var(--text-muted);
             cursor: pointer;
-            user-select: none;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            border-radius: 4px;
+            transition: all 0.2s;
         }}
-        th:hover {{
-            background: #3d4571;
+        
+        .copy-btn:hover {{
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
         }}
-        tbody tr {{
-            border-bottom: 1px solid #2d3561;
+        
+        .copy-btn.copied {{
+            color: var(--success);
         }}
-        tbody tr:hover {{
-            background: #232947;
-        }}
-        .profit {{
-            color: #51cf66;
-        }}
-        .loss {{
-            color: #ff6b6b;
-        }}
-        a {{
-            color: #667eea;
+        
+        .external-link {{
+            color: var(--accent);
             text-decoration: none;
+            font-size: 11px;
+            font-weight: 500;
+            transition: opacity 0.2s;
         }}
-        a:hover {{
-            text-decoration: underline;
+        
+        .external-link:hover {{
+            opacity: 0.7;
         }}
-        .charts {{
+        
+        .status-pill {{
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }}
+        
+        .status-active {{
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }}
+        
+        .status-hit-target {{
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            font-weight: 600;
+        }}
+        
+        .status-stopped {{
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }}
+        
+        .status-dead {{
+            background: rgba(113, 113, 122, 0.1);
+            color: var(--text-muted);
+        }}
+        
+        .strategy-bar-container {{
+            margin-top: 6px;
+            height: 4px;
+            background: var(--bg-tertiary);
+            border-radius: 2px;
+            overflow: hidden;
+        }}
+        
+        .strategy-bar {{
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }}
+        
+        .number {{
+            font-variant-numeric: tabular-nums;
+        }}
+        
+        .pnl-positive {{
+            color: var(--success);
+            font-weight: 600;
+        }}
+        
+        .pnl-negative {{
+            color: var(--danger);
+            font-weight: 600;
+        }}
+        
+        .pnl-neutral {{
+            color: var(--text-secondary);
+        }}
+        
+        .exc-badge {{
+            display: inline-block;
+            padding: 2px 6px;
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 6px;
+            vertical-align: middle;
+        }}
+        
+        .empty-state {{
+            text-align: center;
+            color: var(--text-muted);
+            padding: 40px 20px !important;
+        }}
+        
+        /* Charts */
+        .chart-container {{
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+        }}
+        
+        .charts-grid {{
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            gap: 24px;
+            margin-bottom: 24px;
         }}
-        .chart {{
-            background: #1a1f3a;
-            padding: 20px;
-            border-radius: 10px;
-            border: 1px solid #2d3561;
-        }}
-        .chart img {{
-            width: 100%;
-            border-radius: 5px;
-        }}
+        
+        /* Footer */
         footer {{
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
             text-align: center;
-            margin-top: 40px;
-            color: #8b9dc3;
-            font-size: 0.9em;
+            color: var(--text-muted);
+            font-size: 13px;
         }}
-        .info-box {{
-            background: #1a1f3a;
-            padding: 15px;
-            border-radius: 10px;
-            border: 1px solid #2d3561;
-            margin: 20px 0;
-        }}
-        .info-box h3 {{
-            color: #667eea;
-            margin-bottom: 10px;
-        }}
-        .info-box ul {{
-            margin-left: 20px;
-            color: #8b9dc3;
-        }}
-        .info-box ul li {{
-            margin: 5px 0;
-        }}
-    </style>
-    <script>
-        function sortTable(n) {{
-            const table = document.getElementById("dataTable");
-            let rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
-            switching = true;
-            dir = "asc";
-            while (switching) {{
-                switching = false;
-                rows = table.rows;
-                for (i = 1; i < (rows.length - 1); i++) {{
-                    shouldSwitch = false;
-                    x = rows[i].getElementsByTagName("TD")[n];
-                    y = rows[i + 1].getElementsByTagName("TD")[n];
-                    let xContent = x.textContent || x.innerText;
-                    let yContent = y.textContent || y.innerText;
-                    
-                    let xNum = parseFloat(xContent.replace(/[^0-9.-]/g, ''));
-                    let yNum = parseFloat(yContent.replace(/[^0-9.-]/g, ''));
-                    
-                    if (!isNaN(xNum) && !isNaN(yNum)) {{
-                        if (dir == "asc") {{
-                            if (xNum > yNum) {{
-                                shouldSwitch = true;
-                                break;
-                            }}
-                        }} else if (dir == "desc") {{
-                            if (xNum < yNum) {{
-                                shouldSwitch = true;
-                                break;
-                            }}
-                        }}
-                    }} else {{
-                        if (dir == "asc") {{
-                            if (xContent.toLowerCase() > yContent.toLowerCase()) {{
-                                shouldSwitch = true;
-                                break;
-                            }}
-                        }} else if (dir == "desc") {{
-                            if (xContent.toLowerCase() < yContent.toLowerCase()) {{
-                                shouldSwitch = true;
-                                break;
-                            }}
-                        }}
-                    }}
-                }}
-                if (shouldSwitch) {{
-                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-                    switching = true;
-                    switchcount++;
-                }} else {{
-                    if (switchcount == 0 && dir == "asc") {{
-                        dir = "desc";
-                        switching = true;
-                    }}
-                }}
+        
+        /* Mobile */
+        @media (max-width: 768px) {{
+            body {{
+                padding: 16px;
+            }}
+            
+            h1 {{
+                font-size: 24px;
+            }}
+            
+            .header-top {{
+                flex-direction: column;
+                align-items: flex-start;
+            }}
+            
+            .kpi-grid {{
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            }}
+            
+            .kpi-value {{
+                font-size: 24px;
+            }}
+            
+            .section {{
+                padding: 16px;
+            }}
+            
+            .calls-table {{
+                font-size: 12px;
+            }}
+            
+            .calls-table th,
+            .calls-table td {{
+                padding: 8px;
+            }}
+            
+            .charts-grid {{
+                grid-template-columns: 1fr;
             }}
         }}
-    </script>
+    </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>📊 Memecoin Paper-Trading Dashboard</h1>
-            <p>Last Updated: {format_zurich_time(datetime.now(timezone.utc).isoformat())}</p>
+            <div class="header-top">
+                <h1>📊 Memecoin Paper Trading</h1>
+                <a href="https://github.com/andreolf/memecoin-paper-tracker" target="_blank" class="github-link">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                    </svg>
+                    View on GitHub
+                </a>
+            </div>
+            <div class="header-meta">
+                <span class="badge badge-warning">📝 PAPER TRADING — no real money</span>
+                <span class="badge badge-info">Last updated: {format_zurich_time(datetime.now(timezone.utc).isoformat())}</span>
+            </div>
         </header>
         
-        <div class="warning">
-            ⚠️ PAPER TRADING - NO REAL MONEY - ALL P&L IS THEORETICAL
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">Total Calls</div>
+                <div class="kpi-value neutral">{total_calls}</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Win Rate</div>
+                <div class="kpi-value {'positive' if win_rate_a > 50 else 'negative' if win_rate_a < 50 else 'neutral'}">{win_rate_a:.1f}%</div>
+                <div class="kpi-sub">Strategy A</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Total P&L</div>
+                <div class="kpi-value {'positive' if total_pnl_a > 0 else 'negative' if total_pnl_a < 0 else 'neutral'}">{format_money(total_pnl_a)}</div>
+                <div class="kpi-sub">ROI: {format_money(roi_a) if roi_a != 0 else '0.0'}%</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Best Call</div>
+                <div class="kpi-value neutral" style="font-size: 1.5em;">{best_call_symbol}</div>
+                <div class="kpi-sub">{best_call_multiple:.2f}x multiple</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Active</div>
+                <div class="kpi-value neutral">{active_count}</div>
+                <div class="kpi-sub">Open positions</div>
+            </div>
         </div>
         
-        <div class="best-strategy">
-            🏆 Current Best Performer: {best_strategy} (${best_pnl:.2f} Total P&L)
+        <!-- Strategy Comparison -->
+        <div class="section">
+            <h2 class="section-title">Strategy Comparison</h2>
+            <table class="strategy-table">
+                <tbody>
+                    {strategy_table_html}
+                </tbody>
+            </table>
+            <p style="margin-top: 16px; font-size: 13px; color: var(--text-muted);">
+                All strategies: $10 stake, 0.45% fee + 2% slippage per leg, -50% stop (where applicable)
+            </p>
         </div>
         
-        <div class="info-box">
-            <h3>All Strategies Use:</h3>
-            <ul>
-                <li>$10 stake per alert</li>
-                <li>0.45% trading fee + 2% slippage per leg</li>
-                <li>-50% stop-loss (where applicable)</li>
-                <li>Conservative ordering: stop before target when uncertain</li>
-            </ul>
-        </div>
-        
-        <div class="stats">
-            <div class="stat-card {'best' if best_strategy == 'A: Sell ALL at 2x' else ''}">
-                <h3>Strategy A: Sell ALL at 2x</h3>
-                <div class="value {'profit' if results_a_df['total_pnl'].sum() > 0 else 'loss'}">
-                    ${results_a_df['total_pnl'].sum():.2f}
-                </div>
-                <div class="details">
-                    Win Rate: {(results_a_df['total_pnl'] > 0).mean() * 100:.1f}%<br>
-                    Avg: ${results_a_df['total_pnl'].mean():.2f}
+        <!-- Charts -->
+        <div class="charts-grid">
+            <div class="section">
+                <h2 class="section-title">Cumulative P&L</h2>
+                <div class="chart-container">
+                    <canvas id="cumulativeChart"></canvas>
                 </div>
             </div>
-            <div class="stat-card {'best' if best_strategy == 'B: Sell ALL at +50%' else ''}">
-                <h3>Strategy B: Sell ALL at +50%</h3>
-                <div class="value {'profit' if results_b_df['total_pnl'].sum() > 0 else 'loss'}">
-                    ${results_b_df['total_pnl'].sum():.2f}
-                </div>
-                <div class="details">
-                    Win Rate: {(results_b_df['total_pnl'] > 0).mean() * 100:.1f}%<br>
-                    Avg: ${results_b_df['total_pnl'].mean():.2f}
-                </div>
-            </div>
-            <div class="stat-card {'best' if best_strategy == 'C: Sell HALF at 2x' else ''}">
-                <h3>Strategy C: Sell HALF at 2x</h3>
-                <div class="value {'profit' if results_c_df['total_pnl'].sum() > 0 else 'loss'}">
-                    ${results_c_df['total_pnl'].sum():.2f}
-                </div>
-                <div class="details">
-                    Win Rate: {(results_c_df['total_pnl'] > 0).mean() * 100:.1f}%<br>
-                    Avg: ${results_c_df['total_pnl'].mean():.2f}
-                </div>
-            </div>
-            <div class="stat-card {'best' if best_strategy == 'D: Hold 24h' else ''}">
-                <h3>Strategy D: Hold 24h</h3>
-                <div class="value {'profit' if results_d_df['pnl'].sum() > 0 else 'loss'}">
-                    ${results_d_df['pnl'].sum():.2f}
-                </div>
-                <div class="details">
-                    Win Rate: {(results_d_df['pnl'] > 0).mean() * 100:.1f}%<br>
-                    Avg: ${results_d_df['pnl'].mean():.2f}
+            <div class="section">
+                <h2 class="section-title">Per-Call P&L</h2>
+                <div class="chart-container">
+                    <canvas id="perCallChart"></canvas>
                 </div>
             </div>
         </div>
         
-        <div class="charts">
-            <div class="chart">
-                <img src="cumulative_pnl_comparison.png" alt="Cumulative P&L">
-            </div>
-            <div class="chart">
-                <img src="max_multiple_dist.png" alt="Max Multiple Distribution">
-            </div>
-            <div class="chart">
-                <img src="strategy_comparison.png" alt="Strategy Comparison">
+        <!-- Calls Table -->
+        <div class="section">
+            <h2 class="section-title">All Calls</h2>
+            <div style="overflow-x: auto;">
+                <table class="calls-table">
+                    <thead>
+                        <tr>
+                            <th>Token</th>
+                            <th>Alert Time</th>
+                            <th>Alert MC</th>
+                            <th>Current MC</th>
+                            <th>Max Multiple</th>
+                            <th>Status</th>
+                            <th>P&L (A)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {calls_table_html}
+                    </tbody>
+                </table>
             </div>
         </div>
         
-        <h2 style="margin-bottom: 20px;">Strategy C: Sell HALF at 2x (Click headers to sort)</h2>
-        <table id="dataTable">
-            <thead>
-                <tr>
-                    <th onclick="sortTable(0)">Alert Time (CET/CEST)</th>
-                    <th onclick="sortTable(1)">Token</th>
-                    <th onclick="sortTable(2)">Type</th>
-                    <th onclick="sortTable(3)">Max Multiple</th>
-                    <th onclick="sortTable(4)">Total P&L</th>
-                    <th onclick="sortTable(5)">Realized</th>
-                    <th onclick="sortTable(6)">Unrealized</th>
-                    <th onclick="sortTable(7)">Hit 2x</th>
-                    <th onclick="sortTable(8)">Hit Stop</th>
-                </tr>
-            </thead>
-            <tbody>
-                {table_html}
-            </tbody>
-        </table>
+        <!-- EXC Calls Summary (if any) -->
+        {f'''
+        <div class="section">
+            <h2 class="section-title">Exception Calls (EXC)</h2>
+            <p style="margin-bottom: 16px; color: var(--text-secondary); font-size: 14px;">
+                Strong-narrative exception calls taken despite edge-case signals.
+            </p>
+            <div class="kpi-card">
+                <div class="kpi-label">EXC Calls Subtotal</div>
+                <div class="kpi-value {"positive" if exc_pnl > 0 else "negative" if exc_pnl < 0 else "neutral"}">{format_money(exc_pnl)}</div>
+                <div class="kpi-sub">{exc_count} call{"s" if exc_count != 1 else ""}</div>
+            </div>
+        </div>
+        ''' if exc_count > 0 else ''}
+        
+        <!-- Missed Calls (Filtered Out) -->
+        {f'''
+        <div class="section">
+            <h2 class="section-title">Missed Calls (Filtered Out)</h2>
+            <p style="margin-bottom: 16px; color: var(--text-secondary); font-size: 14px;">
+                Coins deliberately skipped by scanner filters. Shows what they would have returned under Strategy A.
+            </p>
+            
+            <div class="kpi-card" style="margin-bottom: 20px;">
+                <div class="kpi-label">Filters Impact</div>
+                <div class="kpi-value {"positive" if filters_saved > 0 else "negative" if filters_saved < 0 else "neutral"}">
+                    {format_money(filters_saved)}
+                </div>
+                <div class="kpi-sub">{"Saved" if filters_saved > 0 else "Missed gains" if filters_saved < 0 else "Neutral"} • {missed_count} call{"s" if missed_count != 1 else ""}</div>
+            </div>
+            
+            {"""
+            <div style="overflow-x: auto;">
+                <table class="calls-table">
+                    <thead>
+                        <tr>
+                            <th>Token</th>
+                            <th>Skip Reason</th>
+                            <th>Max Multiple</th>
+                            <th>Would-be P&L</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            """ + "".join([f'''
+                        <tr>
+                            <td><strong>{row["symbol"]}</strong></td>
+                            <td><code style="font-size: 11px;">{row["skip_reason"]}</code></td>
+                            <td class="number">{row["max_multiple"]:.2f}x</td>
+                            <td class="number pnl-{"positive" if row["total_pnl"] > 0 else "negative" if row["total_pnl"] < 0 else "neutral"}">{format_money(row["total_pnl"])}</td>
+                        </tr>
+            ''' for _, row in missed_a_df.iterrows()]) + """
+                    </tbody>
+                </table>
+            </div>
+            """ if len(missed_a_df) > 0 else '<p style="color: var(--text-muted); text-align: center; padding: 20px;">No missed calls yet.</p>'}
+        </div>
+        ''' if missed_count > 0 else ''}
         
         <footer>
-            <p>Auto-generated by scripts/refresh.py | Paper-trading only, no real trades executed</p>
-            <p style="margin-top: 10px; font-size: 0.85em;">Includes 2% slippage + 0.45% fees per leg</p>
+            <p>Paper-trading simulation only • No real trades executed • Data auto-refreshed hourly</p>
+            <p style="margin-top: 8px;">Strategy A: Sell ALL at 2x, -50% stop, 0.45% fee + 2% slippage</p>
+            {f'<p style="margin-top: 8px; color: var(--text-muted);">{exc_count} EXC calls • {missed_count} missed calls tracked</p>' if exc_count > 0 or missed_count > 0 else ''}
         </footer>
     </div>
+    
+    <script>
+        // Copy CA functionality
+        function copyCA(ca, elementId) {{
+            navigator.clipboard.writeText(ca).then(() => {{
+                const btn = event.target.closest('.copy-btn');
+                btn.classList.add('copied');
+                setTimeout(() => btn.classList.remove('copied'), 2000);
+            }});
+        }}
+        
+        // Chart.js setup
+        const chartColors = {{
+            primary: getComputedStyle(document.documentElement).getPropertyValue('--accent'),
+            success: getComputedStyle(document.documentElement).getPropertyValue('--success'),
+            danger: getComputedStyle(document.documentElement).getPropertyValue('--danger'),
+            text: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary'),
+            grid: getComputedStyle(document.documentElement).getPropertyValue('--border')
+        }};
+        
+        Chart.defaults.color = chartColors.text;
+        Chart.defaults.borderColor = chartColors.grid;
+        
+        // Cumulative P&L Chart
+        const cumulativeCtx = document.getElementById('cumulativeChart');
+        if (cumulativeCtx) {{
+            new Chart(cumulativeCtx, {{
+                type: 'line',
+                data: {{
+                    labels: {chart_labels},
+                    datasets: [{{
+                        label: 'Cumulative P&L',
+                        data: {cumulative_pnl_with_origin},
+                        borderColor: chartColors.primary,
+                        backgroundColor: chartColors.primary + '20',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointBorderWidth: 2,
+                        pointBackgroundColor: chartColors.primary,
+                        pointBorderColor: '#fff'
+                    }}]
+                }},
+                options: {{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {{
+                        legend: {{
+                            display: false
+                        }}
+                    }},
+                    scales: {{
+                        y: {{
+                            beginAtZero: true,
+                            grid: {{
+                                color: chartColors.grid
+                            }}
+                        }},
+                        x: {{
+                            grid: {{
+                                display: false
+                            }}
+                        }}
+                    }}
+                }}
+            }});
+        }}
+        
+        // Per-Call P&L Chart
+        const perCallCtx = document.getElementById('perCallChart');
+        if (perCallCtx) {{
+            new Chart(perCallCtx, {{
+                type: 'bar',
+                data: {{
+                    labels: {per_call_labels},
+                    datasets: [{{
+                        label: 'P&L',
+                        data: {per_call_pnl},
+                        backgroundColor: {per_call_pnl}.map(v => v >= 0 ? chartColors.success : chartColors.danger),
+                        borderRadius: 6,
+                        borderSkipped: false
+                    }}]
+                }},
+                options: {{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {{
+                        legend: {{
+                            display: false
+                        }}
+                    }},
+                    scales: {{
+                        y: {{
+                            beginAtZero: true,
+                            grid: {{
+                                color: chartColors.grid
+                            }}
+                        }},
+                        x: {{
+                            grid: {{
+                                display: false
+                            }}
+                        }}
+                    }}
+                }}
+            }});
+        }}
+    </script>
 </body>
-</html>
-"""
+</html>'''
     
     with open(DASHBOARD_DIR / 'index.html', 'w') as f:
         f.write(html)
+
 
 
 if __name__ == '__main__':
