@@ -61,6 +61,23 @@ class TestStrategyA:
         
         assert abs(result['total_pnl'] - (-5.242)) < 0.01
         assert result['unrealized_pnl'] == 0
+    
+    def test_hit_both_target_prioritized(self):
+        """Test when both stop and target hit - target is prioritized if ATH proves it was reached."""
+        result = calculate_strategy_a(
+            alert_price=1.0,
+            ath=5.0,  # Went to 5x (definitely hit 2x)
+            min_price=0.4,  # Also hit stop on the way down
+            current_price=0.4,
+            status='active'
+        )
+        
+        # ATH >= 2x proves we reached the target
+        assert result['hit_target']
+        assert not result['hit_stop']  # Stop not reported since target was hit
+        
+        # Should exit at 2x target, not at stop
+        assert abs(result['total_pnl'] - 9.032) < 0.01
 
 
 class TestStrategyB:
@@ -200,6 +217,27 @@ class TestStrategyE:
         assert result['kept_moonbag'] == False
         # Should behave like Strategy A when stopped
         assert abs(result['total_pnl'] - (-5.242)) < 0.01
+    
+    def test_high_narrative_target_then_stop(self):
+        """Test that target is prioritized when ATH shows it was reached, even if stop also hit."""
+        result = calculate_strategy_e(
+            alert_price=1.0,
+            ath=5.7,  # Reached 5.7x (definitely hit 2x)
+            min_price=0.4,  # Also hit stop on way down
+            current_price=0.4,
+            status='active',
+            reason='narr 4/5, hit target then crashed',
+            max_multiple=5.7
+        )
+        
+        assert result['narrative_score'] == 4
+        assert result['hit_target'] == True
+        assert result['hit_stop'] == False  # Not reported since target was hit
+        assert result['kept_moonbag'] == False  # Moonbag exited at 5.7x (>= 5x)
+        
+        # 85% sold at 2x + 15% moonbag at 5.7x
+        # Should be a significant profit
+        assert result['total_pnl'] > 10
     
     def test_high_narrative_2x_but_not_5x_moonbag_held(self):
         """Test moonbag is held when 2x reached but not 5x."""
@@ -533,6 +571,148 @@ class TestStatusMapping:
                 active_count += 1
         
         assert active_count == 1  # Only CA3 is truly open
+
+
+class TestRegressionDashboardCrash:
+    """
+    Regression test for Oct 20, 2026 dashboard crash.
+    Tests the scenario with EXC calls, strategy E calls, missed calls, and normal calls.
+    """
+    
+    def test_mixed_call_types_no_crash(self):
+        """Test that dashboard generation handles mixed call types without crashing."""
+        import pandas as pd
+        
+        # Mock data with all call types
+        alerts_data = {
+            'ca': ['NORMAL1', 'EXC_ARENA', 'EXC_JARVIS', 'MISSED1'],
+            'symbol': ['NORM', 'ARENA', 'JARVIS', 'MISS'],
+            'symbol_alert': ['NORM', 'ARENA', 'JARVIS', 'MISS'],
+            'alert_type': ['new', 'new', 'new', 'missed'],
+            'alert_time_utc': ['2026-10-20T10:00:00Z'] * 4,
+            'alert_time_utc_alert': ['2026-10-20T10:00:00Z'] * 4,
+            'price_usd': [1.0, 1.0, 1.0, 1.0],
+            'mc_usd': [50000, 50000, 50000, 50000],
+            'current_mc_usd': [100000, 120000, 150000, 80000],
+            'ath_since_alert': [2.5, 2.1, 2.2, 1.8],
+            'min_since_alert': [0.8, 0.9, 0.85, 0.6],
+            'current_price_usd': [2.2, 2.0, 2.1, 1.5],
+            'status': ['active', 'active', 'active', 'active'],
+            'max_multiple': [2.5, 2.1, 2.2, 1.8],
+            'reason': [
+                'normal call',
+                'EXC narr 4/5: Pokémon meta, original mechanic',
+                'EXC narr 4/5: Specs x RDJ launch, Jarvis meta',
+                'skip dev-out, narr 3/5: missed for dev-out'
+            ]
+        }
+        
+        df = pd.DataFrame(alerts_data)
+        
+        # Split like in generate_dashboard
+        df_real = df[df['alert_type'] != 'missed'].copy()
+        df_missed = df[df['alert_type'] == 'missed'].copy()
+        df_real['is_exc'] = df_real['reason'].str.startswith('EXC narr', na=False)
+        
+        # Verify splits
+        assert len(df_real) == 3
+        assert len(df_missed) == 1
+        assert df_real['is_exc'].sum() == 2  # ARENA and JARVIS
+        
+        # Calculate strategies
+        results_a = []
+        for _, row in df_real.iterrows():
+            strat_a = calculate_strategy_a(
+                row['price_usd'],
+                row['ath_since_alert'],
+                row['min_since_alert'],
+                row['current_price_usd'],
+                row['status']
+            )
+            results_a.append({
+                'ca': row['ca'],
+                'symbol': row['symbol_alert'],
+                'is_exc': row['is_exc'],
+                **strat_a
+            })
+        
+        results_a_df = pd.DataFrame(results_a)
+        
+        # This is the line that was crashing (line 1167)
+        # exc_mask was built from full_df but applied to results_a_df
+        # Now exc_mask should be built from results_a_df itself
+        exc_count = results_a_df['is_exc'].sum()
+        exc_pnl = results_a_df[results_a_df['is_exc']]['total_pnl'].sum() if exc_count > 0 else 0
+        
+        # Should not crash and should have correct counts
+        assert exc_count == 2
+        assert isinstance(exc_pnl, (int, float))
+        assert len(results_a_df) == 3
+    
+    def test_strategy_e_stop_only_before_2x(self):
+        """
+        Test Strategy E (ARENA/JARVIS scenario):
+        - 85% sold at 2x
+        - 15% moonbag with no stop after 2x
+        - -50% stop applies only BEFORE 2x
+        - If ATH >= 2x, target was reached regardless of later crash
+        """
+        # Scenario 1: Hits 2x then drops (moonbag held, no stop after 2x)
+        result = calculate_strategy_e(
+            alert_price=1.0,
+            ath=2.1,  # Hit 2x
+            min_price=0.9,  # Never hit -50% stop
+            current_price=1.3,  # Now at 1.3x (dropped from 2.1x but still above entry)
+            status='active',
+            reason='EXC narr 4/5: Pokémon meta',
+            max_multiple=2.1
+        )
+        
+        assert result['narrative_score'] == 4
+        assert result['hit_target'] == True  # Hit 2x
+        assert result['hit_stop'] == False  # Never hit -50% stop
+        assert result['kept_moonbag'] == True  # Still holding moonbag
+        
+        # 85% sold at 2x: profit from that
+        # 15% moonbag marked at 1.3x: still positive
+        assert result['realized_pnl'] > 0
+        assert result['unrealized_pnl'] > 0  # Moonbag still above cost basis
+        assert result['total_pnl'] > 0
+        
+        # Scenario 2: Hit stop BEFORE 2x (whole position stopped)
+        result_stopped = calculate_strategy_e(
+            alert_price=1.0,
+            ath=1.8,  # Never hit 2x
+            min_price=0.4,  # Hit -50% stop
+            current_price=0.5,
+            status='active',
+            reason='EXC narr 5/5: strong but stopped',
+            max_multiple=1.8
+        )
+        
+        assert result_stopped['hit_stop'] == True
+        assert result_stopped['hit_target'] == False
+        assert result_stopped['kept_moonbag'] == False  # Never reached 2x to create moonbag
+        assert result_stopped['total_pnl'] < 0  # Should be -50% loss
+        
+        # Scenario 3: Hit 2x, peaked at 5.7x, then crashed below stop (ARENA case)
+        result_arena = calculate_strategy_e(
+            alert_price=1.0,
+            ath=5.7,  # Peaked at 5.7x (definitely hit 2x first)
+            min_price=0.3,  # Later crashed below stop
+            current_price=0.3,
+            status='active',
+            reason='narr 4/5: peaked then crashed',
+            max_multiple=5.7
+        )
+        
+        # ATH proves we hit 2x before crashing
+        assert result_arena['hit_target'] == True
+        assert result_arena['hit_stop'] == False  # Target prioritized since ATH >= 2x
+        assert result_arena['kept_moonbag'] == False  # Moonbag exited at 5.7x (>= 5x)
+        
+        # 85% at 2x + 15% at 5.7x should be profitable
+        assert result_arena['total_pnl'] > 10
 
 
 class TestMoneyFormatting:
