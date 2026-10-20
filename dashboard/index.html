@@ -483,7 +483,7 @@
             </div>
             <div class="header-meta">
                 <span class="badge badge-warning">📝 PAPER TRADING — no real money</span>
-                <span class="badge badge-info">Last updated: 2026-10-20 12:46 CEST</span>
+                <span class="badge badge-info">Last updated: 2026-10-20 12:56 CEST</span>
             </div>
         </header>
         
@@ -648,11 +648,51 @@
         
         <!-- Missed Calls (Filtered Out) -->
         
+        <div class="section">
+            <h2 class="section-title">Missed Calls (Filtered Out)</h2>
+            <p style="margin-bottom: 16px; color: var(--text-secondary); font-size: 14px;">
+                Coins deliberately skipped by scanner filters. Shows what they would have returned under Strategy A.
+            </p>
+            
+            <div class="kpi-card" style="margin-bottom: 20px;">
+                <div class="kpi-label">Filters Impact</div>
+                <div class="kpi-value negative">
+                    −$2.07
+                </div>
+                <div class="kpi-sub">Missed gains • 1 call</div>
+            </div>
+            
+            
+            <div style="overflow-x: auto;">
+                <table class="calls-table">
+                    <thead>
+                        <tr>
+                            <th>Token</th>
+                            <th>Skip Reason</th>
+                            <th>Max Multiple</th>
+                            <th>Would-be P&L</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            
+                        <tr>
+                            <td><strong>LIFAS</strong></td>
+                            <td><code style="font-size: 11px;">bot 63% (>45% exc cap) + dev out + -39% off ATH 87.7k w/ sell vol > buy vol 1m</code></td>
+                            <td class="number">1.24x</td>
+                            <td class="number pnl-positive">+$2.07</td>
+                        </tr>
+            
+                    </tbody>
+                </table>
+            </div>
+            
+        </div>
+        
         
         <footer>
             <p>Paper-trading simulation only • No real trades executed • Data auto-refreshed hourly</p>
             <p style="margin-top: 8px;">Strategy A: Sell ALL at 2x, -50% stop, 0.45% fee + 2% slippage</p>
-            
+            <p style="margin-top: 8px; color: var(--text-muted);">0 EXC calls • 1 missed calls tracked</p>
         </footer>
     </div>
     
