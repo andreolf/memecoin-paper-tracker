@@ -45,6 +45,10 @@ def fetch_with_retry(url: str, max_retries: int = 3) -> Optional[dict]:
                 return resp.json()
             elif resp.status_code == 429:
                 time.sleep(2 ** attempt)
+            elif resp.status_code in (401, 530):
+                # API service issues - don't retry, return None to allow fallback
+                print(f"  HTTP {resp.status_code} for {url} (service issue, skipping)")
+                return None
             else:
                 print(f"  HTTP {resp.status_code} for {url}")
         except Exception as e:
@@ -645,12 +649,24 @@ def refresh_data():
         # Fetch current data
         current = fetch_current_price(ca, alert_time)
         
+        # Get existing data for fallback if APIs fail
+        existing = existing_calls.get(ca, {})
+        
+        # If all APIs failed (price still 0) but we have previous data, keep previous values
+        if current['current_price_usd'] == 0 and existing:
+            prev_price = float(existing.get('current_price_usd', 0))
+            if prev_price > 0:
+                print(f"  Using cached values for {ca} (APIs unavailable)")
+                current['current_price_usd'] = prev_price
+                current['current_mc_usd'] = float(existing.get('current_mc_usd', 0))
+                current['current_liq_usd'] = float(existing.get('current_liq_usd', 0))
+                current['status'] = existing.get('status', 'dead')
+        
         # Try to get OHLCV for better ATH/min
         alert_ts = int(datetime.fromisoformat(alert_time.replace('Z', '+00:00')).timestamp())
         ohlcv = fetch_ohlcv_geckoterminal(ca, alert_ts)
         
         # Calculate ATH and min
-        existing = existing_calls.get(ca, {})
         prev_ath = float(existing.get('ath_since_alert', 0))
         prev_min = float(existing.get('min_since_alert', alert_price))
         
@@ -730,6 +746,7 @@ def generate_dashboard():
             'alert_type': row['alert_type'],
             'alert_time_utc': row['alert_time_utc_alert'],
             'max_multiple': row['max_multiple'],
+            'is_exc': row['is_exc'],  # Include EXC flag
             **strat_a
         })
         
@@ -747,6 +764,7 @@ def generate_dashboard():
             'alert_type': row['alert_type'],
             'alert_time_utc': row['alert_time_utc_alert'],
             'max_multiple': row['max_multiple'],
+            'is_exc': row['is_exc'],
             **strat_b
         })
         
@@ -764,6 +782,7 @@ def generate_dashboard():
             'alert_type': row['alert_type'],
             'alert_time_utc': row['alert_time_utc_alert'],
             'max_multiple': row['max_multiple'],
+            'is_exc': row['is_exc'],
             **strat_c
         })
         
@@ -780,6 +799,7 @@ def generate_dashboard():
             'alert_type': row['alert_type'],
             'alert_time_utc': row['alert_time_utc_alert'],
             'max_multiple': row['max_multiple'],
+            'is_exc': row['is_exc'],
             **strat_d
         })
         
@@ -799,6 +819,7 @@ def generate_dashboard():
             'alert_type': row['alert_type'],
             'alert_time_utc': row['alert_time_utc_alert'],
             'max_multiple': row['max_multiple'],
+            'is_exc': row['is_exc'],
             **strat_e
         })
     
@@ -1161,10 +1182,9 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, result
         if not row['hit_stop'] and not row['hit_target'] and full_df[full_df['ca'] == row['ca']]['status'].iloc[0] == 'active':
             active_count += 1
     
-    # Calculate EXC calls subtotal
-    exc_mask = full_df['is_exc'] if 'is_exc' in full_df.columns else pd.Series([False] * len(full_df))
-    exc_count = exc_mask.sum() if len(full_df) > 0 else 0
-    exc_pnl = results_a_df[exc_mask]['total_pnl'].sum() if exc_count > 0 and len(results_a_df) > 0 else 0
+    # Calculate EXC calls subtotal - use is_exc from results_a_df itself
+    exc_count = results_a_df['is_exc'].sum() if 'is_exc' in results_a_df.columns and len(results_a_df) > 0 else 0
+    exc_pnl = results_a_df[results_a_df['is_exc']]['total_pnl'].sum() if exc_count > 0 else 0
     
     # Calculate missed calls summary
     missed_count = len(df_missed)
