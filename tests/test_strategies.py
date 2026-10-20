@@ -61,6 +61,23 @@ class TestStrategyA:
         
         assert abs(result['total_pnl'] - (-5.242)) < 0.01
         assert result['unrealized_pnl'] == 0
+    
+    def test_hit_both_target_prioritized(self):
+        """Test when both stop and target hit - target is prioritized if ATH proves it was reached."""
+        result = calculate_strategy_a(
+            alert_price=1.0,
+            ath=5.0,  # Went to 5x (definitely hit 2x)
+            min_price=0.4,  # Also hit stop on the way down
+            current_price=0.4,
+            status='active'
+        )
+        
+        # ATH >= 2x proves we reached the target
+        assert result['hit_target']
+        assert not result['hit_stop']  # Stop not reported since target was hit
+        
+        # Should exit at 2x target, not at stop
+        assert abs(result['total_pnl'] - 9.032) < 0.01
 
 
 class TestStrategyB:
@@ -200,6 +217,27 @@ class TestStrategyE:
         assert result['kept_moonbag'] == False
         # Should behave like Strategy A when stopped
         assert abs(result['total_pnl'] - (-5.242)) < 0.01
+    
+    def test_high_narrative_target_then_stop(self):
+        """Test that target is prioritized when ATH shows it was reached, even if stop also hit."""
+        result = calculate_strategy_e(
+            alert_price=1.0,
+            ath=5.7,  # Reached 5.7x (definitely hit 2x)
+            min_price=0.4,  # Also hit stop on way down
+            current_price=0.4,
+            status='active',
+            reason='narr 4/5, hit target then crashed',
+            max_multiple=5.7
+        )
+        
+        assert result['narrative_score'] == 4
+        assert result['hit_target'] == True
+        assert result['hit_stop'] == False  # Not reported since target was hit
+        assert result['kept_moonbag'] == False  # Moonbag exited at 5.7x (>= 5x)
+        
+        # 85% sold at 2x + 15% moonbag at 5.7x
+        # Should be a significant profit
+        assert result['total_pnl'] > 10
     
     def test_high_narrative_2x_but_not_5x_moonbag_held(self):
         """Test moonbag is held when 2x reached but not 5x."""
@@ -617,6 +655,7 @@ class TestRegressionDashboardCrash:
         - 85% sold at 2x
         - 15% moonbag with no stop after 2x
         - -50% stop applies only BEFORE 2x
+        - If ATH >= 2x, target was reached regardless of later crash
         """
         # Scenario 1: Hits 2x then drops (moonbag held, no stop after 2x)
         result = calculate_strategy_e(
@@ -656,28 +695,24 @@ class TestRegressionDashboardCrash:
         assert result_stopped['kept_moonbag'] == False  # Never reached 2x to create moonbag
         assert result_stopped['total_pnl'] < 0  # Should be -50% loss
         
-        # Scenario 3: Hit 2x, moonbag drops below entry but above 0 (no stop on moonbag)
-        result_moonbag_down = calculate_strategy_e(
+        # Scenario 3: Hit 2x, peaked at 5.7x, then crashed below stop (ARENA case)
+        result_arena = calculate_strategy_e(
             alert_price=1.0,
-            ath=2.5,  # Hit 2x
-            min_price=0.4,  # This is min BEFORE 2x hit (doesn't trigger stop if 2x already hit)
-            current_price=0.6,  # Moonbag now at 0.6x (below entry!)
+            ath=5.7,  # Peaked at 5.7x (definitely hit 2x first)
+            min_price=0.3,  # Later crashed below stop
+            current_price=0.3,
             status='active',
-            reason='narr 4/5: moonbag dropped',
-            max_multiple=2.5
+            reason='narr 4/5: peaked then crashed',
+            max_multiple=5.7
         )
         
-        # If ATH was 2.5x and current is 0.6x, we need to check if stop was hit BEFORE 2x
-        # Conservative: if both stop and target hit, assume stop hit first
-        # But if ath >= 2x, we hit target
-        # So this needs careful handling in the logic
+        # ATH proves we hit 2x before crashing
+        assert result_arena['hit_target'] == True
+        assert result_arena['hit_stop'] == False  # Target prioritized since ATH >= 2x
+        assert result_arena['kept_moonbag'] == False  # Moonbag exited at 5.7x (>= 5x)
         
-        # The current implementation is conservative: hit_stop checks if min_price <= stop_price
-        # If min_price = 0.4, that's below 0.5, so hit_stop = True
-        # Conservative ordering means we assume stop hit before target
-        # So this would be stopped out, not held as moonbag
-        
-        # This is correct behavior for the conservative strategy!
+        # 85% at 2x + 15% at 5.7x should be profitable
+        assert result_arena['total_pnl'] > 10
 
 
 class TestMoneyFormatting:

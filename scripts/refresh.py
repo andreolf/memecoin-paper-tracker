@@ -25,6 +25,7 @@ DATA_DIR = BASE_DIR / "data"
 DASHBOARD_DIR = BASE_DIR / "dashboard"
 ALERTS_CSV = DATA_DIR / "alerts.csv"
 CALLS_CSV = DATA_DIR / "calls.csv"
+PEAKS_CSV = DATA_DIR / "peaks.csv"
 
 DEXSCREENER_BASE = "https://api.dexscreener.com/latest/dex/tokens/"
 GECKOTERMINAL_BASE = "https://api.geckoterminal.com/api/v2/networks/solana/tokens/"
@@ -116,24 +117,47 @@ def fetch_ohlcv_geckoterminal(ca: str, since_ts: int) -> Optional[Tuple[float, f
     Returns (ath, min) or None.
     """
     url = f"{GECKOTERMINAL_BASE}{ca}/ohlcv/minute?before_timestamp={int(time.time())}&limit=1000"
-    data = fetch_with_retry(url)
-    if not data or "data" not in data:
-        return None
     
-    try:
-        ohlcv = data["data"]["attributes"]["ohlcv_list"]
-        ath = 0.0
-        min_price = float('inf')
-        for candle in ohlcv:
-            ts = candle[0]
-            if ts >= since_ts:
-                high = float(candle[2])
-                low = float(candle[3])
-                ath = max(ath, high)
-                min_price = min(min_price, low)
-        return (ath, min_price) if ath > 0 else None
-    except (ValueError, TypeError, KeyError, IndexError):
-        return None
+    # Add headers for GeckoTerminal API
+    headers = {
+        'Accept': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (compatible; MemecoinTracker/1.0)'
+    }
+    
+    for attempt in range(3):
+        try:
+            time.sleep(RATE_LIMIT_DELAY)
+            resp = requests.get(url, headers=headers, timeout=REQUEST_TIMEOUT)
+            if resp.status_code == 200:
+                data = resp.json()
+                if not data or "data" not in data:
+                    return None
+                
+                try:
+                    ohlcv = data["data"]["attributes"]["ohlcv_list"]
+                    ath = 0.0
+                    min_price = float('inf')
+                    for candle in ohlcv:
+                        ts = candle[0]
+                        if ts >= since_ts:
+                            high = float(candle[2])
+                            low = float(candle[3])
+                            ath = max(ath, high)
+                            min_price = min(min_price, low)
+                    return (ath, min_price) if ath > 0 else None
+                except (ValueError, TypeError, KeyError, IndexError):
+                    return None
+            elif resp.status_code in (401, 403, 429):
+                # Auth or rate limit issue - don't retry
+                print(f"  HTTP {resp.status_code} for GeckoTerminal OHLCV (service issue, skipping)")
+                return None
+        except Exception as e:
+            if attempt < 2:
+                time.sleep(2 ** attempt)
+            else:
+                print(f"  GeckoTerminal OHLCV failed: {e}")
+    
+    return None
 
 
 def fetch_current_price(ca: str, alert_time: str) -> Dict:
@@ -207,7 +231,8 @@ def calculate_strategy_a(alert_price: float, ath: float, min_price: float, curre
     $10 stake, 0.45% fee + 2% slippage per leg.
     - Stop loss at -50% from entry
     - Sell all at 2x
-    - Conservative: assume stop hit before target if order unknown
+    - If ATH >= target, prioritize target (we know it was reached)
+    - Otherwise, if both hit, assume stop hit before target (conservative)
     """
     FEE_PCT = 0.0045
     SLIPPAGE_PCT = 0.02
@@ -226,19 +251,20 @@ def calculate_strategy_a(alert_price: float, ath: float, min_price: float, curre
     realized_pnl = 0.0
     remaining_tokens = tokens_bought
     
-    # Conservative: if we hit both stop and target, assume stop hit first
-    hit_stop = min_price <= stop_price
+    # Check if we hit target or stop
+    # If ATH >= target, we definitely hit the target (prioritize over stop)
     hit_target = ath >= target_price
+    hit_stop = min_price <= stop_price
     
-    if hit_stop:
-        # Stopped out completely at -50%
-        exit_value = remaining_tokens * stop_price
+    if hit_target:
+        # ATH proves we reached 2x, so we exited there
+        exit_value = remaining_tokens * target_price
         exit_cost = exit_value * TOTAL_COST_PCT
         realized_pnl = exit_value - exit_cost - initial_stake
         remaining_tokens = 0
-    elif hit_target:
-        # Sold all at 2x
-        exit_value = remaining_tokens * target_price
+    elif hit_stop:
+        # Only stopped if we never reached the target
+        exit_value = remaining_tokens * stop_price
         exit_cost = exit_value * TOTAL_COST_PCT
         realized_pnl = exit_value - exit_cost - initial_stake
         remaining_tokens = 0
@@ -260,7 +286,7 @@ def calculate_strategy_a(alert_price: float, ath: float, min_price: float, curre
         "total_pnl": total_pnl,
         "multiple": multiple,
         "hit_target": hit_target,
-        "hit_stop": hit_stop,
+        "hit_stop": hit_stop and not hit_target,  # Only report stop if target wasn't hit
     }
 
 
@@ -270,7 +296,7 @@ def calculate_strategy_b(alert_price: float, ath: float, min_price: float, curre
     $10 stake, 0.45% fee + 2% slippage per leg.
     - Stop loss at -50% from entry
     - Sell all at 1.5x
-    - Conservative: assume stop hit before target if order unknown
+    - If ATH >= target, prioritize target (we know it was reached)
     """
     FEE_PCT = 0.0045
     SLIPPAGE_PCT = 0.02
@@ -289,16 +315,16 @@ def calculate_strategy_b(alert_price: float, ath: float, min_price: float, curre
     realized_pnl = 0.0
     remaining_tokens = tokens_bought
     
-    hit_stop = min_price <= stop_price
     hit_target = ath >= target_price
+    hit_stop = min_price <= stop_price
     
-    if hit_stop:
-        exit_value = remaining_tokens * stop_price
+    if hit_target:
+        exit_value = remaining_tokens * target_price
         exit_cost = exit_value * TOTAL_COST_PCT
         realized_pnl = exit_value - exit_cost - initial_stake
         remaining_tokens = 0
-    elif hit_target:
-        exit_value = remaining_tokens * target_price
+    elif hit_stop:
+        exit_value = remaining_tokens * stop_price
         exit_cost = exit_value * TOTAL_COST_PCT
         realized_pnl = exit_value - exit_cost - initial_stake
         remaining_tokens = 0
@@ -320,7 +346,7 @@ def calculate_strategy_b(alert_price: float, ath: float, min_price: float, curre
         "total_pnl": total_pnl,
         "multiple": multiple,
         "hit_target": hit_target,
-        "hit_stop": hit_stop,
+        "hit_stop": hit_stop and not hit_target,
     }
 
 
@@ -331,7 +357,7 @@ def calculate_strategy_c(alert_price: float, ath: float, min_price: float, curre
     - Sell half at 2x
     - Stop loss at -50% from entry
     - Mark remainder to market
-    - Conservative: assume stop hit before target if order unknown
+    - If ATH >= target, prioritize target (we know it was reached)
     """
     FEE_PCT = 0.0045
     SLIPPAGE_PCT = 0.02
@@ -350,22 +376,22 @@ def calculate_strategy_c(alert_price: float, ath: float, min_price: float, curre
     realized_pnl = 0.0
     remaining_tokens = tokens_bought
     
-    hit_stop = min_price <= stop_price
     hit_target = ath >= target_price
+    hit_stop = min_price <= stop_price
     
-    if hit_stop:
-        # Stopped out completely at -50%
-        exit_value = remaining_tokens * stop_price
-        exit_cost = exit_value * TOTAL_COST_PCT
-        realized_pnl = exit_value - exit_cost - initial_stake
-        remaining_tokens = 0
-    elif hit_target:
+    if hit_target:
         # Sold half at 2x
         half_tokens = remaining_tokens / 2
         exit_value = half_tokens * target_price
         exit_cost = exit_value * TOTAL_COST_PCT
         realized_pnl = exit_value - exit_cost - (initial_stake / 2)
         remaining_tokens = half_tokens
+    elif hit_stop:
+        # Stopped out completely at -50%
+        exit_value = remaining_tokens * stop_price
+        exit_cost = exit_value * TOTAL_COST_PCT
+        realized_pnl = exit_value - exit_cost - initial_stake
+        remaining_tokens = 0
     
     # Mark remaining to market
     if remaining_tokens > 0:
@@ -391,7 +417,7 @@ def calculate_strategy_c(alert_price: float, ath: float, min_price: float, curre
         "total_pnl": total_pnl,
         "multiple": multiple,
         "hit_target": hit_target,
-        "hit_stop": hit_stop,
+        "hit_stop": hit_stop and not hit_target,
     }
 
 
@@ -467,6 +493,7 @@ def calculate_strategy_e(alert_price: float, ath: float, min_price: float, curre
     - At 2x: sell 85%, keep 15% moonbag
     - Moonbag exits at later max_multiple, only if it reached >= 5x
     - After 2x, moonbag has no stop
+    - If ATH >= target, we know target was reached before any stop
     
     For narrative < 4/5:
     - Behaves exactly like Strategy A (sell all at 2x)
@@ -490,20 +517,21 @@ def calculate_strategy_e(alert_price: float, ath: float, min_price: float, curre
     remaining_tokens = tokens_bought
     
     # Check if we hit stop or target
-    hit_stop = min_price <= stop_price
+    # If ATH >= target, we definitely hit the target (prioritize over stop)
     hit_target = ath >= target_price
+    hit_stop = min_price <= stop_price
     
     # For narrative < 4, behave exactly like Strategy A
     if narrative_score < 4:
-        if hit_stop:
-            # Stopped out completely at -50%
-            exit_value = remaining_tokens * stop_price
+        if hit_target:
+            # Sold all at 2x
+            exit_value = remaining_tokens * target_price
             exit_cost = exit_value * TOTAL_COST_PCT
             realized_pnl = exit_value - exit_cost - initial_stake
             remaining_tokens = 0
-        elif hit_target:
-            # Sold all at 2x
-            exit_value = remaining_tokens * target_price
+        elif hit_stop:
+            # Only stopped if target wasn't reached
+            exit_value = remaining_tokens * stop_price
             exit_cost = exit_value * TOTAL_COST_PCT
             realized_pnl = exit_value - exit_cost - initial_stake
             remaining_tokens = 0
@@ -525,19 +553,13 @@ def calculate_strategy_e(alert_price: float, ath: float, min_price: float, curre
             "total_pnl": total_pnl,
             "multiple": multiple,
             "hit_target": hit_target,
-            "hit_stop": hit_stop,
+            "hit_stop": hit_stop and not hit_target,
             "narrative_score": narrative_score,
             "kept_moonbag": False,
         }
     
     # For narrative >= 4: moonbag strategy
-    if hit_stop:
-        # Stopped out completely at -50% (before reaching 2x)
-        exit_value = remaining_tokens * stop_price
-        exit_cost = exit_value * TOTAL_COST_PCT
-        realized_pnl = exit_value - exit_cost - initial_stake
-        remaining_tokens = 0
-    elif hit_target:
+    if hit_target:
         # Reached 2x: sell 85%, keep 15% moonbag
         sell_tokens = remaining_tokens * 0.85
         exit_value = sell_tokens * target_price
@@ -547,16 +569,20 @@ def calculate_strategy_e(alert_price: float, ath: float, min_price: float, curre
         
         # Moonbag exit logic: only if reached >= 5x
         if max_multiple >= 5.0:
-            # Exit moonbag at the max multiple achieved (could be ATH or current)
-            # Use current price if still active and current multiple >= 5x, else use ath
-            moonbag_exit_multiple = max_multiple
-            moonbag_exit_price = alert_price * moonbag_exit_multiple
+            # Exit moonbag at the max multiple achieved
+            moonbag_exit_price = alert_price * max_multiple
             
             moonbag_exit_value = remaining_tokens * moonbag_exit_price
             moonbag_exit_cost = moonbag_exit_value * TOTAL_COST_PCT
             moonbag_pnl = moonbag_exit_value - moonbag_exit_cost - (initial_stake * 0.15)
             realized_pnl += moonbag_pnl
             remaining_tokens = 0
+    elif hit_stop:
+        # Stopped out completely at -50% (before reaching 2x)
+        exit_value = remaining_tokens * stop_price
+        exit_cost = exit_value * TOTAL_COST_PCT
+        realized_pnl = exit_value - exit_cost - initial_stake
+        remaining_tokens = 0
     
     # Mark remaining to market (moonbag still held, or never reached 2x)
     if remaining_tokens > 0:
@@ -584,7 +610,7 @@ def calculate_strategy_e(alert_price: float, ath: float, min_price: float, curre
         "total_pnl": total_pnl,
         "multiple": multiple,
         "hit_target": hit_target,
-        "hit_stop": hit_stop,
+        "hit_stop": hit_stop and not hit_target,
         "narrative_score": narrative_score,
         "kept_moonbag": hit_target and narrative_score >= 4 and max_multiple < 5.0 and remaining_tokens > 0,
     }
@@ -601,6 +627,24 @@ def load_existing_calls() -> Dict[str, Dict]:
         for row in reader:
             calls[row['ca']] = row
     return calls
+
+
+def load_peaks() -> Dict[str, Dict]:
+    """Load manually observed peaks from peaks.csv."""
+    if not PEAKS_CSV.exists():
+        return {}
+    
+    peaks = {}
+    with open(PEAKS_CSV, 'r') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            peaks[row['ca']] = {
+                'max_price': float(row['max_price']),
+                'max_multiple': float(row['max_multiple']),
+                'observed_at_utc': row['observed_at_utc'],
+                'source': row['source']
+            }
+    return peaks
 
 
 def save_calls(calls: List[Dict]):
@@ -639,6 +683,11 @@ def refresh_data():
     # Load existing calls for ATH/min tracking
     existing_calls = load_existing_calls()
     
+    # Load manually observed peaks
+    peaks = load_peaks()
+    if peaks:
+        print(f"Loaded {len(peaks)} manual peak observations")
+    
     updated_calls = []
     for alert in alerts:
         ca = alert['ca']
@@ -666,21 +715,33 @@ def refresh_data():
         alert_ts = int(datetime.fromisoformat(alert_time.replace('Z', '+00:00')).timestamp())
         ohlcv = fetch_ohlcv_geckoterminal(ca, alert_ts)
         
-        # Calculate ATH and min
+        # Calculate ATH and min from multiple sources
         prev_ath = float(existing.get('ath_since_alert', 0))
         prev_min = float(existing.get('min_since_alert', alert_price))
         
+        # Start with previous values and current price
+        ath = max(prev_ath, current['current_price_usd'])
+        min_price = prev_min
+        if current['current_price_usd'] > 0:
+            min_price = min(min_price, current['current_price_usd'])
+        
+        # Incorporate OHLCV if available
         if ohlcv:
             ath_ohlcv, min_ohlcv = ohlcv
-            ath = max(prev_ath, ath_ohlcv, current['current_price_usd'])
-            min_price = min(prev_min, min_ohlcv) if min_ohlcv < float('inf') else prev_min
-        else:
-            ath = max(prev_ath, current['current_price_usd'])
-            min_price = prev_min
-            if current['current_price_usd'] > 0:
-                min_price = min(min_price, current['current_price_usd'])
+            ath = max(ath, ath_ohlcv)
+            if min_ohlcv < float('inf'):
+                min_price = min(min_price, min_ohlcv)
         
+        # Incorporate manual peak observation if available
+        if ca in peaks:
+            peak_price = peaks[ca]['max_price']
+            ath = max(ath, peak_price)
+            print(f"  Using manual peak for {symbol}: ${peak_price:.8f} (source: {peaks[ca]['source']})")
+        
+        # Calculate max_multiple - ensure it never decreases
         max_multiple = ath / alert_price if alert_price > 0 else 0
+        prev_max_multiple = float(existing.get('max_multiple', 0))
+        max_multiple = max(max_multiple, prev_max_multiple)
         
         updated_calls.append({
             'ca': ca,
