@@ -11,7 +11,8 @@ import pytest
 
 # Add parent directory to path to import refresh module
 sys.path.insert(0, str(Path(__file__).parent.parent / 'scripts'))
-from refresh import calculate_strategy_a, calculate_strategy_b, calculate_strategy_c, calculate_strategy_d, format_zurich_time
+from refresh import (calculate_strategy_a, calculate_strategy_b, calculate_strategy_c, calculate_strategy_d, 
+                    calculate_strategy_e, parse_narrative_score, format_zurich_time)
 
 
 class TestStrategyA:
@@ -139,6 +140,128 @@ class TestStrategyD:
         # Net: 19.51 - 0.478 = $19.032
         # P&L: 19.032 - 10 = $9.032
         assert abs(result['pnl'] - 9.032) < 0.01
+
+
+class TestStrategyE:
+    """Test Strategy E: 2x + moonbag on strong narrative."""
+    
+    def test_parse_narrative_score(self):
+        """Test parsing narrative score from reason field."""
+        assert parse_narrative_score('narr 5/5, strong') == 5
+        assert parse_narrative_score('narr 4/5, good') == 4
+        assert parse_narrative_score('narr 3/5, okay') == 3
+        assert parse_narrative_score('EXC narr 5/5, exception') == 5
+        assert parse_narrative_score('EXC narr 4/5, exception') == 4
+        assert parse_narrative_score('skip dev-out, narr 2/5') == 0  # Not at start
+        assert parse_narrative_score('some other reason') == 0
+        assert parse_narrative_score('') == 0
+    
+    def test_low_narrative_behaves_like_strategy_a(self):
+        """Test that narrative < 4 behaves exactly like Strategy A."""
+        result_e = calculate_strategy_e(
+            alert_price=1.0,
+            ath=2.5,
+            min_price=0.6,
+            current_price=2.2,
+            status='active',
+            reason='narr 3/5, weak',
+            max_multiple=2.5
+        )
+        
+        result_a = calculate_strategy_a(
+            alert_price=1.0,
+            ath=2.5,
+            min_price=0.6,
+            current_price=2.2,
+            status='active'
+        )
+        
+        assert result_e['narrative_score'] == 3
+        assert result_e['kept_moonbag'] == False
+        assert abs(result_e['total_pnl'] - result_a['total_pnl']) < 0.01
+        assert result_e['hit_target'] == result_a['hit_target']
+        assert result_e['hit_stop'] == result_a['hit_stop']
+    
+    def test_high_narrative_stop_hit(self):
+        """Test that stop-loss applies to whole position before 2x even with high narrative."""
+        result = calculate_strategy_e(
+            alert_price=1.0,
+            ath=1.8,  # Below 2x
+            min_price=0.4,  # Below stop (0.5)
+            current_price=0.45,
+            status='active',
+            reason='narr 5/5, strong but stopped',
+            max_multiple=1.8
+        )
+        
+        assert result['narrative_score'] == 5
+        assert result['hit_stop'] == True
+        assert result['hit_target'] == False
+        assert result['kept_moonbag'] == False
+        # Should behave like Strategy A when stopped
+        assert abs(result['total_pnl'] - (-5.242)) < 0.01
+    
+    def test_high_narrative_2x_but_not_5x_moonbag_held(self):
+        """Test moonbag is held when 2x reached but not 5x."""
+        result = calculate_strategy_e(
+            alert_price=1.0,
+            ath=3.0,  # Above 2x but below 5x
+            min_price=0.6,
+            current_price=2.8,  # Still active at 2.8x
+            status='active',
+            reason='EXC narr 4/5, moonbag held',
+            max_multiple=3.0
+        )
+        
+        assert result['narrative_score'] == 4
+        assert result['hit_target'] == True
+        assert result['hit_stop'] == False
+        assert result['kept_moonbag'] == True
+        
+        # Entry: $10 - 2.45% = $9.755 in tokens at $1 = 9.755 tokens
+        # Sell 85% at $2: 8.29175 tokens * 2 = $16.5835
+        # Exit cost: 16.5835 * 0.0245 = $0.4063
+        # Realized from 85%: 16.5835 - 0.4063 - 8.5 = $7.6772
+        
+        # Moonbag: 15% = 1.46325 tokens at current $2.8 = $4.097
+        # Cost basis for moonbag: $1.5
+        # Unrealized: 4.097 - 1.5 = $2.597
+        
+        # Total: 7.6772 + 2.597 = $10.274
+        assert abs(result['realized_pnl'] - 7.6772) < 0.01
+        assert abs(result['unrealized_pnl'] - 2.597) < 0.01
+        assert abs(result['total_pnl'] - 10.274) < 0.01
+    
+    def test_high_narrative_5x_moonbag_exited(self):
+        """Test moonbag exits at 5x+ peak."""
+        result = calculate_strategy_e(
+            alert_price=1.0,
+            ath=6.0,  # Hit 6x
+            min_price=0.6,
+            current_price=5.5,  # Currently at 5.5x (still above 5x)
+            status='active',
+            reason='narr 5/5, moonbag exited',
+            max_multiple=6.0  # Max was 6x
+        )
+        
+        assert result['narrative_score'] == 5
+        assert result['hit_target'] == True
+        assert result['hit_stop'] == False
+        assert result['kept_moonbag'] == False  # Exited because >= 5x
+        
+        # Entry: $10 - 2.45% = $9.755 in tokens at $1 = 9.755 tokens
+        # Sell 85% at $2: 8.29175 tokens * 2 = $16.5835
+        # Exit cost: 16.5835 * 0.0245 = $0.4063
+        # Realized from 85%: 16.5835 - 0.4063 - 8.5 = $7.6772
+        
+        # Moonbag: 15% = 1.46325 tokens exited at 6x ($6) = $8.7795
+        # Exit cost: 8.7795 * 0.0245 = $0.2151
+        # Moonbag realized: 8.7795 - 0.2151 - 1.5 = $7.0644
+        
+        # Total realized: 7.6772 + 7.0644 = $14.7416
+        assert abs(result['realized_pnl'] - 14.7416) < 0.01
+        assert result['unrealized_pnl'] == 0
+        assert abs(result['total_pnl'] - 14.7416) < 0.01
 
 
 class TestDataParsing:

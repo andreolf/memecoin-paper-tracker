@@ -435,6 +435,155 @@ def calculate_strategy_d(alert_price: float, current_price: float, status: str, 
         }
 
 
+def parse_narrative_score(reason: str) -> int:
+    """
+    Parse narrative score from reason field.
+    Looks for 'narr X/5' or 'EXC narr X/5' patterns at start of reason.
+    Returns score 0-5, or 0 if not found.
+    """
+    import re
+    if not reason:
+        return 0
+    
+    # Match 'narr X/5' or 'EXC narr X/5' at start of string
+    match = re.match(r'^(?:EXC\s+)?narr\s+(\d)/5', reason, re.IGNORECASE)
+    if match:
+        return int(match.group(1))
+    return 0
+
+
+def calculate_strategy_e(alert_price: float, ath: float, min_price: float, current_price: float, 
+                        status: str, reason: str, max_multiple: float) -> Dict:
+    """
+    Strategy E: Sell 2x + moonbag on strong narrative.
+    $10 stake, 0.45% fee + 2% slippage per leg.
+    
+    For narrative >= 4/5:
+    - Stop loss at -50% applies to whole position before 2x
+    - At 2x: sell 85%, keep 15% moonbag
+    - Moonbag exits at later max_multiple, only if it reached >= 5x
+    - After 2x, moonbag has no stop
+    
+    For narrative < 4/5:
+    - Behaves exactly like Strategy A (sell all at 2x)
+    """
+    FEE_PCT = 0.0045
+    SLIPPAGE_PCT = 0.02
+    TOTAL_COST_PCT = FEE_PCT + SLIPPAGE_PCT
+    
+    initial_stake = 10.0
+    narrative_score = parse_narrative_score(reason)
+    
+    # Account for entry costs (fee + slippage)
+    entry_cost = initial_stake * TOTAL_COST_PCT
+    net_stake = initial_stake - entry_cost
+    tokens_bought = net_stake / alert_price
+    
+    target_price = alert_price * 2.0
+    stop_price = alert_price * 0.5
+    
+    realized_pnl = 0.0
+    remaining_tokens = tokens_bought
+    
+    # Check if we hit stop or target
+    hit_stop = min_price <= stop_price
+    hit_target = ath >= target_price
+    
+    # For narrative < 4, behave exactly like Strategy A
+    if narrative_score < 4:
+        if hit_stop:
+            # Stopped out completely at -50%
+            exit_value = remaining_tokens * stop_price
+            exit_cost = exit_value * TOTAL_COST_PCT
+            realized_pnl = exit_value - exit_cost - initial_stake
+            remaining_tokens = 0
+        elif hit_target:
+            # Sold all at 2x
+            exit_value = remaining_tokens * target_price
+            exit_cost = exit_value * TOTAL_COST_PCT
+            realized_pnl = exit_value - exit_cost - initial_stake
+            remaining_tokens = 0
+        
+        # Mark remaining to market
+        if remaining_tokens > 0:
+            mark_price = 0 if status == "dead" else current_price
+            current_value = remaining_tokens * mark_price
+            unrealized_pnl = current_value - initial_stake
+        else:
+            unrealized_pnl = 0.0
+        
+        total_pnl = realized_pnl + unrealized_pnl
+        multiple = (initial_stake + total_pnl) / initial_stake if initial_stake > 0 else 0
+        
+        return {
+            "realized_pnl": realized_pnl,
+            "unrealized_pnl": unrealized_pnl,
+            "total_pnl": total_pnl,
+            "multiple": multiple,
+            "hit_target": hit_target,
+            "hit_stop": hit_stop,
+            "narrative_score": narrative_score,
+            "kept_moonbag": False,
+        }
+    
+    # For narrative >= 4: moonbag strategy
+    if hit_stop:
+        # Stopped out completely at -50% (before reaching 2x)
+        exit_value = remaining_tokens * stop_price
+        exit_cost = exit_value * TOTAL_COST_PCT
+        realized_pnl = exit_value - exit_cost - initial_stake
+        remaining_tokens = 0
+    elif hit_target:
+        # Reached 2x: sell 85%, keep 15% moonbag
+        sell_tokens = remaining_tokens * 0.85
+        exit_value = sell_tokens * target_price
+        exit_cost = exit_value * TOTAL_COST_PCT
+        realized_pnl = exit_value - exit_cost - (initial_stake * 0.85)
+        remaining_tokens = remaining_tokens * 0.15
+        
+        # Moonbag exit logic: only if reached >= 5x
+        if max_multiple >= 5.0:
+            # Exit moonbag at the max multiple achieved (could be ATH or current)
+            # Use current price if still active and current multiple >= 5x, else use ath
+            moonbag_exit_multiple = max_multiple
+            moonbag_exit_price = alert_price * moonbag_exit_multiple
+            
+            moonbag_exit_value = remaining_tokens * moonbag_exit_price
+            moonbag_exit_cost = moonbag_exit_value * TOTAL_COST_PCT
+            moonbag_pnl = moonbag_exit_value - moonbag_exit_cost - (initial_stake * 0.15)
+            realized_pnl += moonbag_pnl
+            remaining_tokens = 0
+    
+    # Mark remaining to market (moonbag still held, or never reached 2x)
+    if remaining_tokens > 0:
+        mark_price = 0 if status == "dead" else current_price
+        
+        # Calculate cost basis for remaining tokens
+        if hit_target:
+            # Moonbag cost basis is 15% of initial stake
+            remaining_cost_basis = initial_stake * 0.15
+        else:
+            # Never reached 2x, cost basis is full stake
+            remaining_cost_basis = initial_stake
+        
+        current_value = remaining_tokens * mark_price
+        unrealized_pnl = current_value - remaining_cost_basis
+    else:
+        unrealized_pnl = 0.0
+    
+    total_pnl = realized_pnl + unrealized_pnl
+    multiple = (initial_stake + total_pnl) / initial_stake if initial_stake > 0 else 0
+    
+    return {
+        "realized_pnl": realized_pnl,
+        "unrealized_pnl": unrealized_pnl,
+        "total_pnl": total_pnl,
+        "multiple": multiple,
+        "hit_target": hit_target,
+        "hit_stop": hit_stop,
+        "narrative_score": narrative_score,
+        "kept_moonbag": hit_target and narrative_score >= 4 and max_multiple < 5.0 and remaining_tokens > 0,
+    }
 
 
 def load_existing_calls() -> Dict[str, Dict]:
@@ -559,11 +708,12 @@ def generate_dashboard():
     # Identify EXC (exception) calls in real alerts
     df_real['is_exc'] = df_real['reason'].str.startswith('EXC narr', na=False)
     
-    # Calculate all 4 strategies for each REAL alert
+    # Calculate all strategies for each REAL alert
     results_a = []  # Sell ALL at 2x
     results_b = []  # Sell ALL at +50%
     results_c = []  # Sell HALF at 2x
     results_d = []  # Hold 24h
+    results_e = []  # Sell 2x + moonbag on strong narrative
     
     for _, row in df_real.iterrows():
         # Strategy A: Sell ALL at 2x
@@ -632,11 +782,31 @@ def generate_dashboard():
             'max_multiple': row['max_multiple'],
             **strat_d
         })
+        
+        # Strategy E: Sell 2x + moonbag on strong narrative
+        strat_e = calculate_strategy_e(
+            row['price_usd'],
+            row['ath_since_alert'],
+            row['min_since_alert'],
+            row['current_price_usd'],
+            row['status'],
+            row['reason'],
+            row['max_multiple']
+        )
+        results_e.append({
+            'ca': row['ca'],
+            'symbol': row['symbol_alert'],
+            'alert_type': row['alert_type'],
+            'alert_time_utc': row['alert_time_utc_alert'],
+            'max_multiple': row['max_multiple'],
+            **strat_e
+        })
     
     results_a_df = pd.DataFrame(results_a)
     results_b_df = pd.DataFrame(results_b)
     results_c_df = pd.DataFrame(results_c)
     results_d_df = pd.DataFrame(results_d)
+    results_e_df = pd.DataFrame(results_e)
     
     # Calculate Strategy A for MISSED calls (for comparison only)
     missed_results_a = []
@@ -667,18 +837,19 @@ def generate_dashboard():
     DASHBOARD_DIR.mkdir(exist_ok=True)
     
     # Generate charts
-    generate_charts(results_a_df, results_b_df, results_c_df, results_d_df)
+    generate_charts(results_a_df, results_b_df, results_c_df, results_d_df, results_e_df)
     
     # Generate README
-    generate_readme(results_a_df, results_b_df, results_c_df, results_d_df, df_real, df_missed, missed_a_df)
+    generate_readme(results_a_df, results_b_df, results_c_df, results_d_df, results_e_df, df_real, df_missed, missed_a_df)
     
     # Generate HTML dashboard
-    generate_html(results_a_df, results_b_df, results_c_df, results_d_df, df_real, df_missed, missed_a_df)
+    generate_html(results_a_df, results_b_df, results_c_df, results_d_df, results_e_df, df_real, df_missed, missed_a_df)
     
     print("Dashboard generation complete!")
 
 
-def generate_charts(results_a_df: pd.DataFrame, results_b_df: pd.DataFrame, results_c_df: pd.DataFrame, results_d_df: pd.DataFrame):
+def generate_charts(results_a_df: pd.DataFrame, results_b_df: pd.DataFrame, results_c_df: pd.DataFrame, 
+                    results_d_df: pd.DataFrame, results_e_df: pd.DataFrame):
     """Generate matplotlib charts."""
     
     # Chart 1: Cumulative P&L comparison for all strategies
@@ -689,11 +860,13 @@ def generate_charts(results_a_df: pd.DataFrame, results_b_df: pd.DataFrame, resu
     b_sorted = results_b_df.sort_values('alert_time_utc')
     c_sorted = results_c_df.sort_values('alert_time_utc')
     d_sorted = results_d_df.sort_values('alert_time_utc')
+    e_sorted = results_e_df.sort_values('alert_time_utc')
     
     ax.plot(range(len(a_sorted)), a_sorted['total_pnl'].cumsum(), marker='o', label='A: Sell ALL at 2x', linewidth=2)
     ax.plot(range(len(b_sorted)), b_sorted['total_pnl'].cumsum(), marker='s', label='B: Sell ALL at +50%', linewidth=2)
     ax.plot(range(len(c_sorted)), c_sorted['total_pnl'].cumsum(), marker='^', label='C: Sell HALF at 2x', linewidth=2)
     ax.plot(range(len(d_sorted)), d_sorted['pnl'].cumsum(), marker='d', label='D: Hold 24h', linewidth=2)
+    ax.plot(range(len(e_sorted)), e_sorted['total_pnl'].cumsum(), marker='*', label='E: 2x + moonbag', linewidth=2)
     
     ax.set_xlabel('Alert Number')
     ax.set_ylabel('Cumulative P&L (USD)')
@@ -720,14 +893,15 @@ def generate_charts(results_a_df: pd.DataFrame, results_b_df: pd.DataFrame, resu
     plt.close()
     
     # Chart 3: Strategy Total P&L Bar Chart
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(12, 6))
     
-    strategies = ['A: Sell ALL\nat 2x', 'B: Sell ALL\nat +50%', 'C: Sell HALF\nat 2x', 'D: Hold\n24h']
+    strategies = ['A: Sell ALL\nat 2x', 'B: Sell ALL\nat +50%', 'C: Sell HALF\nat 2x', 'D: Hold\n24h', 'E: 2x +\nmoonbag']
     totals = [
         results_a_df['total_pnl'].sum(),
         results_b_df['total_pnl'].sum(),
         results_c_df['total_pnl'].sum(),
-        results_d_df['pnl'].sum()
+        results_d_df['pnl'].sum(),
+        results_e_df['total_pnl'].sum()
     ]
     colors = ['green' if x > 0 else 'red' for x in totals]
     
@@ -768,7 +942,9 @@ def format_zurich_time(utc_str: str) -> str:
         return utc_str
 
 
-def generate_readme(results_a_df: pd.DataFrame, results_b_df: pd.DataFrame, results_c_df: pd.DataFrame, results_d_df: pd.DataFrame, full_df: pd.DataFrame, df_missed: pd.DataFrame, missed_a_df: pd.DataFrame):
+def generate_readme(results_a_df: pd.DataFrame, results_b_df: pd.DataFrame, results_c_df: pd.DataFrame, 
+                   results_d_df: pd.DataFrame, results_e_df: pd.DataFrame, full_df: pd.DataFrame, 
+                   df_missed: pd.DataFrame, missed_a_df: pd.DataFrame):
     """Generate README.md with summary tables."""
     
     # Calculate overall stats for all strategies (REAL alerts only)
@@ -794,6 +970,11 @@ def generate_readme(results_a_df: pd.DataFrame, results_b_df: pd.DataFrame, resu
             'df': results_d_df,
             'pnl_col': 'pnl',
             'desc': 'Hold 24h then sell'
+        },
+        'E: 2x + moonbag': {
+            'df': results_e_df,
+            'pnl_col': 'total_pnl',
+            'desc': 'Sell 85% at 2x, keep 15% moonbag (narr ≥4)'
         }
     }
     
@@ -956,7 +1137,7 @@ def format_money(value: float) -> str:
         return f"${value:.2f}"
 
 
-def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, full_df, df_missed, missed_a_df):
+def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, results_e_df, full_df, df_missed, missed_a_df):
     """Generate elegant standalone HTML dashboard with modern design."""
     
     # Calculate KPIs for Strategy A (primary strategy) - REAL alerts only
@@ -1076,10 +1257,11 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, full_d
     
     # Strategy comparison data with bars
     strategies_comparison = [
-        {'name': 'A: Sell ALL at 2x', 'pnl': results_a_df['total_pnl'].sum(), 'active': True},
-        {'name': 'B: Sell ALL at +50%', 'pnl': results_b_df['total_pnl'].sum(), 'active': False},
-        {'name': 'C: Sell HALF at 2x', 'pnl': results_c_df['total_pnl'].sum(), 'active': False},
-        {'name': 'D: Hold 24h', 'pnl': results_d_df['pnl'].sum(), 'active': False},
+        {'name': 'A: Sell ALL at 2x', 'pnl': results_a_df['total_pnl'].sum(), 'badge': 'active'},
+        {'name': 'E: 2x + moonbag', 'pnl': results_e_df['total_pnl'].sum(), 'badge': 'testing'},
+        {'name': 'B: Sell ALL at +50%', 'pnl': results_b_df['total_pnl'].sum(), 'badge': None},
+        {'name': 'C: Sell HALF at 2x', 'pnl': results_c_df['total_pnl'].sum(), 'badge': None},
+        {'name': 'D: Hold 24h', 'pnl': results_d_df['pnl'].sum(), 'badge': None},
     ]
     
     # Calculate max absolute value for bar scaling
@@ -1089,7 +1271,12 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, full_d
     
     strategy_rows = []
     for s in strategies_comparison:
-        active_badge = '<span class="active-badge">Active Rule</span>' if s['active'] else ''
+        badge = ''
+        if s['badge'] == 'active':
+            badge = '<span class="active-badge">Active Rule</span>'
+        elif s['badge'] == 'testing':
+            badge = '<span class="testing-badge">Testing</span>'
+        
         pnl_class = 'positive' if s['pnl'] > 0 else 'negative' if s['pnl'] < 0 else 'neutral'
         
         # Calculate bar width (percentage)
@@ -1097,9 +1284,9 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, full_d
         bar_color = '#10b981' if s['pnl'] > 0 else '#ef4444' if s['pnl'] < 0 else '#71717a'
         
         strategy_rows.append(f"""
-        <tr class="{'strategy-active' if s['active'] else ''}">
+        <tr class="{'strategy-active' if s['badge'] == 'active' else ''}">
             <td>
-                {s['name']} {active_badge}
+                {s['name']} {badge}
                 <div class="strategy-bar-container">
                     <div class="strategy-bar" style="width: {bar_width}%; background: {bar_color};"></div>
                 </div>
@@ -1330,6 +1517,17 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, full_d
             padding: 2px 8px;
             background: rgba(99, 102, 241, 0.1);
             color: var(--accent);
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }}
+        
+        .testing-badge {{
+            display: inline-block;
+            padding: 2px 8px;
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
             border-radius: 4px;
             font-size: 11px;
             font-weight: 600;
