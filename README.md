@@ -6,7 +6,7 @@
 
 This dashboard tracks theoretical P&L from Solana memecoin alerts. **No actual trades are executed.**
 
-**Last Updated:** 2026-10-20 10:01 CEST
+**Last Updated:** 2026-10-20 10:03 CEST
 
 ---
 
@@ -18,16 +18,16 @@ All strategies use:
 - **-50% stop-loss** (where applicable)
 - **Conservative ordering**: If both stop and target hit, assume stop hit first
 
-**🏆 Current Best Performer: D: Hold 24h** (Total P&L: $2.59)
+**🏆 Current Best Performer: D: Hold 24h** (Total P&L: $2.30)
 
 ### Overall Performance
 
 | Strategy | Description | Total Alerts | Total P&L | Win Rate | Avg P&L | Best Trade | Worst Trade |
 |----------|-------------|--------------|-----------|----------|---------|------------|-------------|
-| A: Sell ALL at 2x | Sell all at 2x, -50% stop | 1 | **$2.34** | 100.0% | $2.34 | $2.34 | $2.34 |
-| B: Sell ALL at +50% | Sell all at 1.5x, -50% stop | 1 | **$2.34** | 100.0% | $2.34 | $2.34 | $2.34 |
-| C: Sell HALF at 2x | Sell half at 2x, hold rest, -50% stop | 1 | **$2.34** | 100.0% | $2.34 | $2.34 | $2.34 |
-| ⭐ D: Hold 24h | Hold 24h then sell | 1 | **$2.59** | 100.0% | $2.59 | $2.59 | $2.59 |
+| A: Sell ALL at 2x | Sell all at 2x, -50% stop | 1 | **$2.06** | 100.0% | $2.06 | $2.06 | $2.06 |
+| B: Sell ALL at +50% | Sell all at 1.5x, -50% stop | 1 | **$2.06** | 100.0% | $2.06 | $2.06 | $2.06 |
+| C: Sell HALF at 2x | Sell half at 2x, hold rest, -50% stop | 1 | **$2.06** | 100.0% | $2.06 | $2.06 | $2.06 |
+| ⭐ D: Hold 24h | Hold 24h then sell | 1 | **$2.30** | 100.0% | $2.30 | $2.30 | $2.30 |
 
 ---
 
@@ -37,25 +37,25 @@ All strategies use:
 
 | Type | Count | Total P&L | Realized | Unrealized | Win Rate | Avg Max Multiple |
 |------|-------|-----------|----------|------------|----------|------------------|
-| new | 1 | $2.34 | $0.00 | $2.34 | 100.0% | 1.27x |
+| new | 1 | $2.06 | $0.00 | $2.06 | 100.0% | 1.27x |
 
 ### Strategy B: Sell ALL at +50%
 
 | Type | Count | Total P&L | Realized | Unrealized | Win Rate | Avg Max Multiple |
 |------|-------|-----------|----------|------------|----------|------------------|
-| new | 1 | $2.34 | $0.00 | $2.34 | 100.0% | 1.27x |
+| new | 1 | $2.06 | $0.00 | $2.06 | 100.0% | 1.27x |
 
 ### Strategy C: Sell HALF at 2x
 
 | Type | Count | Total P&L | Realized | Unrealized | Win Rate | Avg Max Multiple |
 |------|-------|-----------|----------|------------|----------|------------------|
-| new | 1 | $2.34 | $0.00 | $2.34 | 100.0% | 1.27x |
+| new | 1 | $2.06 | $0.00 | $2.06 | 100.0% | 1.27x |
 
 ### Strategy D: Hold 24h
 
 | Type | Count | Total P&L | Win Rate | Avg Max Multiple |
 |------|-------|-----------|----------|------------------|
-| new | 1 | $2.59 | 100.0% | 1.27x |
+| new | 1 | $2.30 | 100.0% | 1.27x |
 
 ---
 
