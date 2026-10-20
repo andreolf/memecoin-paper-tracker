@@ -990,6 +990,13 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, full_d
     missed_total_pnl = missed_a_df['total_pnl'].sum() if len(missed_a_df) > 0 else 0
     filters_saved = -missed_total_pnl  # Positive if we avoided losses
     
+    # Pre-compute class names and plurals for Python 3.11 compatibility (avoid nested f-string quotes)
+    exc_pnl_class = "positive" if exc_pnl > 0 else "negative" if exc_pnl < 0 else "neutral"
+    exc_plural = "s" if exc_count != 1 else ""
+    filters_saved_class = "positive" if filters_saved > 0 else "negative" if filters_saved < 0 else "neutral"
+    filters_saved_label = "Saved" if filters_saved > 0 else "Missed gains" if filters_saved < 0 else "Neutral"
+    missed_plural = "s" if missed_count != 1 else ""
+    
     # Prepare chart data (cumulative P&L for Strategy A)
     sorted_a = results_a_df.sort_values('alert_time_utc')
     cumulative_pnl = sorted_a['total_pnl'].cumsum().tolist() if total_calls > 0 else []
@@ -1670,8 +1677,8 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, full_d
             </p>
             <div class="kpi-card">
                 <div class="kpi-label">EXC Calls Subtotal</div>
-                <div class="kpi-value {"positive" if exc_pnl > 0 else "negative" if exc_pnl < 0 else "neutral"}">{format_money(exc_pnl)}</div>
-                <div class="kpi-sub">{exc_count} call{"s" if exc_count != 1 else ""}</div>
+                <div class="kpi-value {exc_pnl_class}">{format_money(exc_pnl)}</div>
+                <div class="kpi-sub">{exc_count} call{exc_plural}</div>
             </div>
         </div>
         ''' if exc_count > 0 else ''}
@@ -1686,10 +1693,10 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, full_d
             
             <div class="kpi-card" style="margin-bottom: 20px;">
                 <div class="kpi-label">Filters Impact</div>
-                <div class="kpi-value {"positive" if filters_saved > 0 else "negative" if filters_saved < 0 else "neutral"}">
+                <div class="kpi-value {filters_saved_class}">
                     {format_money(filters_saved)}
                 </div>
-                <div class="kpi-sub">{"Saved" if filters_saved > 0 else "Missed gains" if filters_saved < 0 else "Neutral"} • {missed_count} call{"s" if missed_count != 1 else ""}</div>
+                <div class="kpi-sub">{filters_saved_label} • {missed_count} call{missed_plural}</div>
             </div>
             
             {"""
@@ -1709,7 +1716,7 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, full_d
                             <td><strong>{row["symbol"]}</strong></td>
                             <td><code style="font-size: 11px;">{row["skip_reason"]}</code></td>
                             <td class="number">{row["max_multiple"]:.2f}x</td>
-                            <td class="number pnl-{"positive" if row["total_pnl"] > 0 else "negative" if row["total_pnl"] < 0 else "neutral"}">{format_money(row["total_pnl"])}</td>
+                            <td class="number pnl-{'positive' if row["total_pnl"] > 0 else 'negative' if row["total_pnl"] < 0 else 'neutral'}">{format_money(row["total_pnl"])}</td>
                         </tr>
             ''' for _, row in missed_a_df.iterrows()]) + """
                     </tbody>
