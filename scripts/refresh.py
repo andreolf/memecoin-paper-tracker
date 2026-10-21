@@ -1865,6 +1865,9 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, result
                 <span class="badge badge-warning">📝 PAPER TRADING — no real money</span>
                 <span class="badge badge-info">Last updated: {format_zurich_time(datetime.now(timezone.utc).isoformat())}</span>
             </div>
+            <p style="margin-top: 16px; color: var(--text-muted); font-size: 13px;">
+                Built with ❤️ by <a href="https://x.com/francescoswiss" target="_blank" rel="noopener" style="color: var(--text-primary); text-decoration: none; transition: opacity 0.2s;">Francesco Andreoli</a>
+            </p>
         </header>
         
         <!-- KPI Cards -->
@@ -2009,6 +2012,9 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, result
             <p>Paper-trading simulation only • No real trades executed • Data auto-refreshed hourly</p>
             <p style="margin-top: 8px;">Strategy A: Sell ALL at 2x, -50% stop, 0.45% fee + 2% slippage</p>
             {f'<p style="margin-top: 8px; color: var(--text-muted);">{exc_count} EXC calls • {missed_count} missed calls tracked</p>' if exc_count > 0 or missed_count > 0 else ''}
+            <p style="margin-top: 16px; color: var(--text-muted);">
+                Built with ❤️ by <a href="https://x.com/francescoswiss" target="_blank" rel="noopener" style="color: var(--text-primary); text-decoration: none; transition: opacity 0.2s;">Francesco Andreoli</a>
+            </p>
         </footer>
     </div>
     
