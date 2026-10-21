@@ -26,3 +26,4 @@ alert_time_utc,ca,symbol,name,alert_type,mc_usd,price_usd,liq_usd,age_min,bondin
 2026-10-21T14:27:58Z,8uWftzVoVBqyPJj6Xq9kRUtnz54W5GP4pd4smwZHpump,wifchi,Kimchi Wif Hat,missed,237015,0.00024131,40294,38m,migrated,"skip narr 2/5: Kimchi beta (Kimchi $33M live meta) but no own catalyst, X spread only RT-farm accounts, 3.3k holders top10 2% + buys 10x sells suspected holder/volume farm"
 2026-10-21T14:38:28Z,HnN5L1xrgtXjpgpMH2DsGQU2K2yuUgjSxV17Bfsqpump,MOSCOW,Elon Moscow,missed,10560,0.000010561895,12317,3m,53,"skip dev-out + bot 41% bun 37% (serial creator 290), narr 3/5: fresh tweet @politvidchannel 'Elon Moscow' nickname, biggest of ~20 copies, memeable; no organic spread"
 2026-10-21T14:43:36Z,woxkAtygvZKru1Wyy8yvqfBUwf2vK2rcHXTmKi2pump,Ricechi,Ricechi,missed,128995,0.0001291,29674,4m,migrated,"skip narr 2/5: Kimchi-beta (live chi meta) but not leader, X only 0-like shills/bot pings, rug_ratio 0.69; contract safe, bot 1% bun 15%"
+
