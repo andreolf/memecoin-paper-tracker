@@ -28,3 +28,4 @@ alert_time_utc,ca,symbol,name,alert_type,mc_usd,price_usd,liq_usd,age_min,bondin
 2026-10-21T14:43:36Z,woxkAtygvZKru1Wyy8yvqfBUwf2vK2rcHXTmKi2pump,Ricechi,Ricechi,missed,128995,0.0001291,29674,4m,migrated,"skip narr 2/5: Kimchi-beta (live chi meta) but not leader, X only 0-like shills/bot pings, rug_ratio 0.69; contract safe, bot 1% bun 15%"
 
 2026-10-21T15:02:24Z,89LqzC9Fcf9eQzJKCrMRuhiqKURR9uLvWLobiHLXpump,Orangutan,Orangutan Protection,missed,17717,0.00001771,0,9m,75,"skip dev-out, narr 3/5: viral orangutan video today + fee-to-charity onboarding claim (orangutan_COP, unverified), clear leader vs tiny copies, memeable; no confirmed live meta so no exception; bot 34.5%, bun 30%, contract safe"
+2026-10-21T15:05:08Z,7uCYgyuNRWTTuReNnBrs9FiNPoiX2tkUnKy77hjcpump,KIMCHI,Kimchi the clayton kim,missed,125204,0.0001252,30014,19,100,"skip dev-out + not leader (Kimchi CSocnz $30M exists), narr 3/5: live kimchi meta, 6.4k holders in 19m, bot ~0%, contract safe"
