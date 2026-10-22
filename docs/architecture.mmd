@@ -1,0 +1,46 @@
+flowchart LR
+  subgraph SRC["Fonti dati (sola lettura)"]
+    GMGN["GMGN Free API<br/>trenches + signal + security"]
+    PF["pump.fun / PumpSwap"]
+    SF["StonkFun API<br/>(Solana, coppie azioni/ZEC)"]
+    DS["DexScreener API<br/>Solana + Robinhood Chain"]
+    X["X (ricerche mirate,<br/>max 3 per giro)"]
+    BW["@bewise0 Weekly Radar"]
+  end
+
+  subgraph BOT["crypto Trading Bot (routine Grok Bot)"]
+    SC["Memecoin alpha scanner<br/>24/7: ogni 15 min, ogni 5 min 19-24 WITA"]
+    F["Filtri<br/>età &lt;1h, MC &lt;$300k, liquidità ≥$8k<br/>bot/bundle, dev out, ATH, leader<br/>Narrativa ≥3/5 + eccezione forte"]
+    RH["Watchlist Robinhood Chain<br/>(Pons, Orbio) solo watch"]
+    WR["Weekly Radar<br/>lun/mar 18:00 WITA"]
+    WC["Wallet cluster scanner<br/>(in attesa di wallet)"]
+    CT["Call tracker refresh<br/>ogni ora"]
+    ST[("state.json<br/>alert, missed, picchi")]
+  end
+
+  subgraph OUT["Output"]
+    CHAT["Alert in chat<br/>📝 PAPER + callout + exit A/E"]
+    GH[("GitHub repo pubblico<br/>memecoin-paper-tracker<br/>alerts.csv, peaks.csv")]
+    GA["GitHub Action refresh.yml<br/>calcola P&amp;L strategie A-E"]
+    DASH["Dashboard GitHub Pages"]
+  end
+
+  GMGN --> SC
+  PF --> SC
+  SF --> SC
+  DS --> SC
+  X --> F
+  SC --> F
+  SC --> RH
+  F -->|passa| CHAT
+  F -->|passa: alert| GH
+  F -->|scartato ma notevole: missed| GH
+  RH -->|👀 WATCH| CHAT
+  BW --> WR --> CHAT
+  WR --> ST
+  WC -.-> CHAT
+  SC <--> ST
+  SC -->|follow-up 2x / -50% / picchi| CHAT
+  SC -->|peaks.csv| GH
+  CT -->|controlla e rilancia| GA
+  GH --> GA --> DASH
