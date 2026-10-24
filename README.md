@@ -6,9 +6,9 @@
 
 This dashboard tracks theoretical P&L from Solana memecoin alerts. **No actual trades are executed.**
 
-**Last Updated:** 2026-10-24 16:50 CEST
+**Last Updated:** 2026-10-24 17:08 CEST
 
-**Tracked:** 15 real alerts + 76 missed (filtered out)
+**Tracked:** 15 real alerts + 78 missed (filtered out)
 
 ---
 
@@ -28,8 +28,8 @@ All strategies use:
 |----------|-------------|--------------|-----------|----------|---------|------------|-------------|
 | A: Sell ALL at 2x | Sell all at 2x, -50% stop | 15 | **$-21.53** | 26.7% | $-1.44 | $9.03 | $-5.24 |
 | B: Sell ALL at +50% | Sell all at 1.5x, -50% stop | 15 | **$-31.05** | 33.3% | $-2.07 | $4.27 | $-5.24 |
-| C: Sell HALF at 2x | Sell half at 2x, hold rest, -50% stop | 15 | **$-53.48** | 13.3% | $-3.57 | $4.78 | $-5.24 |
-| D: Hold 24h | Hold 24h then sell | 15 | **$-126.33** | 6.7% | $-8.42 | $0.77 | $-9.87 |
+| C: Sell HALF at 2x | Sell half at 2x, hold rest, -50% stop | 15 | **$-55.43** | 13.3% | $-3.70 | $2.83 | $-5.24 |
+| D: Hold 24h | Hold 24h then sell | 15 | **$-130.34** | 0.0% | $-8.69 | $-3.13 | $-9.87 |
 | ⭐ E: 2x + moonbag | Sell 85% at 2x, keep 15% moonbag (narr ≥4) | 15 | **$-19.03** | 26.7% | $-1.27 | $14.37 | $-5.24 |
 
 ---
@@ -52,13 +52,13 @@ All strategies use:
 
 | Type | Count | Total P&L | Realized | Unrealized | Win Rate | Avg Max Multiple |
 |------|-------|-----------|----------|------------|----------|------------------|
-| new | 15 | $-53.48 | $-39.60 | $-13.88 | 13.3% | 1.87x |
+| new | 15 | $-55.43 | $-39.60 | $-15.83 | 13.3% | 1.87x |
 
 ### Strategy D: Hold 24h
 
 | Type | Count | Total P&L | Win Rate | Avg Max Multiple |
 |------|-------|-----------|----------|------------------|
-| new | 15 | $-126.33 | 6.7% | 1.87x |
+| new | 15 | $-130.34 | 0.0% | 1.87x |
 
 ---
 
