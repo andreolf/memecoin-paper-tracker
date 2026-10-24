@@ -6,9 +6,9 @@
 
 This dashboard tracks theoretical P&L from Solana memecoin alerts. **No actual trades are executed.**
 
-**Last Updated:** 2026-10-24 16:12 CEST
+**Last Updated:** 2026-10-24 16:34 CEST
 
-**Tracked:** 15 real alerts + 72 missed (filtered out)
+**Tracked:** 15 real alerts + 74 missed (filtered out)
 
 ---
 
@@ -28,8 +28,8 @@ All strategies use:
 |----------|-------------|--------------|-----------|----------|---------|------------|-------------|
 | A: Sell ALL at 2x | Sell all at 2x, -50% stop | 15 | **$-21.53** | 26.7% | $-1.44 | $9.03 | $-5.24 |
 | B: Sell ALL at +50% | Sell all at 1.5x, -50% stop | 15 | **$-31.05** | 33.3% | $-2.07 | $4.27 | $-5.24 |
-| C: Sell HALF at 2x | Sell half at 2x, hold rest, -50% stop | 15 | **$-47.41** | 13.3% | $-3.16 | $10.85 | $-5.24 |
-| D: Hold 24h | Hold 24h then sell | 15 | **$-113.97** | 6.7% | $-7.60 | $12.91 | $-9.87 |
+| C: Sell HALF at 2x | Sell half at 2x, hold rest, -50% stop | 15 | **$-45.98** | 13.3% | $-3.07 | $12.28 | $-5.24 |
+| D: Hold 24h | Hold 24h then sell | 15 | **$-111.32** | 6.7% | $-7.42 | $15.78 | $-9.87 |
 | ⭐ E: 2x + moonbag | Sell 85% at 2x, keep 15% moonbag (narr ≥4) | 15 | **$-19.03** | 26.7% | $-1.27 | $14.37 | $-5.24 |
 
 ---
@@ -40,25 +40,25 @@ All strategies use:
 
 | Type | Count | Total P&L | Realized | Unrealized | Win Rate | Avg Max Multiple |
 |------|-------|-----------|----------|------------|----------|------------------|
-| new | 15 | $-21.53 | $-21.53 | $0.00 | 26.7% | 1.58x |
+| new | 15 | $-21.53 | $-21.53 | $0.00 | 26.7% | 1.87x |
 
 ### Strategy B: Sell ALL at +50%
 
 | Type | Count | Total P&L | Realized | Unrealized | Win Rate | Avg Max Multiple |
 |------|-------|-----------|----------|------------|----------|------------------|
-| new | 15 | $-31.05 | $-31.05 | $0.00 | 33.3% | 1.58x |
+| new | 15 | $-31.05 | $-31.05 | $0.00 | 33.3% | 1.87x |
 
 ### Strategy C: Sell HALF at 2x
 
 | Type | Count | Total P&L | Realized | Unrealized | Win Rate | Avg Max Multiple |
 |------|-------|-----------|----------|------------|----------|------------------|
-| new | 15 | $-47.41 | $-39.60 | $-7.81 | 13.3% | 1.58x |
+| new | 15 | $-45.98 | $-39.60 | $-6.38 | 13.3% | 1.87x |
 
 ### Strategy D: Hold 24h
 
 | Type | Count | Total P&L | Win Rate | Avg Max Multiple |
 |------|-------|-----------|----------|------------------|
-| new | 15 | $-113.97 | 6.7% | 1.58x |
+| new | 15 | $-111.32 | 6.7% | 1.87x |
 
 ---
 
