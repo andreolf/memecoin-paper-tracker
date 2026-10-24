@@ -12,7 +12,7 @@ import pytest
 # Add parent directory to path to import refresh module
 sys.path.insert(0, str(Path(__file__).parent.parent / 'scripts'))
 from refresh import (calculate_strategy_a, calculate_strategy_b, calculate_strategy_c, calculate_strategy_d, 
-                    calculate_strategy_e, parse_narrative_score, format_zurich_time)
+                    calculate_strategy_e, parse_narrative_score, format_zurich_time, target_first, STOP_AE)
 
 
 class TestStrategyA:
@@ -63,21 +63,48 @@ class TestStrategyA:
         assert result['unrealized_pnl'] == 0
     
     def test_hit_both_target_prioritized(self):
-        """Test when both stop and target hit - target is prioritized if ATH proves it was reached."""
+        """Both stop and target hit, candles show target first -> exit at target."""
         result = calculate_strategy_a(
             alert_price=1.0,
             ath=5.0,  # Went to 5x (definitely hit 2x)
             min_price=0.4,  # Also hit stop on the way down
             current_price=0.4,
-            status='active'
+            status='active',
+            target_first=True
         )
         
-        # ATH >= 2x proves we reached the target
         assert result['hit_target']
         assert not result['hit_stop']  # Stop not reported since target was hit
         
         # Should exit at 2x target, not at stop
         assert abs(result['total_pnl'] - 9.032) < 0.01
+    
+    def test_hit_both_order_unknown_assumes_stop(self):
+        """Regression: ATH >= 2x alone must not count as a win if the stop was also hit (order unknown)."""
+        for tf in (None, False):
+            result = calculate_strategy_a(alert_price=1.0, ath=5.0, min_price=0.4, current_price=0.4,
+                                          status='active', target_first=tf)
+            assert not result['hit_target']
+            assert result['hit_stop']
+            assert abs(result['total_pnl'] - (-5.242)) < 0.01
+    
+    def test_minus_30_stop(self):
+        """-30% stop: min 0.65 stops out at 0.7."""
+        result = calculate_strategy_a(alert_price=1.0, ath=1.8, min_price=0.65, current_price=0.9,
+                                      status='active', stop_mult=STOP_AE)
+        assert result['hit_stop'] and not result['hit_target']
+        # 9.755 * 0.7 = 6.8285, minus 2.45% = 6.661 -> P&L -3.339
+        assert abs(result['total_pnl'] - (-3.339)) < 0.01
+        # same path with the old -50% stop is still open
+        old = calculate_strategy_a(alert_price=1.0, ath=1.8, min_price=0.65, current_price=0.9, status='active')
+        assert not old['hit_stop']
+    
+    def test_target_first_helper(self):
+        assert target_first({'t_2x_utc': '2026-10-24T14:11:00Z', 't_stop30_utc': ''}, 't_2x_utc', 't_stop30_utc') is True
+        assert target_first({'t_2x_utc': '2026-10-24T14:11:00Z', 't_stop30_utc': '2026-10-24T14:05:00Z'}, 't_2x_utc', 't_stop30_utc') is False
+        assert target_first({'t_2x_utc': '2026-10-24T14:11:00Z', 't_stop30_utc': '2026-10-24T14:11:00Z'}, 't_2x_utc', 't_stop30_utc') is False
+        assert target_first({'t_2x_utc': float('nan'), 't_stop30_utc': ''}, 't_2x_utc', 't_stop30_utc') is None
+        assert target_first({}, 't_2x_utc', 't_stop30_utc') is None
 
 
 class TestStrategyB:
@@ -227,7 +254,8 @@ class TestStrategyE:
             current_price=0.4,
             status='active',
             reason='narr 4/5, hit target then crashed',
-            max_multiple=5.7
+            max_multiple=5.7,
+            target_first=True
         )
         
         assert result['narrative_score'] == 4
@@ -703,7 +731,8 @@ class TestRegressionDashboardCrash:
             current_price=0.3,
             status='active',
             reason='narr 4/5: peaked then crashed',
-            max_multiple=5.7
+            max_multiple=5.7,
+            target_first=True
         )
         
         # ATH proves we hit 2x before crashing

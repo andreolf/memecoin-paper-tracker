@@ -35,6 +35,20 @@ RATE_LIMIT_DELAY = 0.5  # seconds between API calls
 REQUEST_TIMEOUT = 10
 SLIPPAGE_PCT = 0.02  # 2% slippage per leg
 
+# Stops. A/E switched from -50% to -30% on 2026-10-24 14:35 UTC (16:35 CEST). Applied to ALL alerts in the
+# main A/E rows; the old -50% versions are kept as separate comparison rows. B/C keep -50%.
+STOP_AE = 0.7
+STOP_OLD = 0.5
+STOP_CHANGE_UTC = "2026-10-24T14:35:00Z"
+# First-touch order check (GeckoTerminal 1-min pool candles, free API)
+GT_POOLS = "https://api.geckoterminal.com/api/v2/networks/solana/tokens/{ca}/pools"
+GT_POOL_OHLCV = "https://api.geckoterminal.com/api/v2/networks/solana/pools/{pool}/ohlcv/minute?before_timestamp={before}&limit=1000&currency=usd&token={ca}"
+GT_DELAY = 2.2           # free GeckoTerminal ~30 req/min
+TOUCH_MAX_AGE_H = 7 * 24 # stop extending the order-check window after this
+TOUCH_MAX_PAGES = 4      # 1000-min pages fetched per coin per run
+TOUCH_LEVELS = {'t_1_5x_utc': 1.5, 't_2x_utc': 2.0, 't_stop30_utc': 0.7, 't_stop50_utc': 0.5}
+TOUCH_PAIRS = [('t_1_5x_utc', 't_stop50_utc'), ('t_2x_utc', 't_stop50_utc'), ('t_2x_utc', 't_stop30_utc')]
+
 
 def fetch_with_retry(url: str, max_retries: int = 3) -> Optional[dict]:
     """Fetch JSON from URL with retries and error handling."""
@@ -160,6 +174,117 @@ def fetch_ohlcv_geckoterminal(ca: str, since_ts: int) -> Optional[Tuple[float, f
     return None
 
 
+def _iso(ts: int) -> str:
+    return datetime.fromtimestamp(ts, timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+
+
+def _gt_get(url: str) -> Optional[dict]:
+    """GeckoTerminal free-API GET, paced for ~30 req/min. Returns None on any error."""
+    try:
+        time.sleep(GT_DELAY)
+        resp = requests.get(url, headers={'Accept': 'application/json',
+                                          'User-Agent': 'Mozilla/5.0 (compatible; MemecoinTracker/1.0)'},
+                            timeout=REQUEST_TIMEOUT)
+        if resp.status_code == 200:
+            return resp.json()
+        print(f"  GeckoTerminal HTTP {resp.status_code} (order check)")
+    except Exception as e:
+        print(f"  GeckoTerminal order check failed: {e}")
+    return None
+
+
+def _touch_pools(ca: str) -> Optional[List[str]]:
+    """Pools used for first-touch: every pump.fun bonding-curve pool (pre-migration) + the top pool by reserve."""
+    data = _gt_get(GT_POOLS.format(ca=ca))
+    if not data or 'data' not in data:
+        return None
+    pools, best, best_res = [], None, -1.0
+    for p in data['data']:
+        attrs = p.get('attributes', {})
+        dex = (((p.get('relationships') or {}).get('dex') or {}).get('data') or {}).get('id', '')
+        addr = attrs.get('address')
+        if not addr:
+            continue
+        if dex == 'pump-fun':
+            pools.append(addr)
+        res = float(attrs.get('reserve_in_usd') or 0)
+        if res > best_res:
+            best, best_res = addr, res
+    if best and best not in pools:
+        pools.append(best)
+    return pools
+
+
+def update_first_touches(ca: str, alert_time: str, alert_price: float, existing: Dict) -> Dict:
+    """
+    First-touch order check. Keeps a contiguous window [alert, touch_cover_end_utc] covered by 1-min candles
+    (all relevant pools merged) and records the first minute each level in TOUCH_LEVELS was touched
+    (high >= target / low <= stop). Extends the window by up to TOUCH_MAX_PAGES x 1000 min per run until every
+    (target, stop) pair in TOUCH_PAIRS is decided, the window reaches now, or the alert is TOUCH_MAX_AGE_H old.
+    On any API failure the previous values are kept. Returns the touch columns.
+    """
+    cols = ['touch_cover_end_utc'] + list(TOUCH_LEVELS)
+    out = {c: (existing.get(c) or '') for c in cols}
+    for c in cols:
+        if str(out[c]) == 'nan':
+            out[c] = ''
+    alert_ts = int(datetime.fromisoformat(alert_time.replace('Z', '+00:00')).timestamp())
+    alert_min = alert_ts - alert_ts % 60
+    now_ts = int(time.time())
+    end_cap = min(now_ts, alert_ts + TOUCH_MAX_AGE_H * 3600)
+
+    def decided():
+        return all(out[t] or out[st] for t, st in TOUCH_PAIRS)
+
+    cover = int(datetime.fromisoformat(out['touch_cover_end_utc'].replace('Z', '+00:00')).timestamp()) \
+        if out['touch_cover_end_utc'] else alert_min
+    if decided() or cover >= end_cap - 120 or alert_price <= 0:
+        return out
+    pools = _touch_pools(ca)
+    if not pools:
+        return out
+    for _ in range(TOUCH_MAX_PAGES):
+        if decided() or cover >= end_cap - 120:
+            break
+        before = min(cover + 1000 * 60, now_ts)
+        candles = []
+        for pool in pools:
+            data = _gt_get(GT_POOL_OHLCV.format(pool=pool, before=before, ca=ca))
+            if data is None:
+                return out  # keep coverage contiguous: do not advance on a failed fetch
+            try:
+                candles += data['data']['attributes']['ohlcv_list']
+            except (KeyError, TypeError):
+                pass
+        for c in sorted(candles, key=lambda c: c[0]):
+            ts, high, low = int(c[0]), float(c[2]), float(c[3])
+            if ts < alert_min or ts < cover - 60 or ts > before:
+                continue
+            for col, lvl in TOUCH_LEVELS.items():
+                if out[col]:
+                    continue
+                # the alert-minute candle may hold pre-alert trades: use it for stops (conservative) but not targets
+                if (lvl > 1 and ts > alert_min and high >= alert_price * lvl) or (lvl < 1 and low <= alert_price * lvl):
+                    out[col] = _iso(ts)
+        cover = before
+        out['touch_cover_end_utc'] = _iso(cover)
+    return out
+
+
+def target_first(row, target_col: str, stop_col: str) -> Optional[bool]:
+    """True if the target's first touch is strictly earlier than the stop's (or the stop was never touched in a
+    window that already contains the target touch); False if stop first or same minute; None if unknown."""
+    def val(c):
+        v = row.get(c, '') if hasattr(row, 'get') else ''
+        return '' if v is None or str(v) == 'nan' else str(v)
+    tt, ts = val(target_col), val(stop_col)
+    if tt and (not ts or tt < ts):
+        return True
+    if ts:
+        return False
+    return None
+
+
 def fetch_current_price(ca: str, alert_time: str) -> Dict:
     """
     Fetch current price from multiple sources.
@@ -225,14 +350,15 @@ def fetch_current_price(ca: str, alert_time: str) -> Dict:
     return result
 
 
-def calculate_strategy_a(alert_price: float, ath: float, min_price: float, current_price: float, status: str) -> Dict:
+def calculate_strategy_a(alert_price: float, ath: float, min_price: float, current_price: float, status: str,
+                         stop_mult: float = STOP_OLD, target_first: Optional[bool] = None) -> Dict:
     """
     Strategy A: Sell ALL at 2x with stop-loss.
     $10 stake, 0.45% fee + 2% slippage per leg.
-    - Stop loss at -50% from entry
+    - Stop loss at stop_mult x entry (dashboard: -30% since 2026-10-24; old row -50%)
     - Sell all at 2x
-    - If ATH >= target, prioritize target (we know it was reached)
-    - Otherwise, if both hit, assume stop hit before target (conservative)
+    - If both target and stop were reached, target counts only if target_first is True
+      (first-touch order from 1-min candles); unknown or same-minute -> stop first (conservative)
     """
     FEE_PCT = 0.0045
     SLIPPAGE_PCT = 0.02
@@ -246,7 +372,7 @@ def calculate_strategy_a(alert_price: float, ath: float, min_price: float, curre
     tokens_bought = net_stake / alert_price
     
     target_price = alert_price * 2.0
-    stop_price = alert_price * 0.5
+    stop_price = alert_price * stop_mult
     
     realized_pnl = 0.0
     remaining_tokens = tokens_bought
@@ -255,6 +381,9 @@ def calculate_strategy_a(alert_price: float, ath: float, min_price: float, curre
     # If ATH >= target, we definitely hit the target (prioritize over stop)
     hit_target = ath >= target_price
     hit_stop = min_price <= stop_price
+    if hit_target and hit_stop and target_first is not True:
+        # Both levels reached: target counts only if candles prove it came first; else stop first (conservative)
+        hit_target = False
     
     if hit_target:
         # ATH proves we reached 2x, so we exited there
@@ -290,13 +419,14 @@ def calculate_strategy_a(alert_price: float, ath: float, min_price: float, curre
     }
 
 
-def calculate_strategy_b(alert_price: float, ath: float, min_price: float, current_price: float, status: str) -> Dict:
+def calculate_strategy_b(alert_price: float, ath: float, min_price: float, current_price: float, status: str,
+                         stop_mult: float = STOP_OLD, target_first: Optional[bool] = None) -> Dict:
     """
     Strategy B: Sell ALL at +50% (1.5x) with stop-loss.
     $10 stake, 0.45% fee + 2% slippage per leg.
     - Stop loss at -50% from entry
     - Sell all at 1.5x
-    - If ATH >= target, prioritize target (we know it was reached)
+    - Both reached: target only if target_first is True, else stop first
     """
     FEE_PCT = 0.0045
     SLIPPAGE_PCT = 0.02
@@ -310,13 +440,16 @@ def calculate_strategy_b(alert_price: float, ath: float, min_price: float, curre
     tokens_bought = net_stake / alert_price
     
     target_price = alert_price * 1.5
-    stop_price = alert_price * 0.5
+    stop_price = alert_price * stop_mult
     
     realized_pnl = 0.0
     remaining_tokens = tokens_bought
     
     hit_target = ath >= target_price
     hit_stop = min_price <= stop_price
+    if hit_target and hit_stop and target_first is not True:
+        # Both levels reached: target counts only if candles prove it came first; else stop first (conservative)
+        hit_target = False
     
     if hit_target:
         exit_value = remaining_tokens * target_price
@@ -350,14 +483,15 @@ def calculate_strategy_b(alert_price: float, ath: float, min_price: float, curre
     }
 
 
-def calculate_strategy_c(alert_price: float, ath: float, min_price: float, current_price: float, status: str) -> Dict:
+def calculate_strategy_c(alert_price: float, ath: float, min_price: float, current_price: float, status: str,
+                         stop_mult: float = STOP_OLD, target_first: Optional[bool] = None) -> Dict:
     """
     Strategy C: Sell HALF at 2x, hold rest with stop-loss.
     $10 stake, 0.45% fee + 2% slippage per leg.
     - Sell half at 2x
     - Stop loss at -50% from entry
     - Mark remainder to market
-    - If ATH >= target, prioritize target (we know it was reached)
+    - Both reached: target only if target_first is True, else stop first
     """
     FEE_PCT = 0.0045
     SLIPPAGE_PCT = 0.02
@@ -371,13 +505,16 @@ def calculate_strategy_c(alert_price: float, ath: float, min_price: float, curre
     tokens_bought = net_stake / alert_price
     
     target_price = alert_price * 2.0
-    stop_price = alert_price * 0.5
+    stop_price = alert_price * stop_mult
     
     realized_pnl = 0.0
     remaining_tokens = tokens_bought
     
     hit_target = ath >= target_price
     hit_stop = min_price <= stop_price
+    if hit_target and hit_stop and target_first is not True:
+        # Both levels reached: target counts only if candles prove it came first; else stop first (conservative)
+        hit_target = False
     
     if hit_target:
         # Sold half at 2x
@@ -387,7 +524,7 @@ def calculate_strategy_c(alert_price: float, ath: float, min_price: float, curre
         realized_pnl = exit_value - exit_cost - (initial_stake / 2)
         remaining_tokens = half_tokens
     elif hit_stop:
-        # Stopped out completely at -50%
+        # Stopped out completely at the stop
         exit_value = remaining_tokens * stop_price
         exit_cost = exit_value * TOTAL_COST_PCT
         realized_pnl = exit_value - exit_cost - initial_stake
@@ -483,17 +620,18 @@ def parse_narrative_score(reason: str) -> int:
 
 
 def calculate_strategy_e(alert_price: float, ath: float, min_price: float, current_price: float, 
-                        status: str, reason: str, max_multiple: float) -> Dict:
+                        status: str, reason: str, max_multiple: float,
+                        stop_mult: float = STOP_OLD, target_first: Optional[bool] = None) -> Dict:
     """
     Strategy E: Sell 2x + moonbag on strong narrative.
     $10 stake, 0.45% fee + 2% slippage per leg.
     
     For narrative >= 4/5:
-    - Stop loss at -50% applies to whole position before 2x
+    - Stop loss (stop_mult; dashboard -30%, old row -50%) applies to whole position before 2x
     - At 2x: sell 85%, keep 15% moonbag
     - Moonbag exits at later max_multiple, only if it reached >= 5x
     - After 2x, moonbag has no stop
-    - If ATH >= target, we know target was reached before any stop
+    - Both 2x and stop reached: 2x only if target_first is True, else stop first
     
     For narrative < 4/5:
     - Behaves exactly like Strategy A (sell all at 2x)
@@ -511,7 +649,7 @@ def calculate_strategy_e(alert_price: float, ath: float, min_price: float, curre
     tokens_bought = net_stake / alert_price
     
     target_price = alert_price * 2.0
-    stop_price = alert_price * 0.5
+    stop_price = alert_price * stop_mult
     
     realized_pnl = 0.0
     remaining_tokens = tokens_bought
@@ -520,6 +658,9 @@ def calculate_strategy_e(alert_price: float, ath: float, min_price: float, curre
     # If ATH >= target, we definitely hit the target (prioritize over stop)
     hit_target = ath >= target_price
     hit_stop = min_price <= stop_price
+    if hit_target and hit_stop and target_first is not True:
+        # Both levels reached: target counts only if candles prove it came first; else stop first (conservative)
+        hit_target = False
     
     # For narrative < 4, behave exactly like Strategy A
     if narrative_score < 4:
@@ -578,7 +719,7 @@ def calculate_strategy_e(alert_price: float, ath: float, min_price: float, curre
             realized_pnl += moonbag_pnl
             remaining_tokens = 0
     elif hit_stop:
-        # Stopped out completely at -50% (before reaching 2x)
+        # Stopped out completely at the stop (before reaching 2x)
         exit_value = remaining_tokens * stop_price
         exit_cost = exit_value * TOTAL_COST_PCT
         realized_pnl = exit_value - exit_cost - initial_stake
@@ -656,7 +797,9 @@ def save_calls(calls: List[Dict]):
         'ca', 'symbol', 'alert_time_utc', 'alert_price_usd', 
         'current_price_usd', 'current_mc_usd', 'current_liq_usd',
         'ath_since_alert', 'min_since_alert', 'max_multiple',
-        'status', 'last_updated_utc'
+        'status', 'last_updated_utc',
+        # first-touch order check (UTC minute of first 1-min candle touching the level; '' = not in window)
+        'touch_cover_end_utc', 't_1_5x_utc', 't_2x_utc', 't_stop30_utc', 't_stop50_utc',
     ]
     
     with open(CALLS_CSV, 'w', newline='') as f:
@@ -743,7 +886,10 @@ def refresh_data():
         prev_max_multiple = float(existing.get('max_multiple', 0))
         max_multiple = max(max_multiple, prev_max_multiple)
         
+        touches = update_first_touches(ca, alert_time, alert_price, existing)
+
         updated_calls.append({
+            **touches,
             'ca': ca,
             'symbol': symbol,
             'alert_time_utc': alert_time,
@@ -792,14 +938,31 @@ def generate_dashboard():
     results_d = []  # Hold 24h
     results_e = []  # Sell 2x + moonbag on strong narrative
     
+    results_a_old = []  # A with the old -50% stop (comparison)
+    results_e_old = []  # E with the old -50% stop (comparison)
+    
     for _, row in df_real.iterrows():
-        # Strategy A: Sell ALL at 2x
+        tf_2x_30 = target_first(row, 't_2x_utc', 't_stop30_utc')
+        tf_2x_50 = target_first(row, 't_2x_utc', 't_stop50_utc')
+        tf_15_50 = target_first(row, 't_1_5x_utc', 't_stop50_utc')
+        base = {'ca': row['ca'], 'symbol': row['symbol_alert'], 'alert_type': row['alert_type'],
+                'alert_time_utc': row['alert_time_utc_alert'], 'max_multiple': row['max_multiple'],
+                'is_exc': row['is_exc']}
+        results_a_old.append({**base, **calculate_strategy_a(
+            row['price_usd'], row['ath_since_alert'], row['min_since_alert'], row['current_price_usd'],
+            row['status'], stop_mult=STOP_OLD, target_first=tf_2x_50)})
+        results_e_old.append({**base, **calculate_strategy_e(
+            row['price_usd'], row['ath_since_alert'], row['min_since_alert'], row['current_price_usd'],
+            row['status'], row['reason'], row['max_multiple'], stop_mult=STOP_OLD, target_first=tf_2x_50)})
+        
+        # Strategy A: Sell ALL at 2x, -30% stop
         strat_a = calculate_strategy_a(
             row['price_usd'],
             row['ath_since_alert'],
             row['min_since_alert'],
             row['current_price_usd'],
-            row['status']
+            row['status'],
+            stop_mult=STOP_AE, target_first=tf_2x_30
         )
         results_a.append({
             'ca': row['ca'],
@@ -817,7 +980,8 @@ def generate_dashboard():
             row['ath_since_alert'],
             row['min_since_alert'],
             row['current_price_usd'],
-            row['status']
+            row['status'],
+            stop_mult=STOP_OLD, target_first=tf_15_50
         )
         results_b.append({
             'ca': row['ca'],
@@ -835,7 +999,8 @@ def generate_dashboard():
             row['ath_since_alert'],
             row['min_since_alert'],
             row['current_price_usd'],
-            row['status']
+            row['status'],
+            stop_mult=STOP_OLD, target_first=tf_2x_50
         )
         results_c.append({
             'ca': row['ca'],
@@ -872,7 +1037,8 @@ def generate_dashboard():
             row['current_price_usd'],
             row['status'],
             row['reason'],
-            row['max_multiple']
+            row['max_multiple'],
+            stop_mult=STOP_AE, target_first=tf_2x_30
         )
         results_e.append({
             'ca': row['ca'],
@@ -889,6 +1055,8 @@ def generate_dashboard():
     results_c_df = pd.DataFrame(results_c)
     results_d_df = pd.DataFrame(results_d)
     results_e_df = pd.DataFrame(results_e)
+    results_a_old_df = pd.DataFrame(results_a_old)
+    results_e_old_df = pd.DataFrame(results_e_old)
     
     # Calculate Strategy A for MISSED calls (for comparison only)
     missed_results_a = []
@@ -898,7 +1066,8 @@ def generate_dashboard():
             row['ath_since_alert'],
             row['min_since_alert'],
             row['current_price_usd'],
-            row['status']
+            row['status'],
+            stop_mult=STOP_AE, target_first=target_first(row, 't_2x_utc', 't_stop30_utc')
         )
         # Extract skip reason (first part of reason field)
         reason_parts = row['reason'].split(',', 1)
@@ -922,10 +1091,12 @@ def generate_dashboard():
     generate_charts(results_a_df, results_b_df, results_c_df, results_d_df, results_e_df)
     
     # Generate README
-    generate_readme(results_a_df, results_b_df, results_c_df, results_d_df, results_e_df, df_real, df_missed, missed_a_df)
+    generate_readme(results_a_df, results_b_df, results_c_df, results_d_df, results_e_df, df_real, df_missed, missed_a_df,
+                    results_a_old_df, results_e_old_df)
     
     # Generate HTML dashboard
-    generate_html(results_a_df, results_b_df, results_c_df, results_d_df, results_e_df, df_real, df_missed, missed_a_df)
+    generate_html(results_a_df, results_b_df, results_c_df, results_d_df, results_e_df, df_real, df_missed, missed_a_df,
+                  results_a_old_df, results_e_old_df)
     
     print("Dashboard generation complete!")
 
@@ -1026,7 +1197,8 @@ def format_zurich_time(utc_str: str) -> str:
 
 def generate_readme(results_a_df: pd.DataFrame, results_b_df: pd.DataFrame, results_c_df: pd.DataFrame, 
                    results_d_df: pd.DataFrame, results_e_df: pd.DataFrame, full_df: pd.DataFrame, 
-                   df_missed: pd.DataFrame, missed_a_df: pd.DataFrame):
+                   df_missed: pd.DataFrame, missed_a_df: pd.DataFrame,
+                   results_a_old_df: Optional[pd.DataFrame] = None, results_e_old_df: Optional[pd.DataFrame] = None):
     """Generate README.md with summary tables."""
     
     # Calculate overall stats for all strategies (REAL alerts only)
@@ -1036,7 +1208,7 @@ def generate_readme(results_a_df: pd.DataFrame, results_b_df: pd.DataFrame, resu
         'A: Sell ALL at 2x': {
             'df': results_a_df,
             'pnl_col': 'total_pnl',
-            'desc': 'Sell all at 2x, -50% stop'
+            'desc': 'Sell all at 2x, -30% stop'
         },
         'B: Sell ALL at +50%': {
             'df': results_b_df,
@@ -1056,9 +1228,15 @@ def generate_readme(results_a_df: pd.DataFrame, results_b_df: pd.DataFrame, resu
         'E: 2x + moonbag': {
             'df': results_e_df,
             'pnl_col': 'total_pnl',
-            'desc': 'Sell 85% at 2x, keep 15% moonbag (narr ≥4)'
+            'desc': 'Sell 85% at 2x, keep 15% moonbag (narr ≥4), -30% stop before 2x'
         }
     }
+    if results_a_old_df is not None and len(results_a_old_df) > 0:
+        strategies['A (−50%, old)'] = {'df': results_a_old_df, 'pnl_col': 'total_pnl',
+                                       'desc': 'A with the old -50% stop (comparison)'}
+    if results_e_old_df is not None and len(results_e_old_df) > 0:
+        strategies['E (−50%, old)'] = {'df': results_e_old_df, 'pnl_col': 'total_pnl',
+                                       'desc': 'E with the old -50% stop (comparison)'}
     
     # Find best strategy
     best_strategy = None
@@ -1088,8 +1266,8 @@ This dashboard tracks theoretical P&L from Solana memecoin alerts. **No actual t
 All strategies use:
 - **$10 stake per alert**
 - **0.45% trading fee + 2% slippage per leg**
-- **-50% stop-loss** (where applicable)
-- **Conservative ordering**: If both stop and target hit, assume stop hit first
+- **Stop-loss**: A and E use **-30%** (changed from -50% on 2026-10-24 16:35 CEST, applied to all alerts here); B, C and the "(−50%, old)" comparison rows use -50%
+- **Order check**: if both stop and target were reached, the target counts only if GeckoTerminal 1-min candles show it was touched first; same minute or unknown order → stop first (conservative)
 
 **🏆 Current Best Performer: {best_strategy}** (Total P&L: ${best_pnl:.2f})
 
@@ -1219,7 +1397,8 @@ def format_money(value: float) -> str:
         return f"${value:.2f}"
 
 
-def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, results_e_df, full_df, df_missed, missed_a_df):
+def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, results_e_df, full_df, df_missed, missed_a_df,
+                  results_a_old_df=None, results_e_old_df=None):
     """Generate elegant standalone HTML dashboard with modern design."""
     
     # Calculate KPIs for Strategy A (primary strategy) - REAL alerts only
@@ -1286,7 +1465,7 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, result
         # Determine status pill based on strategy outcome
         if a_row is not None:
             if a_row['hit_stop']:
-                status_pill = '<span class="status-pill status-stopped">Stopped −50%</span>'
+                status_pill = '<span class="status-pill status-stopped">Stopped −30%</span>'
             elif a_row['hit_target']:
                 status_pill = '<span class="status-pill status-hit-target">Hit 2x</span>'
             elif row['status'] == 'dead':
@@ -1344,6 +1523,10 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, result
         {'name': 'C: Sell HALF at 2x', 'pnl': results_c_df['total_pnl'].sum(), 'badge': None},
         {'name': 'D: Hold 24h', 'pnl': results_d_df['pnl'].sum(), 'badge': None},
     ]
+    if results_a_old_df is not None and len(results_a_old_df) > 0:
+        strategies_comparison.append({'name': 'A (−50%, old)', 'pnl': results_a_old_df['total_pnl'].sum(), 'badge': None})
+    if results_e_old_df is not None and len(results_e_old_df) > 0:
+        strategies_comparison.append({'name': 'E (−50%, old)', 'pnl': results_e_old_df['total_pnl'].sum(), 'badge': None})
     
     # Calculate max absolute value for bar scaling
     max_abs_pnl = max([abs(s['pnl']) for s in strategies_comparison]) if strategies_comparison else 1
@@ -1907,7 +2090,7 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, result
                 </tbody>
             </table>
             <p style="margin-top: 16px; font-size: 13px; color: var(--text-muted);">
-                All strategies: $10 stake, 0.45% fee + 2% slippage per leg, -50% stop (where applicable)
+                All strategies: $10 stake, 0.45% fee + 2% slippage per leg. Stop: A/E −30% (since 2026-10-24 16:35 CEST, applied to all alerts); B/C and "(−50%, old)" rows −50%. If both stop and target were reached, the target counts only if 1-min candles show it came first; otherwise stop first.
             </p>
         </div>
         
@@ -2010,7 +2193,7 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, result
         
         <footer>
             <p>Paper-trading simulation only • No real trades executed • Data auto-refreshed hourly</p>
-            <p style="margin-top: 8px;">Strategy A: Sell ALL at 2x, -50% stop, 0.45% fee + 2% slippage</p>
+            <p style="margin-top: 8px;">Strategy A: Sell ALL at 2x, −30% stop, 0.45% fee + 2% slippage</p>
             {f'<p style="margin-top: 8px; color: var(--text-muted);">{exc_count} EXC calls • {missed_count} missed calls tracked</p>' if exc_count > 0 or missed_count > 0 else ''}
             <p style="margin-top: 16px; color: var(--text-muted);">
                 Built with ❤️ by <a href="https://x.com/francescoswiss" target="_blank" rel="noopener" style="color: var(--text-primary); text-decoration: none; transition: opacity 0.2s;">Francesco Andreoli</a>
