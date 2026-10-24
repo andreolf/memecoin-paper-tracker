@@ -6,9 +6,9 @@
 
 This dashboard tracks theoretical P&L from Solana memecoin alerts. **No actual trades are executed.**
 
-**Last Updated:** 2026-10-24 17:48 CEST
+**Last Updated:** 2026-10-24 18:19 CEST
 
-**Tracked:** 15 real alerts + 80 missed (filtered out)
+**Tracked:** 16 real alerts + 80 missed (filtered out)
 
 ---
 
@@ -20,19 +20,19 @@ All strategies use:
 - **Stop-loss**: A and E use **-30%** (changed from -50% on 2026-10-24 16:35 CEST, applied to all alerts here); B, C and the "(−50%, old)" comparison rows use -50%
 - **Order check**: if both stop and target were reached, the target counts only if GeckoTerminal 1-min candles show it was touched first; same minute or unknown order → stop first (conservative)
 
-**🏆 Current Best Performer: E: 2x + moonbag** (Total P&L: $1.90)
+**🏆 Current Best Performer: E: 2x + moonbag** (Total P&L: $-8.10)
 
 ### Overall Performance
 
 | Strategy | Description | Total Alerts | Total P&L | Win Rate | Avg P&L | Best Trade | Worst Trade |
 |----------|-------------|--------------|-----------|----------|---------|------------|-------------|
-| A: Sell ALL at 2x | Sell all at 2x, -30% stop | 15 | **$-0.60** | 26.7% | $-0.04 | $9.03 | $-3.34 |
-| B: Sell ALL at +50% | Sell all at 1.5x, -50% stop | 15 | **$-31.05** | 33.3% | $-2.07 | $4.27 | $-5.24 |
-| C: Sell HALF at 2x | Sell half at 2x, hold rest, -50% stop | 15 | **$-56.82** | 13.3% | $-3.79 | $1.44 | $-5.24 |
-| D: Hold 24h | Hold 24h then sell | 15 | **$-133.35** | 0.0% | $-8.89 | $-5.92 | $-9.87 |
-| ⭐ E: 2x + moonbag | Sell 85% at 2x, keep 15% moonbag (narr ≥4), -30% stop before 2x | 15 | **$1.90** | 26.7% | $0.13 | $14.37 | $-3.34 |
-| A (−50%, old) | A with the old -50% stop (comparison) | 15 | **$-21.53** | 26.7% | $-1.44 | $9.03 | $-5.24 |
-| E (−50%, old) | E with the old -50% stop (comparison) | 15 | **$-19.03** | 26.7% | $-1.27 | $14.37 | $-5.24 |
+| A: Sell ALL at 2x | Sell all at 2x, -30% stop | 16 | **$-10.60** | 25.0% | $-0.66 | $9.03 | $-10.00 |
+| B: Sell ALL at +50% | Sell all at 1.5x, -50% stop | 16 | **$-41.05** | 31.2% | $-2.57 | $4.27 | $-10.00 |
+| C: Sell HALF at 2x | Sell half at 2x, hold rest, -50% stop | 16 | **$-66.93** | 12.5% | $-4.18 | $1.33 | $-10.00 |
+| D: Hold 24h | Hold 24h then sell | 16 | **$-143.19** | 0.0% | $-8.95 | $-6.12 | $-9.87 |
+| ⭐ E: 2x + moonbag | Sell 85% at 2x, keep 15% moonbag (narr ≥4), -30% stop before 2x | 16 | **$-8.10** | 25.0% | $-0.51 | $14.37 | $-10.00 |
+| A (−50%, old) | A with the old -50% stop (comparison) | 16 | **$-31.53** | 25.0% | $-1.97 | $9.03 | $-10.00 |
+| E (−50%, old) | E with the old -50% stop (comparison) | 16 | **$-29.03** | 25.0% | $-1.81 | $14.37 | $-10.00 |
 
 ---
 
@@ -42,25 +42,25 @@ All strategies use:
 
 | Type | Count | Total P&L | Realized | Unrealized | Win Rate | Avg Max Multiple |
 |------|-------|-----------|----------|------------|----------|------------------|
-| new | 15 | $-0.60 | $-0.60 | $0.00 | 26.7% | 1.87x |
+| new | 16 | $-10.60 | $-0.60 | $-10.00 | 25.0% | 1.75x |
 
 ### Strategy B: Sell ALL at +50%
 
 | Type | Count | Total P&L | Realized | Unrealized | Win Rate | Avg Max Multiple |
 |------|-------|-----------|----------|------------|----------|------------------|
-| new | 15 | $-31.05 | $-31.05 | $0.00 | 33.3% | 1.87x |
+| new | 16 | $-41.05 | $-31.05 | $-10.00 | 31.2% | 1.75x |
 
 ### Strategy C: Sell HALF at 2x
 
 | Type | Count | Total P&L | Realized | Unrealized | Win Rate | Avg Max Multiple |
 |------|-------|-----------|----------|------------|----------|------------------|
-| new | 15 | $-56.82 | $-39.60 | $-17.23 | 13.3% | 1.87x |
+| new | 16 | $-66.93 | $-39.60 | $-27.33 | 12.5% | 1.75x |
 
 ### Strategy D: Hold 24h
 
 | Type | Count | Total P&L | Win Rate | Avg Max Multiple |
 |------|-------|-----------|----------|------------------|
-| new | 15 | $-133.35 | 0.0% | 1.87x |
+| new | 16 | $-143.19 | 0.0% | 1.75x |
 
 ---
 
