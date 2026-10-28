@@ -48,6 +48,34 @@ TOUCH_MAX_AGE_H = 7 * 24 # stop extending the order-check window after this
 TOUCH_MAX_PAGES = 4      # 1000-min pages fetched per coin per run
 TOUCH_LEVELS = {'t_1_5x_utc': 1.5, 't_2x_utc': 2.0, 't_stop30_utc': 0.7, 't_stop50_utc': 0.5}
 TOUCH_PAIRS = [('t_1_5x_utc', 't_stop50_utc'), ('t_2x_utc', 't_stop50_utc'), ('t_2x_utc', 't_stop30_utc')]
+PUMP_SUPPLY = 1e9  # pump.fun total supply: price = MC / 1e9
+
+
+def num(v, default: Optional[float] = 0.0) -> Optional[float]:
+    """Parse a CSV/API numeric field. Empty, invalid, NaN or inf values return `default` instead of raising."""
+    try:
+        f = float(v)
+    except (TypeError, ValueError):
+        return default
+    if f != f or f in (float('inf'), float('-inf')):
+        return default
+    return f
+
+
+def is_pump_ca(ca) -> bool:
+    return str(ca or '').endswith('pump')
+
+
+def alert_entry_price(alert) -> float:
+    """Entry price of an alert row: price_usd if valid (> 0), else MC / 1e9 for pump.fun coins, else 0
+    (0 = unknown -> the row stays listed but is skipped from price-based calcs)."""
+    price = num(alert.get('price_usd'), 0.0)
+    if price > 0:
+        return price
+    mc = num(alert.get('mc_usd'), 0.0)
+    if mc > 0 and is_pump_ca(alert.get('ca')):
+        return mc / PUMP_SUPPLY
+    return 0.0
 
 
 def fetch_with_retry(url: str, max_retries: int = 3) -> Optional[dict]:
@@ -766,7 +794,9 @@ def load_existing_calls() -> Dict[str, Dict]:
     with open(CALLS_CSV, 'r') as f:
         reader = csv.DictReader(f)
         for row in reader:
-            calls[row['ca']] = row
+            calls[(row['ca'], row.get('alert_time_utc', ''))] = row
+            if not row.get('alert_time_utc'):
+                calls.setdefault(row['ca'], row)  # legacy rows without alert time: lookup by CA only
     return calls
 
 
@@ -779,9 +809,13 @@ def load_peaks() -> Dict[str, Dict]:
     with open(PEAKS_CSV, 'r') as f:
         reader = csv.DictReader(f)
         for row in reader:
+            max_price = num(row.get('max_price'), None)
+            if max_price is None or max_price <= 0:
+                print(f"  Skipping peak row with invalid max_price for {row.get('ca')}")
+                continue
             peaks[row['ca']] = {
-                'max_price': float(row['max_price']),
-                'max_multiple': float(row['max_multiple']),
+                'max_price': max_price,
+                'max_multiple': num(row.get('max_multiple'), 0.0),
                 'observed_at_utc': row['observed_at_utc'],
                 'source': row['source']
             }
@@ -835,23 +869,28 @@ def refresh_data():
     for alert in alerts:
         ca = alert['ca']
         alert_time = alert['alert_time_utc']
-        alert_price = float(alert['price_usd'])
+        alert_price = alert_entry_price(alert)
         symbol = alert['symbol']
+        if num(alert.get('price_usd'), 0.0) <= 0:
+            if alert_price > 0:
+                print(f"  {symbol} {alert_time}: empty/invalid price_usd, using MC/1e9 = {alert_price:.10f}")
+            else:
+                print(f"  {symbol} {alert_time}: no usable price_usd or MC, row kept without performance")
         
         # Fetch current data
         current = fetch_current_price(ca, alert_time)
         
         # Get existing data for fallback if APIs fail
-        existing = existing_calls.get(ca, {})
+        existing = existing_calls.get((ca, alert_time)) or existing_calls.get(ca, {})
         
         # If all APIs failed (price still 0) but we have previous data, keep previous values
         if current['current_price_usd'] == 0 and existing:
-            prev_price = float(existing.get('current_price_usd', 0))
+            prev_price = num(existing.get('current_price_usd'), 0.0)
             if prev_price > 0:
                 print(f"  Using cached values for {ca} (APIs unavailable)")
                 current['current_price_usd'] = prev_price
-                current['current_mc_usd'] = float(existing.get('current_mc_usd', 0))
-                current['current_liq_usd'] = float(existing.get('current_liq_usd', 0))
+                current['current_mc_usd'] = num(existing.get('current_mc_usd'), 0.0)
+                current['current_liq_usd'] = num(existing.get('current_liq_usd'), 0.0)
                 current['status'] = existing.get('status', 'dead')
         
         # Try to get OHLCV for better ATH/min
@@ -859,8 +898,10 @@ def refresh_data():
         ohlcv = fetch_ohlcv_geckoterminal(ca, alert_ts)
         
         # Calculate ATH and min from multiple sources
-        prev_ath = float(existing.get('ath_since_alert', 0))
-        prev_min = float(existing.get('min_since_alert', alert_price))
+        prev_ath = num(existing.get('ath_since_alert'), 0.0)
+        prev_min = num(existing.get('min_since_alert'), None)
+        if prev_min is None or (prev_min <= 0 and alert_price > 0):
+            prev_min = alert_price
         
         # Start with previous values and current price
         ath = max(prev_ath, current['current_price_usd'])
@@ -883,7 +924,7 @@ def refresh_data():
         
         # Calculate max_multiple - ensure it never decreases
         max_multiple = ath / alert_price if alert_price > 0 else 0
-        prev_max_multiple = float(existing.get('max_multiple', 0))
+        prev_max_multiple = num(existing.get('max_multiple'), 0.0) if alert_price > 0 else 0.0
         max_multiple = max(max_multiple, prev_max_multiple)
         
         touches = update_first_touches(ca, alert_time, alert_price, existing)
@@ -923,6 +964,25 @@ def generate_dashboard():
     
     # Merge
     df = alerts_df.merge(calls_df, on=['ca'], suffixes=('_alert', '_call'))
+    # Two alerts on the same CA: keep only the matching alert/call pairs (by alert time)
+    if 'alert_time_utc_alert' in df.columns and 'alert_time_utc_call' in df.columns:
+        dup = df['ca'].duplicated(keep=False)
+        df = df[~dup | (df['alert_time_utc_alert'].astype(str) == df['alert_time_utc_call'].astype(str))].copy()
+    # Numeric fields: empty/invalid -> NaN, never crash
+    for col in ['mc_usd', 'price_usd', 'liq_usd', 'current_price_usd', 'current_mc_usd', 'current_liq_usd',
+                'ath_since_alert', 'min_since_alert', 'max_multiple']:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors='coerce')
+    # Entry price: price_usd if valid, else MC / 1e9 for pump.fun coins; rows with no usable price keep
+    # price_usd NaN and are listed without performance
+    bad_price = ~(df['price_usd'] > 0)
+    derive = bad_price & (df['mc_usd'] > 0) & df['ca'].astype(str).str.endswith('pump')
+    df.loc[derive, 'price_usd'] = df.loc[derive, 'mc_usd'] / PUMP_SUPPLY
+    for col in ['current_price_usd', 'current_mc_usd', 'current_liq_usd', 'ath_since_alert', 'max_multiple']:
+        df[col] = df[col].fillna(0.0)
+    df['min_since_alert'] = df['min_since_alert'].fillna(df['price_usd'])
+    df['reason'] = df['reason'].fillna('').astype(str)
+    df['has_price'] = df['price_usd'] > 0
     
     # Separate missed calls from real alerts
     df_real = df[df['alert_type'] != 'missed'].copy()
@@ -941,7 +1001,7 @@ def generate_dashboard():
     results_a_old = []  # A with the old -50% stop (comparison)
     results_e_old = []  # E with the old -50% stop (comparison)
     
-    for _, row in df_real.iterrows():
+    for _, row in df_real[df_real['has_price']].iterrows():
         tf_2x_30 = target_first(row, 't_2x_utc', 't_stop30_utc')
         tf_2x_50 = target_first(row, 't_2x_utc', 't_stop50_utc')
         tf_15_50 = target_first(row, 't_1_5x_utc', 't_stop50_utc')
@@ -1061,6 +1121,18 @@ def generate_dashboard():
     # Calculate Strategy A for MISSED calls (for comparison only)
     missed_results_a = []
     for _, row in df_missed.iterrows():
+        # Extract skip reason (first part of reason field)
+        reason_parts = row['reason'].split(',', 1)
+        skip_reason = reason_parts[0].replace('skip ', '').strip() if reason_parts else 'unknown'
+        if not row['has_price']:
+            # No usable entry price: keep the row visible, without performance
+            missed_results_a.append({
+                'ca': row['ca'], 'symbol': row['symbol_alert'], 'alert_time_utc': row['alert_time_utc_alert'],
+                'max_multiple': 0.0, 'skip_reason': skip_reason, 'no_price': True,
+                'realized_pnl': 0.0, 'unrealized_pnl': 0.0, 'total_pnl': 0.0, 'multiple': 0.0,
+                'hit_target': False, 'hit_stop': False,
+            })
+            continue
         strat_a = calculate_strategy_a(
             row['price_usd'],
             row['ath_since_alert'],
@@ -1069,16 +1141,13 @@ def generate_dashboard():
             row['status'],
             stop_mult=STOP_AE, target_first=target_first(row, 't_2x_utc', 't_stop30_utc')
         )
-        # Extract skip reason (first part of reason field)
-        reason_parts = row['reason'].split(',', 1)
-        skip_reason = reason_parts[0].replace('skip ', '').strip() if reason_parts else 'unknown'
-        
         missed_results_a.append({
             'ca': row['ca'],
             'symbol': row['symbol_alert'],
             'alert_time_utc': row['alert_time_utc_alert'],
             'max_multiple': row['max_multiple'],
             'skip_reason': skip_reason,
+            'no_price': False,
             **strat_a
         })
     
@@ -1482,7 +1551,7 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, result
         pnl_a = a_row['total_pnl'] if a_row is not None else 0
         pnl_class = 'positive' if pnl_a > 0 else 'negative' if pnl_a < 0 else 'neutral'
         
-        alert_mc_formatted = f"${row['mc_usd']:,.0f}" if 'mc_usd' in row else "N/A"
+        alert_mc_formatted = f"${row['mc_usd']:,.0f}" if 'mc_usd' in row and pd.notna(row['mc_usd']) else "N/A"
         current_mc_formatted = f"${row['current_mc_usd']:,.0f}"
         
         calls_rows.append(f"""
@@ -2180,8 +2249,8 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, result
                         <tr>
                             <td><strong>{row["symbol"]}</strong></td>
                             <td><code style="font-size: 11px;">{row["skip_reason"]}</code></td>
-                            <td class="number">{row["max_multiple"]:.2f}x</td>
-                            <td class="number pnl-{'positive' if row["total_pnl"] > 0 else 'negative' if row["total_pnl"] < 0 else 'neutral'}">{format_money(row["total_pnl"])}</td>
+                            <td class="number">{"n/a" if row.get("no_price") else f'{row["max_multiple"]:.2f}x'}</td>
+                            <td class="number pnl-{'positive' if row["total_pnl"] > 0 else 'negative' if row["total_pnl"] < 0 else 'neutral'}">{"n/a (no price)" if row.get("no_price") else format_money(row["total_pnl"])}</td>
                         </tr>
             ''' for _, row in missed_a_df.iterrows()]) + """
                     </tbody>
