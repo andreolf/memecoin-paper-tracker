@@ -12,7 +12,8 @@ import pytest
 # Add parent directory to path to import refresh module
 sys.path.insert(0, str(Path(__file__).parent.parent / 'scripts'))
 from refresh import (calculate_strategy_a, calculate_strategy_b, calculate_strategy_c, calculate_strategy_d, 
-                    calculate_strategy_e, parse_narrative_score, format_zurich_time, target_first, STOP_AE)
+                    calculate_strategy_e, parse_narrative_score, format_zurich_time, target_first, STOP_AE,
+                    calculate_strategy_v2, is_v2_alert, skip_reason_of, v2_summary, STOP_V2, V2_RESULT_COLS)
 
 
 class TestStrategyA:
@@ -261,11 +262,14 @@ class TestStrategyE:
         assert result['narrative_score'] == 4
         assert result['hit_target'] == True
         assert result['hit_stop'] == False  # Not reported since target was hit
-        assert result['kept_moonbag'] == False  # Moonbag exited at 5.7x (>= 5x)
+        assert result['kept_moonbag'] == True  # Moonbag is never sold at the peak any more
+        assert result['moonbag_hit_5x'] == True
         
-        # 85% sold at 2x + 15% moonbag at 5.7x
-        # Should be a significant profit
-        assert result['total_pnl'] > 10
+        # 85% sold at 2x (realized $7.6772) + 15% moonbag marked at current 0.4x:
+        # 1.46325 tokens * 0.4 = 0.5853 - 1.5 cost basis = -0.9147 unrealized
+        assert abs(result['realized_pnl'] - 7.6772) < 0.01
+        assert abs(result['unrealized_pnl'] - (-0.9147)) < 0.01
+        assert abs(result['total_pnl'] - 6.7625) < 0.01
     
     def test_high_narrative_2x_but_not_5x_moonbag_held(self):
         """Test moonbag is held when 2x reached but not 5x."""
@@ -298,8 +302,8 @@ class TestStrategyE:
         assert abs(result['unrealized_pnl'] - 2.597) < 0.01
         assert abs(result['total_pnl'] - 10.274) < 0.01
     
-    def test_high_narrative_5x_moonbag_exited(self):
-        """Test moonbag exits at 5x+ peak."""
+    def test_high_narrative_5x_moonbag_marked_not_peak(self):
+        """After 5x the moonbag is marked at the current price (unrealized), not sold at the peak."""
         result = calculate_strategy_e(
             alert_price=1.0,
             ath=6.0,  # Hit 6x
@@ -313,21 +317,20 @@ class TestStrategyE:
         assert result['narrative_score'] == 5
         assert result['hit_target'] == True
         assert result['hit_stop'] == False
-        assert result['kept_moonbag'] == False  # Exited because >= 5x
+        assert result['kept_moonbag'] == True  # still held, marked to market
+        assert result['moonbag_hit_5x'] == True
         
         # Entry: $10 - 2.45% = $9.755 in tokens at $1 = 9.755 tokens
         # Sell 85% at $2: 8.29175 tokens * 2 = $16.5835
         # Exit cost: 16.5835 * 0.0245 = $0.4063
         # Realized from 85%: 16.5835 - 0.4063 - 8.5 = $7.6772
         
-        # Moonbag: 15% = 1.46325 tokens exited at 6x ($6) = $8.7795
-        # Exit cost: 8.7795 * 0.0245 = $0.2151
-        # Moonbag realized: 8.7795 - 0.2151 - 1.5 = $7.0644
-        
-        # Total realized: 7.6772 + 7.0644 = $14.7416
-        assert abs(result['realized_pnl'] - 14.7416) < 0.01
-        assert result['unrealized_pnl'] == 0
-        assert abs(result['total_pnl'] - 14.7416) < 0.01
+        # Moonbag: 15% = 1.46325 tokens marked at the current $5.5 (not the $6 peak) = $8.0479
+        # Unrealized vs $1.5 cost basis: $6.5479 (no exit cost: not sold)
+        # Total: 7.6772 + 6.5479 = $14.2251
+        assert abs(result['realized_pnl'] - 7.6772) < 0.01
+        assert abs(result['unrealized_pnl'] - 6.5479) < 0.01
+        assert abs(result['total_pnl'] - 14.2251) < 0.01
 
 
 class TestDataParsing:
@@ -738,10 +741,64 @@ class TestRegressionDashboardCrash:
         # ATH proves we hit 2x before crashing
         assert result_arena['hit_target'] == True
         assert result_arena['hit_stop'] == False  # Target prioritized since ATH >= 2x
-        assert result_arena['kept_moonbag'] == False  # Moonbag exited at 5.7x (>= 5x)
+        assert result_arena['kept_moonbag'] == True  # moonbag held, marked at current 0.3x (not the 5.7x peak)
         
-        # 85% at 2x + 15% at 5.7x should be profitable
-        assert result_arena['total_pnl'] > 10
+        # 85% at 2x ($7.6772) + 15% moonbag at 0.3x (1.46325*0.3 - 1.5 = -1.0610)
+        assert abs(result_arena['total_pnl'] - 6.6162) < 0.01
+
+
+class TestRulesV2:
+    """Rules V2 (from 2026-10-28T08:39Z): 100% at 2x, -20% stop before 2x, no moonbag, 2.45%/leg cost."""
+
+    def test_is_v2_alert(self):
+        assert is_v2_alert('2026-10-28T08:39:00Z', 'narr 3/5: x') is True
+        assert is_v2_alert('2026-10-28T09:10:11Z', '') is True
+        assert is_v2_alert('2026-10-28T08:38:59Z', 'narr 3/5') is False
+        assert is_v2_alert('2026-10-20T00:00:00Z', 'v2 narr 3/5') is True
+        assert is_v2_alert('2026-10-20T00:00:00Z', 'V2: test') is True
+        assert is_v2_alert('2026-10-20T00:00:00Z', 'EXC narr 4/5') is False
+        assert is_v2_alert('', None) is False
+
+    def test_v2_win(self):
+        r = calculate_strategy_v2(1.0, ath=2.5, min_price=0.9, current_price=1.1, status='active')
+        assert r['hit_target'] and not r['hit_stop']
+        assert abs(r['total_pnl'] - (10 * (2 * 0.9755 ** 2 - 1))) < 0.01   # +$9.03
+
+    def test_v2_stop_at_20(self):
+        r = calculate_strategy_v2(1.0, ath=1.5, min_price=0.79, current_price=0.5, status='active')
+        assert r['hit_stop'] and not r['hit_target']
+        assert abs(r['total_pnl'] - (10 * (0.8 * 0.9755 ** 2 - 1))) < 0.01  # -$2.39
+        # -25% would NOT be a stop under -30% rules, but is under V2
+        r2 = calculate_strategy_v2(1.0, ath=1.2, min_price=0.75, current_price=0.9, status='active')
+        assert r2['hit_stop']
+
+    def test_v2_order(self):
+        both = dict(alert_price=1.0, ath=3.0, min_price=0.5, current_price=0.5, status='active')
+        assert calculate_strategy_v2(**both, target_first=True)['hit_target']
+        assert calculate_strategy_v2(**both, target_first=None)['hit_stop']   # unknown -> stop first
+        row = {'t_2x_utc': '2026-10-28T09:05:00Z', 't_stop20_utc': '2026-10-28T09:01:00Z'}
+        assert target_first(row, 't_2x_utc', 't_stop20_utc') is False
+
+    def test_v2_summary(self):
+        import pandas as pd
+        rows = []
+        for ath, mn, cur in [(2.5, 0.9, 1.0), (1.2, 0.7, 0.5), (1.3, 0.9, 1.1)]:
+            r = calculate_strategy_v2(1.0, ath, mn, cur, 'active')
+            rows.append({'ca': 'x', 'symbol': 'X', 'alert_type': 'new', 'alert_time_utc': '2026-10-28T09:00:00Z',
+                         'max_multiple': ath, 'is_exc': False, 'entry_price': 1.0, 'no_price': False, **r})
+        s = v2_summary(pd.DataFrame(rows, columns=V2_RESULT_COLS))
+        assert (s['n'], s['wins'], s['stops'], s['open'], s['target']) == (3, 1, 1, 1, 50)
+        assert abs(s['win_rate'] - 50.0) < 1e-9
+        assert 20 < s['breakeven_wr'] < 22
+        empty = v2_summary(pd.DataFrame(columns=V2_RESULT_COLS))
+        assert empty['n'] == 0 and empty['win_rate'] is None and empty['total'] == 0
+
+    def test_skip_reason_only_leading_skip_removed(self):
+        assert skip_reason_of('skip dev-out, narr 3/5: x') == 'dev-out'
+        assert skip_reason_of('cluster skip chase: 2 trusted wallets (32mR 99 USD @212k, 4Bc4') == \
+            'cluster skip chase: 2 trusted wallets (32mR 99 USD @212k'
+        assert skip_reason_of('Skip bot 50% + dev-out') == 'bot 50% + dev-out'
+        assert skip_reason_of('') == 'unknown'
 
 
 class TestMoneyFormatting:

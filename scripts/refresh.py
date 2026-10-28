@@ -7,6 +7,7 @@ Fetches current prices, tracks performance, simulates strategies, and generates 
 import csv
 import json
 import os
+import re
 import sys
 import time
 from collections import defaultdict
@@ -48,6 +49,17 @@ TOUCH_MAX_AGE_H = 7 * 24 # stop extending the order-check window after this
 TOUCH_MAX_PAGES = 4      # 1000-min pages fetched per coin per run
 TOUCH_LEVELS = {'t_1_5x_utc': 1.5, 't_2x_utc': 2.0, 't_stop30_utc': 0.7, 't_stop50_utc': 0.5}
 TOUCH_PAIRS = [('t_1_5x_utc', 't_stop50_utc'), ('t_2x_utc', 't_stop50_utc'), ('t_2x_utc', 't_stop30_utc')]
+# Rules V2 (approved 2026-10-28 16:39 WITA = 08:39 UTC, after the post-mortem): entry = logged live price
+# (price_usd); sell 100% at the first touch of 2x, or stop at the first touch of 0.80x (-20%) before 2x; no moonbag.
+# Cost = the same 0.45% fee + 2% slippage per leg (~4.9% round trip) as the post-mortem's realistic model.
+# Applies to alerts at/after V2_START_UTC or whose reason starts with 'v2'. Older alerts keep A/E (-30%) accounting.
+V2_START_UTC = "2026-10-28T08:39:00Z"
+STOP_V2 = 0.8
+V2_TARGET_TRADES = 50   # pre-registered paper test length
+# The -20% touch is only tracked for V2 alerts (older rows were already decided against -30%/-50%).
+TOUCH_LEVELS_V2 = {**TOUCH_LEVELS, 't_stop20_utc': 0.8}
+TOUCH_PAIRS_V2 = TOUCH_PAIRS + [('t_2x_utc', 't_stop20_utc')]
+TOUCH_COLS = ['touch_cover_end_utc'] + list(TOUCH_LEVELS_V2)
 PUMP_SUPPLY = 1e9  # pump.fun total supply: price = MC / 1e9
 
 
@@ -60,6 +72,30 @@ def num(v, default: Optional[float] = 0.0) -> Optional[float]:
     if f != f or f in (float('inf'), float('-inf')):
         return default
     return f
+
+
+def is_v2_alert(alert_time, reason) -> bool:
+    """Rules V2 alert: reason starts with 'v2' (case-insensitive), or alert time at/after V2_START_UTC."""
+    r = '' if reason is None or str(reason) == 'nan' else str(reason)
+    if r.strip().lower().startswith('v2'):
+        return True
+    t = '' if alert_time is None or str(alert_time) == 'nan' else str(alert_time).strip()
+    try:
+        at = datetime.fromisoformat(t.replace('Z', '+00:00'))
+        if at.tzinfo is None:
+            at = at.replace(tzinfo=timezone.utc)
+        return at >= datetime.fromisoformat(V2_START_UTC.replace('Z', '+00:00'))
+    except ValueError:
+        return False
+
+
+def skip_reason_of(reason) -> str:
+    """Skip reason shown for a missed call: the first comma-separated part of `reason`, with only a LEADING
+    'skip ' removed (e.g. 'skip dev-out' -> 'dev-out'; 'cluster skip chase: ...' stays as written)."""
+    r = '' if reason is None or str(reason) == 'nan' else str(reason)
+    first = r.split(',', 1)[0]
+    out = re.sub(r'^\s*skip\s+', '', first, flags=re.IGNORECASE).strip()
+    return out or 'unknown'
 
 
 def is_pump_ca(ca) -> bool:
@@ -243,15 +279,18 @@ def _touch_pools(ca: str) -> Optional[List[str]]:
     return pools
 
 
-def update_first_touches(ca: str, alert_time: str, alert_price: float, existing: Dict) -> Dict:
+def update_first_touches(ca: str, alert_time: str, alert_price: float, existing: Dict, v2: bool = False) -> Dict:
     """
     First-touch order check. Keeps a contiguous window [alert, touch_cover_end_utc] covered by 1-min candles
     (all relevant pools merged) and records the first minute each level in TOUCH_LEVELS was touched
     (high >= target / low <= stop). Extends the window by up to TOUCH_MAX_PAGES x 1000 min per run until every
     (target, stop) pair in TOUCH_PAIRS is decided, the window reaches now, or the alert is TOUCH_MAX_AGE_H old.
     On any API failure the previous values are kept. Returns the touch columns.
+    v2=True also tracks the -20% level (t_stop20_utc) and requires the (2x, -20%) pair to be decided.
     """
-    cols = ['touch_cover_end_utc'] + list(TOUCH_LEVELS)
+    levels = TOUCH_LEVELS_V2 if v2 else TOUCH_LEVELS
+    pairs = TOUCH_PAIRS_V2 if v2 else TOUCH_PAIRS
+    cols = TOUCH_COLS
     out = {c: (existing.get(c) or '') for c in cols}
     for c in cols:
         if str(out[c]) == 'nan':
@@ -262,7 +301,7 @@ def update_first_touches(ca: str, alert_time: str, alert_price: float, existing:
     end_cap = min(now_ts, alert_ts + TOUCH_MAX_AGE_H * 3600)
 
     def decided():
-        return all(out[t] or out[st] for t, st in TOUCH_PAIRS)
+        return all(out[t] or out[st] for t, st in pairs)
 
     cover = int(datetime.fromisoformat(out['touch_cover_end_utc'].replace('Z', '+00:00')).timestamp()) \
         if out['touch_cover_end_utc'] else alert_min
@@ -288,7 +327,7 @@ def update_first_touches(ca: str, alert_time: str, alert_price: float, existing:
             ts, high, low = int(c[0]), float(c[2]), float(c[3])
             if ts < alert_min or ts < cover - 60 or ts > before:
                 continue
-            for col, lvl in TOUCH_LEVELS.items():
+            for col, lvl in levels.items():
                 if out[col]:
                     continue
                 # the alert-minute candle may hold pre-alert trades: use it for stops (conservative) but not targets
@@ -657,7 +696,8 @@ def calculate_strategy_e(alert_price: float, ath: float, min_price: float, curre
     For narrative >= 4/5:
     - Stop loss (stop_mult; dashboard -30%, old row -50%) applies to whole position before 2x
     - At 2x: sell 85%, keep 15% moonbag
-    - Moonbag exits at later max_multiple, only if it reached >= 5x
+    - Moonbag is marked to the actual current price (0 if dead) as unrealized P&L. It is NOT sold at the
+      peak after 5x any more (that flattered E: nobody sells the exact top). moonbag_hit_5x is reported for info.
     - After 2x, moonbag has no stop
     - Both 2x and stop reached: 2x only if target_first is True, else stop first
     
@@ -735,17 +775,7 @@ def calculate_strategy_e(alert_price: float, ath: float, min_price: float, curre
         exit_cost = exit_value * TOTAL_COST_PCT
         realized_pnl = exit_value - exit_cost - (initial_stake * 0.85)
         remaining_tokens = remaining_tokens * 0.15
-        
-        # Moonbag exit logic: only if reached >= 5x
-        if max_multiple >= 5.0:
-            # Exit moonbag at the max multiple achieved
-            moonbag_exit_price = alert_price * max_multiple
-            
-            moonbag_exit_value = remaining_tokens * moonbag_exit_price
-            moonbag_exit_cost = moonbag_exit_value * TOTAL_COST_PCT
-            moonbag_pnl = moonbag_exit_value - moonbag_exit_cost - (initial_stake * 0.15)
-            realized_pnl += moonbag_pnl
-            remaining_tokens = 0
+        # Moonbag stays open: marked to market below (no exit at the peak)
     elif hit_stop:
         # Stopped out completely at the stop (before reaching 2x)
         exit_value = remaining_tokens * stop_price
@@ -781,7 +811,46 @@ def calculate_strategy_e(alert_price: float, ath: float, min_price: float, curre
         "hit_target": hit_target,
         "hit_stop": hit_stop and not hit_target,
         "narrative_score": narrative_score,
-        "kept_moonbag": hit_target and narrative_score >= 4 and max_multiple < 5.0 and remaining_tokens > 0,
+        "kept_moonbag": bool(hit_target and remaining_tokens > 0),
+        "moonbag_hit_5x": bool(hit_target and max_multiple >= 5.0),
+    }
+
+
+V2_RESULT_COLS = ['ca', 'symbol', 'alert_type', 'alert_time_utc', 'max_multiple', 'is_exc', 'entry_price', 'no_price',
+                  'realized_pnl', 'unrealized_pnl', 'total_pnl', 'multiple', 'hit_target', 'hit_stop']
+
+
+def calculate_strategy_v2(alert_price: float, ath: float, min_price: float, current_price: float, status: str,
+                          target_first: Optional[bool] = None) -> Dict:
+    """
+    Rules V2: sell 100% at the first touch of 2x; stop at the first touch of 0.80x (-20%) if it comes before 2x.
+    No moonbag. $10 stake, 0.45% fee + 2% slippage per leg (~4.9% round trip, post-mortem realistic cost).
+    Both levels reached: 2x counts only if target_first is True (1-min candle first touch), else stop first.
+    Neither reached: open, marked to market (0 if dead).
+    """
+    return calculate_strategy_a(alert_price, ath, min_price, current_price, status,
+                                stop_mult=STOP_V2, target_first=target_first)
+
+
+def v2_summary(v2_df: pd.DataFrame) -> Dict:
+    """Rules V2 scoreboard: trades out of V2_TARGET_TRADES, wins (2x) / stops (-20%) / open, win rate on closed
+    trades, realized + open P&L at $10/trade (realistic cost included)."""
+    priced = v2_df[~v2_df['no_price'].astype(bool)] if len(v2_df) else v2_df
+    n = len(v2_df)
+    wins = int(priced['hit_target'].astype(bool).sum()) if len(priced) else 0
+    stops = int(priced['hit_stop'].astype(bool).sum()) if len(priced) else 0
+    closed = wins + stops
+    realized = float(priced['realized_pnl'].sum()) if len(priced) else 0.0
+    unrealized = float(priced['unrealized_pnl'].sum()) if len(priced) else 0.0
+    # breakeven win rate: win = 2 * 0.9755^2 - 1, loss = 0.8 * 0.9755^2 - 1 (fraction of stake)
+    keep = (1 - 0.0045 - SLIPPAGE_PCT) ** 2
+    w, l = 2.0 * keep - 1, 1 - STOP_V2 * keep
+    return {
+        'n': n, 'target': V2_TARGET_TRADES, 'wins': wins, 'stops': stops, 'closed': closed,
+        'open': n - closed, 'win_rate': (wins / closed * 100) if closed else None,
+        'realized': realized, 'unrealized': unrealized, 'total': realized + unrealized,
+        'avg_closed': (realized / closed) if closed else None, 'breakeven_wr': l / (w + l) * 100,
+        'win_usd': 10 * w, 'loss_usd': -10 * l,
     }
 
 
@@ -834,6 +903,7 @@ def save_calls(calls: List[Dict]):
         'status', 'last_updated_utc',
         # first-touch order check (UTC minute of first 1-min candle touching the level; '' = not in window)
         'touch_cover_end_utc', 't_1_5x_utc', 't_2x_utc', 't_stop30_utc', 't_stop50_utc',
+        't_stop20_utc',  # Rules V2 alerts only
     ]
     
     with open(CALLS_CSV, 'w', newline='') as f:
@@ -927,7 +997,8 @@ def refresh_data():
         prev_max_multiple = num(existing.get('max_multiple'), 0.0) if alert_price > 0 else 0.0
         max_multiple = max(max_multiple, prev_max_multiple)
         
-        touches = update_first_touches(ca, alert_time, alert_price, existing)
+        touches = update_first_touches(ca, alert_time, alert_price, existing,
+                                       v2=is_v2_alert(alert_time, alert.get('reason')))
 
         updated_calls.append({
             **touches,
@@ -990,6 +1061,24 @@ def generate_dashboard():
     
     # Identify EXC (exception) calls in real alerts
     df_real['is_exc'] = df_real['reason'].str.startswith('EXC narr', na=False)
+    # Rules V2 alerts are scored separately (V2 exit); A-E strategy tables keep the pre-V2 history only
+    df_real['is_v2'] = [is_v2_alert(t, r) for t, r in zip(df_real['alert_time_utc_alert'], df_real['reason'])]
+    df_missed['is_v2'] = [is_v2_alert(t, r) for t, r in zip(df_missed['alert_time_utc_alert'], df_missed['reason'])]
+    df_v2 = df_real[df_real['is_v2']].copy()
+    df_pre = df_real[~df_real['is_v2']].copy()
+    results_v2 = []
+    for _, row in df_v2.iterrows():
+        base = {'ca': row['ca'], 'symbol': row['symbol_alert'], 'alert_type': row['alert_type'],
+                'alert_time_utc': row['alert_time_utc_alert'], 'max_multiple': row['max_multiple'],
+                'is_exc': row['is_exc'], 'entry_price': row['price_usd'], 'no_price': not row['has_price']}
+        if not row['has_price']:
+            results_v2.append({**base, 'realized_pnl': 0.0, 'unrealized_pnl': 0.0, 'total_pnl': 0.0,
+                               'multiple': 0.0, 'hit_target': False, 'hit_stop': False})
+            continue
+        results_v2.append({**base, **calculate_strategy_v2(
+            row['price_usd'], row['ath_since_alert'], row['min_since_alert'], row['current_price_usd'],
+            row['status'], target_first=target_first(row, 't_2x_utc', 't_stop20_utc'))})
+    results_v2_df = pd.DataFrame(results_v2, columns=V2_RESULT_COLS)
     
     # Calculate all strategies for each REAL alert
     results_a = []  # Sell ALL at 2x
@@ -1001,7 +1090,7 @@ def generate_dashboard():
     results_a_old = []  # A with the old -50% stop (comparison)
     results_e_old = []  # E with the old -50% stop (comparison)
     
-    for _, row in df_real[df_real['has_price']].iterrows():
+    for _, row in df_pre[df_pre['has_price']].iterrows():
         tf_2x_30 = target_first(row, 't_2x_utc', 't_stop30_utc')
         tf_2x_50 = target_first(row, 't_2x_utc', 't_stop50_utc')
         tf_15_50 = target_first(row, 't_1_5x_utc', 't_stop50_utc')
@@ -1121,26 +1210,32 @@ def generate_dashboard():
     # Calculate Strategy A for MISSED calls (for comparison only)
     missed_results_a = []
     for _, row in df_missed.iterrows():
-        # Extract skip reason (first part of reason field)
-        reason_parts = row['reason'].split(',', 1)
-        skip_reason = reason_parts[0].replace('skip ', '').strip() if reason_parts else 'unknown'
+        # Extract skip reason (first part of reason field, leading 'skip ' removed)
+        skip_reason = skip_reason_of(row['reason'])
+        row_v2 = bool(row['is_v2'])
         if not row['has_price']:
             # No usable entry price: keep the row visible, without performance
             missed_results_a.append({
                 'ca': row['ca'], 'symbol': row['symbol_alert'], 'alert_time_utc': row['alert_time_utc_alert'],
-                'max_multiple': 0.0, 'skip_reason': skip_reason, 'no_price': True,
+                'max_multiple': 0.0, 'skip_reason': skip_reason, 'no_price': True, 'is_v2': row_v2,
                 'realized_pnl': 0.0, 'unrealized_pnl': 0.0, 'total_pnl': 0.0, 'multiple': 0.0,
                 'hit_target': False, 'hit_stop': False,
             })
             continue
-        strat_a = calculate_strategy_a(
-            row['price_usd'],
-            row['ath_since_alert'],
-            row['min_since_alert'],
-            row['current_price_usd'],
-            row['status'],
-            stop_mult=STOP_AE, target_first=target_first(row, 't_2x_utc', 't_stop30_utc')
-        )
+        # Would-be P&L under the rules live at the time: V2 exit for V2-era skips, else A (-30%)
+        if row_v2:
+            strat_a = calculate_strategy_v2(
+                row['price_usd'], row['ath_since_alert'], row['min_since_alert'], row['current_price_usd'],
+                row['status'], target_first=target_first(row, 't_2x_utc', 't_stop20_utc'))
+        else:
+            strat_a = calculate_strategy_a(
+                row['price_usd'],
+                row['ath_since_alert'],
+                row['min_since_alert'],
+                row['current_price_usd'],
+                row['status'],
+                stop_mult=STOP_AE, target_first=target_first(row, 't_2x_utc', 't_stop30_utc')
+            )
         missed_results_a.append({
             'ca': row['ca'],
             'symbol': row['symbol_alert'],
@@ -1148,6 +1243,7 @@ def generate_dashboard():
             'max_multiple': row['max_multiple'],
             'skip_reason': skip_reason,
             'no_price': False,
+            'is_v2': row_v2,
             **strat_a
         })
     
@@ -1160,12 +1256,12 @@ def generate_dashboard():
     generate_charts(results_a_df, results_b_df, results_c_df, results_d_df, results_e_df)
     
     # Generate README
-    generate_readme(results_a_df, results_b_df, results_c_df, results_d_df, results_e_df, df_real, df_missed, missed_a_df,
-                    results_a_old_df, results_e_old_df)
+    generate_readme(results_a_df, results_b_df, results_c_df, results_d_df, results_e_df, df_pre, df_missed, missed_a_df,
+                    results_a_old_df, results_e_old_df, results_v2_df=results_v2_df)
     
     # Generate HTML dashboard
     generate_html(results_a_df, results_b_df, results_c_df, results_d_df, results_e_df, df_real, df_missed, missed_a_df,
-                  results_a_old_df, results_e_old_df)
+                  results_a_old_df, results_e_old_df, results_v2_df=results_v2_df)
     
     print("Dashboard generation complete!")
 
@@ -1267,8 +1363,41 @@ def format_zurich_time(utc_str: str) -> str:
 def generate_readme(results_a_df: pd.DataFrame, results_b_df: pd.DataFrame, results_c_df: pd.DataFrame, 
                    results_d_df: pd.DataFrame, results_e_df: pd.DataFrame, full_df: pd.DataFrame, 
                    df_missed: pd.DataFrame, missed_a_df: pd.DataFrame,
-                   results_a_old_df: Optional[pd.DataFrame] = None, results_e_old_df: Optional[pd.DataFrame] = None):
+                   results_a_old_df: Optional[pd.DataFrame] = None, results_e_old_df: Optional[pd.DataFrame] = None,
+                   results_v2_df: Optional[pd.DataFrame] = None):
     """Generate README.md with summary tables."""
+    if results_v2_df is None:
+        results_v2_df = pd.DataFrame(columns=V2_RESULT_COLS)
+    v2 = v2_summary(results_v2_df)
+    v2_wr = f"{v2['win_rate']:.1f}%" if v2['win_rate'] is not None else "n/a"
+    v2_rows = ""
+    for _, r in results_v2_df.sort_values('alert_time_utc').iterrows():
+        if r['no_price']:
+            out = "no price"
+        elif r['hit_target']:
+            out = "2x ✅"
+        elif r['hit_stop']:
+            out = "stop −20%"
+        else:
+            out = "open"
+        v2_rows += (f"| {r['symbol']} | {format_zurich_time(str(r['alert_time_utc']))} | {r['max_multiple']:.2f}x | "
+                    f"{out} | {format_money(r['total_pnl'])} |\n")
+    v2_table = ("| Token | Alert | Max multiple | Outcome | P&L |\n|---|---|---|---|---|\n" + v2_rows) if v2_rows \
+        else "_No V2 trades yet._\n"
+    v2_section = f"""## 🆕 Regole V2 (since 2026-10-28 09:39 CET / 16:39 WITA)
+
+Pre-registered paper test after the post-mortem. **Entry** = logged live price. **Exit** = sell 100% at the first touch of **2x**, or stop at the first touch of **−20%** (0.80x) before 2x. **No moonbag.** **Cost** 0.45% fee + 2% slippage per leg (~4.9% round trip). Applies to alerts from 2026-10-28T08:39Z (or reason starting with `v2`); scored separately from the pre-V2 history below.
+
+| V2 trades | Wins (2x) | Stops (−20%) | Open | Win rate (closed) | Realized P&L | Open (mark) | Total @ $10/trade |
+|---|---|---|---|---|---|---|---|
+| **{v2['n']} / {v2['target']}** | {v2['wins']} | {v2['stops']} | {v2['open']} | {v2_wr} | {format_money(v2['realized'])} | {format_money(v2['unrealized'])} | **{format_money(v2['total'])}** |
+
+Per trade: a 2x win nets {format_money(v2['win_usd'])}, a −20% stop {format_money(v2['loss_usd'])} → breakeven win rate ≈ {v2['breakeven_wr']:.0f}%.
+
+{v2_table}
+---
+
+"""
     
     # Calculate overall stats for all strategies (REAL alerts only)
     total_alerts = len(results_a_df)
@@ -1297,7 +1426,7 @@ def generate_readme(results_a_df: pd.DataFrame, results_b_df: pd.DataFrame, resu
         'E: 2x + moonbag': {
             'df': results_e_df,
             'pnl_col': 'total_pnl',
-            'desc': 'Sell 85% at 2x, keep 15% moonbag (narr ≥4), -30% stop before 2x'
+            'desc': 'Sell 85% at 2x, keep 15% moonbag (narr ≥4, marked at current price, not at peak), -30% stop before 2x'
         }
     }
     if results_a_old_df is not None and len(results_a_old_df) > 0:
@@ -1326,13 +1455,13 @@ This dashboard tracks theoretical P&L from Solana memecoin alerts. **No actual t
 
 **Last Updated:** {format_zurich_time(datetime.now(timezone.utc).isoformat())}
 
-**Tracked:** {total_alerts} real alerts{f" + {len(df_missed)} missed (filtered out)" if len(df_missed) > 0 else ""}
+**Tracked:** {total_alerts} pre-V2 real alerts + {v2['n']} Rules V2 trades{f" + {len(df_missed)} missed (filtered out)" if len(df_missed) > 0 else ""}
 
 ---
 
-## 📊 Strategy Comparison
+{v2_section}## 📊 Strategy Comparison (pre-V2 history)
 
-All strategies use:
+Pre-V2 real alerts only (before 2026-10-28T08:39Z). All strategies use:
 - **$10 stake per alert**
 - **0.45% trading fee + 2% slippage per leg**
 - **Stop-loss**: A and E use **-30%** (changed from -50% on 2026-10-24 16:35 CEST, applied to all alerts here); B, C and the "(−50%, old)" comparison rows use -50%
@@ -1466,9 +1595,79 @@ def format_money(value: float) -> str:
         return f"${value:.2f}"
 
 
+def build_v2_section_html(results_v2_df: pd.DataFrame) -> str:
+    """'Regole V2' scoreboard section (kept separate from the pre-V2 history)."""
+    v2 = v2_summary(results_v2_df)
+    cls = lambda x: 'positive' if x > 0 else 'negative' if x < 0 else 'neutral'
+    wr = f"{v2['win_rate']:.1f}%" if v2['win_rate'] is not None else "n/a"
+    progress = min(100.0, v2['n'] / v2['target'] * 100) if v2['target'] else 0
+    rows = []
+    for _, r in results_v2_df.sort_values('alert_time_utc').iterrows():
+        if r['no_price']:
+            pill = '<span class="status-pill status-dead">No price</span>'
+        elif r['hit_target']:
+            pill = '<span class="status-pill status-hit-target">Hit 2x</span>'
+        elif r['hit_stop']:
+            pill = '<span class="status-pill status-stopped">Stopped −20%</span>'
+        else:
+            pill = '<span class="status-pill status-active">Open</span>'
+        rows.append(f"""
+                        <tr>
+                            <td><strong>{r['symbol']}</strong></td>
+                            <td>{format_zurich_time(str(r['alert_time_utc']))}</td>
+                            <td class="number">{r['max_multiple']:.2f}x</td>
+                            <td>{pill}</td>
+                            <td class="number pnl-{cls(r['total_pnl'])}">{format_money(r['total_pnl'])}</td>
+                        </tr>""")
+    table = ("""
+            <div style="overflow-x: auto; margin-top: 20px;">
+                <table class="calls-table">
+                    <thead><tr><th>Token</th><th>Alert Time</th><th>Max Multiple</th><th>Outcome</th><th>P&L (V2)</th></tr></thead>
+                    <tbody>""" + ''.join(rows) + """
+                    </tbody>
+                </table>
+            </div>""") if rows else '<p style="color: var(--text-muted); text-align: center; padding: 16px;">No V2 trades yet. The first alert after 2026-10-28 09:39 CET will appear here.</p>'
+    return f"""
+        <!-- Rules V2 -->
+        <div class="section" id="regole-v2" style="border-color: var(--accent);">
+            <h2 class="section-title">🆕 Regole V2 <span class="active-badge">Active Rule</span></h2>
+            <p style="margin-bottom: 16px; color: var(--text-secondary); font-size: 14px;">
+                Since 2026-10-28 09:39 CET (16:39 WITA). Entry = logged live price. Sell 100% at the first touch of 2x, or stop at the first touch of −20% before 2x. No moonbag. Cost 0.45% fee + 2% slippage per leg (~4.9% round trip), $10/trade. Scored separately from the pre-V2 history below.
+            </p>
+            <div class="kpi-grid" style="margin-bottom: 0;">
+                <div class="kpi-card">
+                    <div class="kpi-label">V2 Trades</div>
+                    <div class="kpi-value neutral">{v2['n']} / {v2['target']}</div>
+                    <div class="strategy-bar-container"><div class="strategy-bar" style="width: {progress:.1f}%; background: var(--accent);"></div></div>
+                    <div class="kpi-sub">{v2['wins']} × 2x • {v2['stops']} × −20% • {v2['open']} open</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Win Rate</div>
+                    <div class="kpi-value neutral">{wr}</div>
+                    <div class="kpi-sub">closed trades • breakeven ≈ {v2['breakeven_wr']:.0f}%</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">P&L (realistic)</div>
+                    <div class="kpi-value {cls(v2['total'])}">{format_money(v2['total'])}</div>
+                    <div class="kpi-sub">realized {format_money(v2['realized'])} • open {format_money(v2['unrealized'])}</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Per Trade</div>
+                    <div class="kpi-value neutral" style="font-size: 1.3em;">{format_money(v2['win_usd'])} / {format_money(v2['loss_usd'])}</div>
+                    <div class="kpi-sub">2x win / −20% stop, after costs</div>
+                </div>
+            </div>
+            {table}
+        </div>
+"""
+
+
 def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, results_e_df, full_df, df_missed, missed_a_df,
-                  results_a_old_df=None, results_e_old_df=None):
+                  results_a_old_df=None, results_e_old_df=None, results_v2_df=None):
     """Generate elegant standalone HTML dashboard with modern design."""
+    if results_v2_df is None:
+        results_v2_df = pd.DataFrame(columns=V2_RESULT_COLS)
+    v2_section_html = build_v2_section_html(results_v2_df)
     
     # Calculate KPIs for Strategy A (primary strategy) - REAL alerts only
     total_calls = len(results_a_df)
@@ -1487,7 +1686,8 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, result
     
     # Active count: only truly open positions (not hit stop, not hit target, not dead)
     active_count = 0
-    for _, row in results_a_df.iterrows():
+    for _, row in pd.concat([results_a_df, results_v2_df[~results_v2_df['no_price'].astype(bool)]]
+                            if len(results_v2_df) else [results_a_df]).iterrows():
         if not row['hit_stop'] and not row['hit_target'] and full_df[full_df['ca'] == row['ca']]['status'].iloc[0] == 'active':
             active_count += 1
     
@@ -1528,13 +1728,24 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, result
         is_exc_call = row.get('is_exc', False)
         exc_badge = '<span class="exc-badge" title="Exception call">EXC</span>' if is_exc_call else ''
         
-        # Find corresponding Strategy A result
-        a_row = results_a_df[results_a_df['ca'] == ca].iloc[0] if len(results_a_df[results_a_df['ca'] == ca]) > 0 else None
+        # Find corresponding result: V2 exit for Rules V2 alerts, Strategy A for the pre-V2 history
+        row_v2 = bool(row.get('is_v2', False))
+        src_df = results_v2_df if row_v2 else results_a_df
+        match = src_df[(src_df['ca'] == ca) & (src_df['alert_time_utc'].astype(str) == str(row.get('alert_time_utc_alert')))] \
+            if len(src_df) else src_df
+        if len(match) == 0 and len(src_df):
+            match = src_df[src_df['ca'] == ca]
+        a_row = match.iloc[0] if len(match) > 0 else None
+        if a_row is not None and row_v2 and bool(a_row.get('no_price', False)):
+            a_row = None
+        if row_v2:
+            exc_badge += ' <span class="testing-badge" title="Rules V2: 2x / -20%, no moonbag">V2</span>'
+        stop_label = '−20%' if row_v2 else '−30%'
         
         # Determine status pill based on strategy outcome
         if a_row is not None:
             if a_row['hit_stop']:
-                status_pill = '<span class="status-pill status-stopped">Stopped −30%</span>'
+                status_pill = f'<span class="status-pill status-stopped">Stopped {stop_label}</span>'
             elif a_row['hit_target']:
                 status_pill = '<span class="status-pill status-hit-target">Hit 2x</span>'
             elif row['status'] == 'dead':
@@ -2127,6 +2338,7 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, result
             <div class="kpi-card">
                 <div class="kpi-label">Total Calls</div>
                 <div class="kpi-value neutral">{total_calls}</div>
+                <div class="kpi-sub">pre-V2 history</div>
             </div>
             <div class="kpi-card">
                 <div class="kpi-label">Win Rate</div>
@@ -2150,16 +2362,18 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, result
             </div>
         </div>
         
+        {v2_section_html}
+        
         <!-- Strategy Comparison -->
         <div class="section">
-            <h2 class="section-title">Strategy Comparison</h2>
+            <h2 class="section-title">Strategy Comparison (pre-V2 history)</h2>
             <table class="strategy-table">
                 <tbody>
                     {strategy_table_html}
                 </tbody>
             </table>
             <p style="margin-top: 16px; font-size: 13px; color: var(--text-muted);">
-                All strategies: $10 stake, 0.45% fee + 2% slippage per leg. Stop: A/E −30% (since 2026-10-24 16:35 CEST, applied to all alerts); B/C and "(−50%, old)" rows −50%. If both stop and target were reached, the target counts only if 1-min candles show it came first; otherwise stop first.
+                Pre-V2 real alerts only (before 2026-10-28 09:39 CET); KPI cards above are the same history. E's moonbag is marked at the current price (unrealized), not sold at the peak. All strategies: $10 stake, 0.45% fee + 2% slippage per leg. Stop: A/E −30% (since 2026-10-24 16:35 CEST, applied to all alerts); B/C and "(−50%, old)" rows −50%. If both stop and target were reached, the target counts only if 1-min candles show it came first; otherwise stop first.
             </p>
         </div>
         
@@ -2192,7 +2406,7 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, result
                             <th>Current MC</th>
                             <th>Max Multiple</th>
                             <th>Status</th>
-                            <th>P&L (A)</th>
+                            <th>P&L (A / V2)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -2222,7 +2436,7 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, result
         <div class="section">
             <h2 class="section-title">Missed Calls (Filtered Out)</h2>
             <p style="margin-bottom: 16px; color: var(--text-secondary); font-size: 14px;">
-                Coins deliberately skipped by scanner filters. Shows what they would have returned under Strategy A.
+                Coins deliberately skipped by scanner filters. Shows what they would have returned under Strategy A (−30%), or under the V2 exit (2x / −20%) for skips since 2026-10-28 09:39 CET.
             </p>
             
             <div class="kpi-card" style="margin-bottom: 20px;">
@@ -2262,7 +2476,7 @@ def generate_html(results_a_df, results_b_df, results_c_df, results_d_df, result
         
         <footer>
             <p>Paper-trading simulation only • No real trades executed • Data auto-refreshed hourly</p>
-            <p style="margin-top: 8px;">Strategy A: Sell ALL at 2x, −30% stop, 0.45% fee + 2% slippage</p>
+            <p style="margin-top: 8px;">Rules V2 (since 2026-10-28 09:39 CET): sell 100% at 2x, −20% stop, no moonbag • Pre-V2 Strategy A: sell all at 2x, −30% stop • 0.45% fee + 2% slippage per leg</p>
             {f'<p style="margin-top: 8px; color: var(--text-muted);">{exc_count} EXC calls • {missed_count} missed calls tracked</p>' if exc_count > 0 or missed_count > 0 else ''}
             <p style="margin-top: 16px; color: var(--text-muted);">
                 Built with ❤️ by <a href="https://x.com/francescoswiss" target="_blank" rel="noopener" style="color: var(--text-primary); text-decoration: none; transition: opacity 0.2s;">Francesco Andreoli</a>
