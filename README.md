@@ -6,7 +6,7 @@
 
 This dashboard tracks theoretical P&L from Solana memecoin alerts. **No actual trades are executed.**
 
-**Last Updated:** 2026-10-29 12:25 CET
+**Last Updated:** 2026-10-29 13:32 CET
 
 **Tracked:** 20 pre-V2 real alerts + 1 Rules V2 trades + 130 missed (filtered out)
 
@@ -70,7 +70,7 @@ Pre-V2 real alerts only (before 2026-10-28T08:39Z). All strategies use:
 
 | Type | Count | Total P&L | Realized | Unrealized | Win Rate | Avg Max Multiple |
 |------|-------|-----------|----------|------------|----------|------------------|
-| new | 20 | $-83.42 | $-65.81 | $-17.62 | 10.0% | 1.77x |
+| new | 20 | $-83.42 | $-65.81 | $-17.61 | 10.0% | 1.77x |
 
 ### Strategy D: Hold 24h
 
