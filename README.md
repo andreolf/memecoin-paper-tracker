@@ -6,9 +6,9 @@
 
 This dashboard tracks theoretical P&L from Solana memecoin alerts. **No actual trades are executed.**
 
-**Last Updated:** 2026-10-29 07:29 CET
+**Last Updated:** 2026-10-29 07:59 CET
 
-**Tracked:** 20 pre-V2 real alerts + 0 Rules V2 trades + 130 missed (filtered out)
+**Tracked:** 20 pre-V2 real alerts + 1 Rules V2 trades + 130 missed (filtered out)
 
 ---
 
@@ -18,11 +18,13 @@ Pre-registered paper test after the post-mortem. **Entry** = logged live price. 
 
 | V2 trades | Wins (2x) | Stops (−20%) | Open | Win rate (closed) | Realized P&L | Open (mark) | Total @ $10/trade |
 |---|---|---|---|---|---|---|---|
-| **0 / 50** | 0 | 0 | 0 | n/a | $0.00 | $0.00 | **$0.00** |
+| **1 / 50** | 0 | 1 | 0 | 0.0% | −$2.39 | $0.00 | **−$2.39** |
 
 Per trade: a 2x win nets +$9.03, a −20% stop −$2.39 → breakeven win rate ≈ 21%.
 
-_No V2 trades yet._
+| Token | Alert | Max multiple | Outcome | P&L |
+|---|---|---|---|---|
+| Steve | 2026-10-29 07:43 CET | 0.01x | stop −20% | −$2.39 |
 
 ---
 
@@ -43,7 +45,7 @@ Pre-V2 real alerts only (before 2026-10-28T08:39Z). All strategies use:
 | ⭐ A: Sell ALL at 2x | Sell all at 2x, -30% stop | 20 | **$-17.29** | 20.0% | $-0.86 | $9.03 | $-3.34 |
 | B: Sell ALL at +50% | Sell all at 1.5x, -50% stop | 20 | **$-57.26** | 25.0% | $-2.86 | $4.27 | $-5.24 |
 | C: Sell HALF at 2x | Sell half at 2x, hold rest, -50% stop | 20 | **$-83.40** | 10.0% | $-4.17 | $1.07 | $-5.24 |
-| D: Hold 24h | Hold 24h then sell | 20 | **$-157.89** | 5.0% | $-7.89 | $5.78 | $-9.92 |
+| D: Hold 24h | Hold 24h then sell | 20 | **$-157.91** | 5.0% | $-7.90 | $5.78 | $-9.92 |
 | E: 2x + moonbag | Sell 85% at 2x, keep 15% moonbag (narr ≥4, marked at current price, not at peak), -30% stop before 2x | 20 | **$-22.78** | 20.0% | $-1.14 | $9.03 | $-3.34 |
 | A (−50%, old) | A with the old -50% stop (comparison) | 20 | **$-47.74** | 20.0% | $-2.39 | $9.03 | $-5.24 |
 | E (−50%, old) | E with the old -50% stop (comparison) | 20 | **$-53.24** | 20.0% | $-2.66 | $9.03 | $-5.24 |
@@ -74,7 +76,7 @@ Pre-V2 real alerts only (before 2026-10-28T08:39Z). All strategies use:
 
 | Type | Count | Total P&L | Win Rate | Avg Max Multiple |
 |------|-------|-----------|----------|------------------|
-| new | 20 | $-157.89 | 5.0% | 1.77x |
+| new | 20 | $-157.91 | 5.0% | 1.77x |
 
 ---
 
