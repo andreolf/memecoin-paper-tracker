@@ -6,7 +6,7 @@
 
 This dashboard tracks theoretical P&L from Solana memecoin alerts. **No actual trades are executed.**
 
-**Last Updated:** 2026-10-31 23:21 CET
+**Last Updated:** 2026-11-01 01:35 CET
 
 **Tracked:** 20 pre-V2 real alerts + 4 Rules V2 trades + 145 missed (filtered out)
 
@@ -27,7 +27,7 @@ Per trade: a 2x win nets +$9.03, a −20% stop −$2.39 → breakeven win rate �
 | Steve | 2026-10-29 07:43 CET | 1.25x | stop −20% | −$2.39 |
 | laptop | 2026-10-30 15:06 CET | 1.53x | stop −20% | −$2.39 |
 | CIO | 2026-10-30 19:59 CET | 1.10x | stop −20% | −$2.39 |
-| NNN | 2026-10-31 21:15 CET | 2.11x | 2x ✅ | +$9.03 |
+| NNN | 2026-10-31 21:15 CET | 2.52x | 2x ✅ | +$9.03 |
 
 ---
 
