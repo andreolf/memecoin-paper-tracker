@@ -6,9 +6,9 @@
 
 This dashboard tracks theoretical P&L from Solana memecoin alerts. **No actual trades are executed.**
 
-**Last Updated:** 2026-11-03 08:49 CET
+**Last Updated:** 2026-11-03 09:39 CET
 
-**Tracked:** 20 pre-V2 real alerts + 5 Rules V2 trades + 159 missed (filtered out)
+**Tracked:** 20 pre-V2 real alerts + 5 Rules V2 trades + 160 missed (filtered out)
 
 ---
 
