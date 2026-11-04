@@ -202,3 +202,4 @@ alert_time_utc,ca,symbol,name,alert_type,mc_usd,price_usd,liq_usd,age_min,bondin
 2026-11-04T11:13:30Z,3wzW3DUzHRACqNRnJv2U4TpRUpXQe2pD9b2h5MUjpump,AMD,A Meme Dog,missed,81047,0.00008104,31763,2m,100,"skip creator_close (a), narr 3/5: live AMD/meme-dog meta swarm; age~2m mc~1k liq~2k m5 flat; hard skip a"
 2026-11-04T11:13:35Z,2LasZcDUv9dVzmbPyoQk7wwDdVNrN8YC5sZ1zgRXqvTf,AMD,A Meme Dog,missed,92500,0.0000925,34066,22m,100,"skip creator_close (a), narr 3/5: live AMD meta copy swarm; age~22m mc~2k liq~4k; hard skip a"
 2026-11-04T11:14:01Z,F5zDAmmHr4mEpqAYsTxsapckgb51WJxdFswT4AeJpump,RAM,Ram Altman,missed,81271,0.00008127,31829,2m,100,"skip creator_close (a), narr 3/5: live RAM/Altman meta; age~2m mc~1k liq~2k; hard skip a"
+2026-11-04T11:41:34Z,CSwe6DjAr83EzAFpdHQTxCNeSybiAsD233f7fewWpump,AMD,A Meme Dog,missed,83656,0.00008365,32343,6m,,"skip creator_close (a), narr 3/5: live AMD/A Meme Dog meta swarm; age~6m mc~4k liq~2k"
