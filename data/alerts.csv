@@ -294,3 +294,15 @@ python3 log_alert.py \
   --bonding 100 \
   --type missed \
   --reason ""skip bundler~(b)~86% + chase (e) m5~+254%, narr 3/5: live AMD ticker-meme meta (multi-AMD swarm) + site/x; creator_hold; top10~71%; sniper_hold~90%; MC~$173k age~4m liq~$32k migrated pumpswap""73k age~4m liq~2k migrated pumpswap"
+2026-11-04T12:24:26Z,CPZguakzrJSPZDvyB2BY7wdk25eKFwuwtYxSPYHmpump,LEOMAN,Leonida Man,missed,119865,0.0001198,26398,4m,migrated,"skip (b) bun~82%+(e) chase m5~+197%; MC~python3 /home/box/trading-bot/log_alert.py \
+  --type missed \
+  --ca CPZguakzrJSPZDvyB2BY7wdk25eKFwuwtYxSPYHmpump \
+  --symbol LEOMAN \
+  --name ""Leonida Man"" \
+  --mc 119865 \
+  --price 0.0001198 \
+  --liq 26398 \
+  --age 4m \
+  --bonding migrated \
+  --reason ""skip (b) bun~82%+(e) chase m5~+197%; MC~$120k age~4m liq~$26k; Leonida/GTA6 live meta narr~3"" \
+  2>&120k age~4m liq~6k; Leonida/GTA6 live meta narr~3"
