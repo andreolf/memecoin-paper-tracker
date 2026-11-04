@@ -283,3 +283,14 @@ python3 log_alert.py \
   --age 3 \
   --reason ""skip chase (e) m5~+65%, narr 3/5: live Dumocrat political-meme swarm (clear leader vs copies); age~3m mc~$65k liq~$19k; top10~67%""
 9k; top10~67%"
+2026-11-04T12:19:50Z,5tdWkbqhTqVyPmksqX8WVKrHbjjqmvQfrMGwZoZPpump,AMD,Always Moist Downstairs,missed,173334,0.0001733,32120,4m,100,"skip bundler~(b)~86% + chase (e) m5~+254%, narr 3/5: live AMD ticker-meme meta (multi-AMD swarm) + site/x; creator_hold; top10~71%; sniper_hold~90%; MC~python3 /home/box/trading-bot/log_alert.py \
+  --ca 5tdWkbqhTqVyPmksqX8WVKrHbjjqmvQfrMGwZoZPpump \
+  --symbol AMD \
+  --name ""Always Moist Downstairs"" \
+  --mc 173334 \
+  --price 0.0001733 \
+  --liq 32120 \
+  --age 4m \
+  --bonding 100 \
+  --type missed \
+  --reason ""skip bundler~(b)~86% + chase (e) m5~+254%, narr 3/5: live AMD ticker-meme meta (multi-AMD swarm) + site/x; creator_hold; top10~71%; sniper_hold~90%; MC~$173k age~4m liq~$32k migrated pumpswap""73k age~4m liq~2k migrated pumpswap"
