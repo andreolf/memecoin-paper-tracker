@@ -243,3 +243,43 @@ python3 log_alert.py \
   --age 3 \
   --reason ""skip chase (e) m5~+65%, narr 3/5: live Dumocrat political-meme swarm (clear leader vs copies); age~3m mc~$65k liq~$19k; top10~67%""
 17k liq~6k; high entrapment/rug flags"
+2026-11-04T11:41:45Z,3Y2TGH3AvFFEL48rZfCgtiNJZJ84Eu75akYWmhyXpump,Dumocrat,Dumocrat,missed,65479,0.00006547,19462,3m,,"skip chase (e) m5~+65%, narr 3/5: live Dumocrat political-meme swarm (clear leader vs copies); age~3m mc~5k liq~cd /home/box/trading-bot
+NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+echo ""NOW=$NOW""
+
+# 1) AMD creator_close
+python3 log_alert.py \
+  --type missed \
+  --ca CSwe6DjAr83EzAFpdHQTxCNeSybiAsD233f7fewWpump \
+  --symbol AMD \
+  --name ""A Meme Dog"" \
+  --mc 83656 \
+  --price 0.00008365 \
+  --liq 32343 \
+  --age 6 \
+  --reason ""skip creator_close (a), narr 3/5: live AMD/A Meme Dog meta swarm; age~6m mc~$84k liq~$32k""
+
+# 2) Claude creator_close + dump
+python3 log_alert.py \
+  --type missed \
+  --ca tTrig69bMyzAT2vpUhqi36seyJV5jJ5Vcoj6GSxpump \
+  --symbol Claude \
+  --name ""Be Nice To Claude"" \
+  --mc 116647 \
+  --price 0.0001166 \
+  --liq 26141 \
+  --age 12 \
+  --reason ""skip creator_close (a) + m5~-29% off-ATH (c), narr 3/5: live Claude/Anthropic meta (clear leader); age~12m mc~$117k liq~$26k; high entrapment/rug flags""
+
+# 3) Dumocrat chase
+python3 log_alert.py \
+  --type missed \
+  --ca 3Y2TGH3AvFFEL48rZfCgtiNJZJ84Eu75akYWmhyXpump \
+  --symbol Dumocrat \
+  --name Dumocrat \
+  --mc 65479 \
+  --price 0.00006547 \
+  --liq 19462 \
+  --age 3 \
+  --reason ""skip chase (e) m5~+65%, narr 3/5: live Dumocrat political-meme swarm (clear leader vs copies); age~3m mc~$65k liq~$19k; top10~67%""
+9k; top10~67%"
