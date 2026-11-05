@@ -322,3 +322,4 @@ python3 log_alert.py \
 2026-11-05T12:47:16Z,52e9K9NtXT9m6yX4ykfKE4WuGc8uocjTNuvfsHbWpump,Bank,Bankcoin,missed,101744,0.0001017,25474,28m,,skip (d) equal Bankcoin swarm (not clear leader vs HBZKP/Gt7Bm/others) on Paraguay Ueno-bank meta; narr 3/5 live catalyst
 2026-11-05T12:47:19Z,XeZDzWwBB2boZCY68ggxKL1dp2nBCxXAiEENQYMpump,BARRON,Official Barron Trump,missed,136845,0.0001369,28587,5m,,skip (b)+(d)+(e) bun 61% + recycled Barron Trump copy swarm + 5m +243%; narr 3/5 Barron meta
 2026-11-05T12:47:20Z,7C8Up3xn1S5AHngdBjY3CRF3tezbe9rR37UvtpRopump,CATE,Catecoin,missed,118581,0.0001186,26513,7m,,skip (d) Catecoin copy vs Solana leader Ai66LHZG (~$38M) + entrap~53%; narr 3/5 Cate meta but not leader
+2026-11-05T13:03:32Z,HD3YicTJQ6feHEWx65Me9zZx4QADnufzgnaRxYrzpump,CR7,Cristiano Ronaldo,missed,122811,0.0001228,27037,10m,migrated,skip (d) 3rd CR7/Ronaldo copy vs GpsEw/GmyYMh + entrap~78%; narr 3/5
