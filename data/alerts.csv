@@ -316,3 +316,4 @@ python3 log_alert.py \
 2026-11-05T11:48:41Z,5qXePcVyNkm7grDosb832i7Rz7zNDrvF5GYUHYPvpump,GTA 6 Coin,GTA6,missed,110755,0.0001107,25735,6m,100,skip (a)+(b)+(d) creator bal 0 + rat 72% + entrap 77% + equal-size twin 3ag13 (~$111k); narr 3/5 live GTA6 meta not leader
 2026-11-05T11:59:39Z,5Qs5xz4TEbhtoVmCv5TRN2zVSYYi4AjUp3uhyZ6xpump,GTA 6 Coin,GTA6,missed,119009,0.0001190,26733.83,4m,migrated,skip (b)+(d)+(e) bundler 56% + equal GTA copy (not leader vs 5qXe/twins) + 5m +197%; narr 3/5 live GTA6 meta
 2026-11-05T11:59:40Z,ETLSMv4F85GtBa2Csh87WYjhErmGGEXmRfqdzzgppump,CR,Cristiano Ronaldo,missed,111867,0.0001119,25870.17,2m,migrated,skip (b)+(d)+(e) bundler 87% + equal CR copy (leader GpsEw) + 5m +179%; narr 3/5 Ronaldo meta
+2026-11-05T12:15:42Z,F7CSEdSHM4jxhqN8fS6o1SUDagnZUhaC4ZTfbvBJpump,WOKE,Woke is Back,missed,78802,0.00007880,21948,21m,100,skip (a) creator_close bal 0 + 2nd WOKE copy vs Hf1Kcpqd; narr 3/5 woke-is-back meta
