@@ -305,3 +305,4 @@ python3 log_alert.py \
 2026-11-05T08:59:29Z,Cw5wb48AndzrwnnCDDLFHEQwq5kuQjQskuvLFvJNpump,GTA 6 Coin,GTA6,missed,162813,0.0001628,31607,16m,migrated,"skip (b) rat/insider traders 79% + entrapment 0.79 + wash-like flow (10k swaps / ~$27k vol, fees $0.78); narr 3/5 GTA VI 2 weeks out live meta, clear leader"
 2026-11-05T09:27:17Z,Gv7yBedbS7q7zcDjdh1EsYdFoovmWZaXBYpTEGBCpump,GTA 6 Coin,GTA6,missed,126852,0.0001269,27683,6m,100,"skip (d) late copy vs multi-M GTA6 leaders + entrap 0.78, narr 3/5: live GTA6 meta but not leader"
 2026-11-05T09:58:58Z,68rLvLNhTTKfv4k4i3b6BtHAfXNpGzp3ndatq6Gxpump,GTA 6 Coin,GTA6,missed,148302,0.0001483,30098,13m,,skip (b) rat traders 79% + entrapment 0.79; narr 3/5: live GTA6 meta but wash-like rat flow
+2026-11-05T09:59:00Z,kiRneDAfiNr5NJFJfQd1gkDsMLsbxnZ9PB7ua1cpump,SpaceX,SpaceX official,missed,149097,0.0001490,30209,18m,,skip (a) creator_close + entrapment 0.82 + ~38% off ATH dump; narr 3/5: SpaceX meta but dev out
