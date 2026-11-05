@@ -336,3 +336,4 @@ python3 log_alert.py \
 2026-11-05T14:47:09Z,Eq8UZ5oadKvLtiDnPrb41dwDwU4BuB2tFXRT8rw8pump,AMD,A Meme Democrats,missed,201560,0.0002016,35131,6m,,"v2 skip (a)+(b) creator_close + bundler 71%/top10 65%/sniper70%; narr 3/5: Dems political meme ticker AMD, leader, high vol"
 2026-11-05T14:47:11Z,J4rP3zhpvk3r2tFasTAecU4g9gnxDDpaR2xAXnz873fu,LIBRE,Libre Paraguay,missed,58088,0.00005808,18115,12m,,"v2 skip (e) m5 +39% chase; narr 3/5: Paraguay Libre/bank meta, liquid leader among copies"
 2026-11-05T15:15:34Z,C1nrtoJHLHUyt3Gm4Pu3TUHBVytFMpzNNEgJHa5Cpump,EAGLE,The Eagle,missed,53515,0.00005362,17157,28m,migrated,skip (a)+(b) creator_close + bot~52%/bun~19%; narr 3/5: WhiteHouse eagle/article live political meta
+2026-11-05T15:15:36Z,8Mi9E1V2bdPeAaRkR5yxUsAvpzP6UBUEEUrYmgKNpump,WEALTH,Wealth Coin,missed,206792,0.0002067,36079,10m,migrated,"skip (a)+(c) creator_close + ~41% off ATH; narr 3/5: Wealth Coin X community, liquid leader"
