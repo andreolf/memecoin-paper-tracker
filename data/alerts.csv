@@ -437,3 +437,64 @@ date -u +%Y-%m-%dT%H:%M:%SZ
 TZ=Asia/Makassar date '+%H:%M WITA'
 TZ=Europe/Zurich date '+%H:%M Zurigo'
 11k liq~5k not clear leader"
+2026-11-05T21:12:12Z,Ge9u2FUrrcDVZmEpQgyRqPhcxXABWDz4kJWQ2KQBpump,penguin,The Penguin,missed,184833,0.0001849,34391,33m,100,"skip (c) ~68% off ATH (ATH~83k vs live~# Backup state then log 3 missed
+cp /home/box/trading-bot/state.json /home/box/trading-bot/state.json.bak-scan-20261106-0510
+
+python3 /home/box/trading-bot/log_alert.py \
+  --type missed \
+  --ca CsnZJW2fGZsBShxiyoptd2fYDkKrDspsoT8AcfbQpump \
+  --symbol ""GTA 6 Coin"" \
+  --name ""GTA6"" \
+  --mc 110846 \
+  --price 0.0001109 \
+  --liq 24859 \
+  --age 5 \
+  --bonding 100 \
+  --reason ""skip (b)+(d) bot/copy swarm m5 buys/sells ~1307/1152 top10~35-69%; live GTA6 meta; age~5m MC~$111k liq~$25k not clear leader""
+
+python3 /home/box/trading-bot/log_alert.py \
+  --type missed \
+  --ca Ge9u2FUrrcDVZmEpQgyRqPhcxXABWDz4kJWQ2KQBpump \
+  --symbol ""penguin"" \
+  --name ""The Penguin"" \
+  --mc 184833 \
+  --price 0.0001849 \
+  --liq 34391 \
+  --age 33 \
+  --bonding 100 \
+  --reason ""skip (c) ~68% off ATH (ATH~$583k vs live~$185k) m5~-51%; age~33m MC/liq ok; dump after spike""
+
+python3 /home/box/trading-bot/log_alert.py \
+  --type missed \
+  --ca 6CJ4KBTxxNYhWMVRvbASVNwVfcDiZa2viaE8MdaGpump \
+  --symbol ""ZOH"" \
+  --name ""Zohcoin"" \
+  --mc 63300 \
+  --price 0.00006777 \
+  --liq 18462 \
+  --age 56 \
+  --bonding 100 \
+  --reason ""skip (e) m5~+32% chase (>30%); COGE-quoted pair; age~56m MC~$63k; Zohran/COGE-adjacent meta""
+
+# Update last_run_utc only (log_alert may already patch missed)
+python3 << 'PY'
+import json
+from datetime import datetime, timezone
+path='/home/box/trading-bot/state.json'
+with open(path) as f: s=json.load(f)
+s['last_run_utc']='2026-11-05T21:10:00Z'
+# ensure breaker unchanged
+print('v2.alerts', s.get('v2'))
+print('breaker.on', s['breaker']['on'], 'streak', s['breaker'].get('current_streak_stops'))
+print('missed has GTA6', 'CsnZJW2fGZsBShxiyoptd2fYDkKrDspsoT8AcfbQpump' in s.get('missed',{}))
+print('missed has penguin', 'Ge9u2FUrrcDVZmEpQgyRqPhcxXABWDz4kJWQ2KQBpump' in s.get('missed',{}))
+print('missed has ZOH', '6CJ4KBTxxNYhWMVRvbASVNwVfcDiZa2viaE8MdaGpump' in s.get('missed',{}))
+print('last_run', s['last_run_utc'])
+with open(path,'w') as f: json.dump(s, f, indent=1)
+print('state written')
+PY
+
+date -u +%Y-%m-%dT%H:%M:%SZ
+TZ=Asia/Makassar date '+%H:%M WITA'
+TZ=Europe/Zurich date '+%H:%M Zurigo'
+85k) m5~-51%; age~33m MC/liq ok; dump after spike"
