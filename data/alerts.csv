@@ -368,3 +368,4 @@ python3 log_alert.py \
 2026-11-05T19:45:28Z,CSuXQBBuruY57GK1VhP7rtyLx1YZNZL6qJq4PizDpump,OpenAI,OpenAI,missed,130081,0.00013,27122,7m,migrated,"skip (b) entrap/insider~75%; narr 3/5: live OpenAI/Altman ticker meta, liquid migrated under 1h"
 2026-11-05T19:45:29Z,6HTqcMDdjQWxX6oBHVfvtwAzgYQYpRtkXwvSLzTSpump,MrBeast,MrBeast,missed,138386,0.0001383,28020,14m,migrated,skip (a)+(b) creator_bal 0 + entrap/insider~78%; narr 3/5: MrBeast celeb meme liquid migrated under 1h
 2026-11-05T19:57:12Z,38sFzqRSerGhztsgsqQ26ToeAz5UU5ggTS6f5946pump,LUCIA,Lucia the Baddie,missed,123098,0.0001231,26671.09,36m,,skip (a) creator_close / creator balance 0; dev out hard skip V2
+2026-11-05T19:57:14Z,44d5iecvQpn8BALBjie9vpr2nqULYAsPYzgQ2DfTpump,s/acc,Space Acceleration,missed,64874,0.00006497,18984.98,10m,,"skip (a) creator balance 0; no verified fresh catalyst/live meta, narrative insufficient"
