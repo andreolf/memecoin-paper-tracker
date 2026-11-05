@@ -498,3 +498,4 @@ date -u +%Y-%m-%dT%H:%M:%SZ
 TZ=Asia/Makassar date '+%H:%M WITA'
 TZ=Europe/Zurich date '+%H:%M Zurigo'
 85k) m5~-51%; age~33m MC/liq ok; dump after spike"
+2026-11-05T21:12:13Z,6CJ4KBTxxNYhWMVRvbASVNwVfcDiZa2viaE8MdaGpump,ZOH,Zohcoin,missed,63300,0.00006777,18462,56m,100,skip (e) m5~+32% chase (>30%); COGE-quoted pair; age~56m MC~3k; Zohran/COGE-adjacent meta
