@@ -325,3 +325,4 @@ python3 log_alert.py \
 2026-11-05T13:03:32Z,HD3YicTJQ6feHEWx65Me9zZx4QADnufzgnaRxYrzpump,CR7,Cristiano Ronaldo,missed,122811,0.0001228,27037,10m,migrated,skip (d) 3rd CR7/Ronaldo copy vs GpsEw/GmyYMh + entrap~78%; narr 3/5
 2026-11-05T13:19:50Z,25qhsa6X1ovqDCYFWHYGEhw9vx7D5a1vdiaUy7hzpump,CR7,Cristiano Ronaldo,missed,104469,0.0001045,24819,4m,,skip (b)+(d)+(e) bun 49% + CR7/Ronaldo copy vs GpsEw + 5m +164%; narr 3/5 Ronaldo meta
 2026-11-05T13:19:51Z,J2cogdSGUqjLrQdUYxQuZGBRLFgYK1qK8CZxXckepump,Deadpool,Deadpool Pony,missed,57966,0.00005805,18186,8m,migrated,skip (a)+(e) creator_close + 5m +46%; narr 3/5 Deadpool Pony (visegrad24) meta
+2026-11-05T13:38:27Z,BFJd5mWCvu7yMivKCM7Xh8Dx17GgBbwaxcmFX3Aqpump,PILLHEADS,Pillheads,missed,78201,0.00007822,24354,11m,100,skip (a)+(b)+(c)+(e) creator_close + bun47%/bot87% + m5-40% off ATH; narr 3/5 live Pillheads multi-chain meta
