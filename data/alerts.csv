@@ -368,3 +368,4 @@ python3 log_alert.py \
 2026-11-05T21:12:10Z,CsnZJW2fGZsBShxiyoptd2fYDkKrDspsoT8AcfbQpump,GTA 6 Coin,GTA6,missed,110846,0.0001109,24859,5m,100,skip (b)+(d) bot/copy swarm m5 buys/sells ~1307/1152 top10~35-69%; live GTA6 meta; age~5m MC~111k liq~25k not clear leader
 2026-11-05T21:12:12Z,Ge9u2FUrrcDVZmEpQgyRqPhcxXABWDz4kJWQ2KQBpump,penguin,The Penguin,missed,184833,0.0001849,34391,33m,100,skip (c) ~68% off ATH (ATH~583k vs live~185k) m5~-51%; age~33m MC/liq ok; dump after spike
 2026-11-05T21:12:13Z,6CJ4KBTxxNYhWMVRvbASVNwVfcDiZa2viaE8MdaGpump,ZOH,Zohcoin,missed,63300,0.00006777,18462,56m,100,skip (e) m5~+32% chase (>30%); COGE-quoted pair; age~56m MC~63k; Zohran/COGE-adjacent meta
+2026-11-05T22:04:07Z,ES9FintJPSGcoVuJhkLAsfSoug6B69bDoeTb3hJYpump,COGE,Cougar Of Great Excitement,missed,171706,0.0001717,31970.62,11m,migrated,skip (b)+(d) bun~40% copy vs $2.3M COGE leader (8UQdy); live COGE meta; age~11m MC~$172k liq~$32k m5~-20% h1~+280 buys>sells
