@@ -1047,3 +1047,4 @@ echo DONE
 date -u +%Y-%m-%dT%H:%M:%SZ
 # verify last_run
 python3 -c ""import json;s=json.load(open('/home/box/trading-bot/state.json'));print(s['last_run_utc'], s['v2'], s['breaker']['on'], s['breaker'].get('current_streak_stops'), s['gmgn_run_counter'], s['gmgn_last_security'])""66k migrated"
+2026-11-06T13:52:51Z,aRNPo5iJZ1bfTzhWY8KFSxe7o41bBtYAupwg5fxpump,Trump,Trump Coin,missed,76936,0.00007793,20693,36m,100,v2 skip (c)+(d): ~63% off ATH + entrap~82% Trump brand-copy; age~36m MC~7k
