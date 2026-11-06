@@ -383,3 +383,14 @@ python3 log_alert.py \
 2026-11-05T23:27:50Z,BPud5gHnFXBixRzGXZzdyMrZnKYBN86zzfv5ATSpump,MrBeast,MrBeast,missed,70241,0.00007028,19423,20m,,v2 skip (b) bun~41% top10~44% + wash-like m5 buys/sells~1435/1342; MrBeast celeb meta; age~20m MC~$70k liq~$19k; no socials
 2026-11-05T23:46:27Z,F55yBFwc5pZ4KCU23KSZNYit129FuUNzgiYGnizNpump,MrBeast,MrBeast,missed,107484,0.0001074,24411,5m,,skip (b)+(e) entrap~53% bun~36% top10~36% + m5~+190% chase; MrBeast celeb meta narr3/5; age~5m MC~$107k liq~$24k holders thin; no socials
 2026-11-05T23:46:28Z,7zd3MMVgw6RbuAJkcRgc17hJBHdT9XnjYjNyGZCgpump,GTA 6 Coin,GTA6,missed,94922,0.00009496,22852,4m,,skip (b)+(e) bun~85% top10~86% + m5~+156% chase; GTA6 live meta narr3/5; age~4m MC~$95k liq~$23k holders thin cbal~0; no socials
+2026-11-04T12:19:50Z,5tdWkbqhTqVyPmksqX8WVKrHbjjqmvQfrMGwZoZPpump,AMD,Always Moist Downstairs,missed,173334,0.0001733,32120,4m,100,"skip bundler~(b)~86% + chase (e) m5~+254%, narr 3/5: live AMD ticker-meme meta (multi-AMD swarm) + site/x; creator_hold; top10~71%; sniper_hold~90%; MC~python3 /home/box/trading-bot/log_alert.py \
+  --ca 5tdWkbqhTqVyPmksqX8WVKrHbjjqmvQfrMGwZoZPpump \
+  --symbol AMD \
+  --name ""Always Moist Downstairs"" \
+  --mc 173334 \
+  --price 0.0001733 \
+  --liq 32120 \
+  --age 4m \
+  --bonding 100 \
+  --type missed \
+  --reason ""skip bundler~(b)~86% + chase (e) m5~+254%, narr 3/5: live AMD ticker-meme meta (multi-AMD swarm) + site/x; creator_hold; top10~71%; sniper_hold~90%; MC~$173k age~4m liq~$32k migrated pumpswap""73k age~4m liq~2k migrated pumpswap"
