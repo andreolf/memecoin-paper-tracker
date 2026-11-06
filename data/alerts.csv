@@ -454,3 +454,31 @@ python3 /home/box/trading-bot/log_alert.py \
 2026-11-06T02:02:00Z,Fyff8ZbT3omcwoqmAgLbXH25tzqQp1FoM4UYWtePpump,Chika,The Market Chan,missed,85538,0.00008561,22565,9m,100,"skip (b)+(d) entrap~56% top10~40% + copy swarm vs larger Chika pairs (Bhy41~$95k liq, 7RSJA~$197k); Chika anime/meta narr3/5; age~9m MC~$86k liq~$23k holders~302; h1~+125% wash-like m5 buys/sells~572/360; no strong unique catalyst"
 2026-11-06T02:14:49Z,78ThnYbKk5dquDUbMEwg4XURvK1RdkctiHivyeUEpump,Kimchi,Kimchi,missed,167634,0.0001678,31715,5m,,v2 skip (d) equal copy vs Kimchi DpX3hk~$40.8M; age~5m MC~$168k liq~$32k; food meme narr~2/5 no fresh catalyst
 2026-11-06T02:14:50Z,YRUDb5EoQtKRw9tUmX5L2xGcWeCkdkxNmxmp1oBpump,FOMO,FOMO,missed,180944,0.0001810,32309,1m,,v2 skip (e) m5~+55% max chase +(d) FOMO swarm; age~1m MC~$181k liq~$32k; narr~2/5 generic FOMO
+2026-11-06T02:41:30Z,CkQamF6TpKcWoE9J6JSBPhsqHNkdNnZQRRktb9Jdpump,GTA6,GTA VI,missed,149473,0.0001495,29267,23m,100,"v2 skip (b)+(d) entrap~78% GTA6 copy swarm no clear leader; age~23m MC~cd /tmp/scan1138
+# Log missed GTA6 CkQa and GTA 6 Coin 6kN5
+python3 /home/box/trading-bot/log_alert.py \
+  --type missed \
+  --ca CkQamF6TpKcWoE9J6JSBPhsqHNkdNnZQRRktb9Jdpump \
+  --symbol GTA6 \
+  --name ""GTA VI"" \
+  --mc 149473 \
+  --price 0.0001495 \
+  --liq 29267 \
+  --age 23m \
+  --bonding 100 \
+  --reason ""v2 skip (b)+(d) entrap~78% GTA6 copy swarm no clear leader; age~23m MC~$149k liq~$29k m5~+3%; narr 3/5 live GTA VI meta"" \
+  2>&1 | tee log_missed_gta6.txt
+
+python3 /home/box/trading-bot/log_alert.py \
+  --type missed \
+  --ca 6kN5Z6N8JJYoN8zgcrXvYKgTUfwoKFnSKRDScoaypump \
+  --symbol ""GTA 6 Coin"" \
+  --name GTA6 \
+  --mc 163153 \
+  --price 0.0001632 \
+  --liq 30650 \
+  --age 29m \
+  --bonding 100 \
+  --reason ""v2 skip (b)+(d) entrap~80% GTA6 copy swarm no clear leader; age~29m MC~$163k liq~$31k m5~+8%; narr 3/5 live GTA VI meta"" \
+  2>&1 | tee log_missed_gta6coin.txt
+49k liq~9k m5~+3%; narr 3/5 live GTA VI meta"
