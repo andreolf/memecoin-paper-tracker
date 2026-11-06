@@ -1334,3 +1334,4 @@ wait $PID3; echo FOMO_LOG:$?
 2026-11-06T22:16:26Z,PgKNd27UcZCdawjzyUCXLsest4kDtiCFQskojU9pump,Leonida,State of Leonida,missed,87991,0.0000880,22098,16m,,v2 skip (a)+(b): DEV_OUT creator_close + entrap~80%; age~16m MC~$88k liq~$22k m5~-5% GTA Leonida meta bun0
 2026-11-06T22:28:04Z,FJ8YMaW5kZY23DjCmFU1UCGCMqtmA16qG7PkVKfpump,Diamond,Diamond,missed,198513,0.0001985,33929,19m,,v2 skip (a)+(b)+(d): DEV_OUT creator_close + entrap~80% + not leader vs ~$640k Diamond; age~19m MC~$199k liq~$34k m5~+21% bun~9% bot~0
 2026-11-06T22:28:06Z,J4fWoyVecozyBj83NFk3qzHZR7qkt92YAhgoFvGzcash,MOOH,Mert The Pooh,missed,55541,0.00005554,18866,20m,,v2 skip (a)+(b): DEV_OUT creator_close + bot~51% bun~18%; age~20m MC~$55k liq~$19k m5~-3% Mert persona meme leader
+2026-11-06T22:45:30Z,AJxSiK2e2Kkx1iocjyXSBZLtz8szyDBFiUkepUzkpump,WHITE,WHITE MONSTER,missed,92134,0.00009213,5418,24m,3,"skip brand-copy (d), narr 3/5: live WHITE MONSTER meta but not leader vs ~$471k 2XCfvnMisH…"
