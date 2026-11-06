@@ -482,3 +482,31 @@ python3 /home/box/trading-bot/log_alert.py \
   --reason ""v2 skip (b)+(d) entrap~80% GTA6 copy swarm no clear leader; age~29m MC~$163k liq~$31k m5~+8%; narr 3/5 live GTA VI meta"" \
   2>&1 | tee log_missed_gta6coin.txt
 49k liq~9k m5~+3%; narr 3/5 live GTA VI meta"
+2026-11-06T02:41:32Z,6kN5Z6N8JJYoN8zgcrXvYKgTUfwoKFnSKRDScoaypump,GTA 6 Coin,GTA6,missed,163153,0.0001632,30650,29m,100,"v2 skip (b)+(d) entrap~80% GTA6 copy swarm no clear leader; age~29m MC~cd /tmp/scan1138
+# Log missed GTA6 CkQa and GTA 6 Coin 6kN5
+python3 /home/box/trading-bot/log_alert.py \
+  --type missed \
+  --ca CkQamF6TpKcWoE9J6JSBPhsqHNkdNnZQRRktb9Jdpump \
+  --symbol GTA6 \
+  --name ""GTA VI"" \
+  --mc 149473 \
+  --price 0.0001495 \
+  --liq 29267 \
+  --age 23m \
+  --bonding 100 \
+  --reason ""v2 skip (b)+(d) entrap~78% GTA6 copy swarm no clear leader; age~23m MC~$149k liq~$29k m5~+3%; narr 3/5 live GTA VI meta"" \
+  2>&1 | tee log_missed_gta6.txt
+
+python3 /home/box/trading-bot/log_alert.py \
+  --type missed \
+  --ca 6kN5Z6N8JJYoN8zgcrXvYKgTUfwoKFnSKRDScoaypump \
+  --symbol ""GTA 6 Coin"" \
+  --name GTA6 \
+  --mc 163153 \
+  --price 0.0001632 \
+  --liq 30650 \
+  --age 29m \
+  --bonding 100 \
+  --reason ""v2 skip (b)+(d) entrap~80% GTA6 copy swarm no clear leader; age~29m MC~$163k liq~$31k m5~+8%; narr 3/5 live GTA VI meta"" \
+  2>&1 | tee log_missed_gta6coin.txt
+63k liq~1k m5~+8%; narr 3/5 live GTA VI meta"
