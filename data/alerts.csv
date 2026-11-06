@@ -1293,3 +1293,4 @@ wait $PID3; echo FOMO_LOG:$?
 2026-11-06T18:15:12Z,Gg9QvrkJhpZ5XhAQvYWSZw9aW19KfxTU19q1xpHjpump,X,X(Twitter）,missed,133496,0.0001335,27629,7m,100,v2 skip (d)+(e): Twitter/X brand-copy + live ~29% above discovery MC ($103k→$133k); age~7m MC~$133k liq~$28k; creator_hold bot0 bun~18%; leader of tiny X(Twitter) swarm but brand-copy + chase
 2026-11-06T18:27:40Z,Hbgvqrk9UJLQZQSsdxMugyTY8jTR5RBKWgaQNYkEpump,Laura,LAURA,missed,184404,0.000184404,39164,11m,100,v2 (a)+(b) DEV_OUT+bot~90%+bun~60%
 2026-11-06T18:27:41Z,8XLS8ViymbBpLNHPW82D6v7ATYA5JjbmckiWbyQmpump,$GTA6,GTA6,missed,68340,6.834e-05,0,5m,2,v2 (d)+(e) brand-copy vs GTA6 leaders + m5 chase ~+2599%
+2026-11-06T18:27:43Z,4UYUvMA6vL3uHBnRDSYXfazedV4kvyG5dPnKeb7fLoat,Pooh,Xi Xing Pooh,missed,63004,,0,16m,52,v2 (a)+(b)+(e) DEV_OUT+bot~54%+chase~+180%
