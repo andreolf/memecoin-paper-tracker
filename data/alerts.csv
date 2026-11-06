@@ -303,16 +303,16 @@ alert_time_utc,ca,symbol,name,alert_type,mc_usd,price_usd,liq_usd,age_min,bondin
 2026-11-05T23:46:27Z,F55yBFwc5pZ4KCU23KSZNYit129FuUNzgiYGnizNpump,MrBeast,MrBeast,missed,107484,0.0001074,24411,5m,,skip (b)+(e) entrap~53% bun~36% top10~36% + m5~+190% chase; MrBeast celeb meta narr3/5; age~5m MC~$107k liq~$24k holders thin; no socials
 2026-11-05T23:46:28Z,7zd3MMVgw6RbuAJkcRgc17hJBHdT9XnjYjNyGZCgpump,GTA 6 Coin,GTA6,missed,94922,0.00009496,22852,4m,,skip (b)+(e) bun~85% top10~86% + m5~+156% chase; GTA6 live meta narr3/5; age~4m MC~$95k liq~$23k holders thin cbal~0; no socials
 2026-11-04T12:19:50Z,5tdWkbqhTqVyPmksqX8WVKrHbjjqmvQfrMGwZoZPpump,AMD,Always Moist Downstairs,missed,173334,0.0001733,32120,4m,100,"skip bundler~(b)~86% + chase (e) m5~+254%, narr 3/5: live AMD ticker-meme meta (multi-AMD swarm) + site/x; creator_hold; top10~71%; sniper_hold~90%; MC~python3 /home/box/trading-bot/log_alert.py \
-2026-11-06T00:29:08Z,DiHr8eYwqiwY61yUqKGiuGmtRYKFKbtGd5yXW8rqpump,GTA 6 Coin,GTA6,missed,108206,0.0001082,24618,7m,100,"skip (b)+(d) bun~64% top10~64% + GTA6 copy swarm no clear leader; narr 3/5: live GTA6 meta; age~7m MC~# Log missed GTA6 DiHr + EFIL; then patch state
+2026-11-06T00:29:08Z,DiHr8eYwqiwY61yUqKGiuGmtRYKFKbtGd5yXW8rqpump,GTA 6 Coin,GTA6,missed,108206,0.0001082,24618,7m,100,skip (b)+(d) bun~64% top10~64% + GTA6 copy swarm no clear leader; narr 3/5: live GTA6 meta; age~7m MC~# Log missed GTA6 DiHr + EFIL; then patch state"
 2026-11-06T00:29:09Z,9PoXLpV5vMutnk9Hh9KGNBy5qdH6P4VugxhQtFE8puSH,EFIL,efiL ym deniuR nufpmuP,missed,163502,0.0001635,4177,7m,94,"skip (a) creator_close/cbal0; mayhem 'Pumpfun Ruined my Life' reverse-name meta narr3/5; age~7m MC~# Log missed GTA6 DiHr + EFIL; then patch state
 2026-11-06T01:16:29Z,9q17YrKCeBtSZ6qkBTmttyZnh5ZVEapF6TwTrtX2pump,Chika,Chika,missed,85934,8.6e-05,23598,25m,100,skip (a)+(b) creator_close + bot~60% bun~34%; anime CollapseAnime meta narr3/5; age~25m MC~$86k liq~$24k m5~flat; holders thin
 2026-11-06T01:16:31Z,BCxTfpfWmzfMKqUVAogUG37jdmrEkHtNv5d37bJrpump,MrBeast,MrBeast,missed,202038,0.000202,34287,36m,100,skip (b) entrap~78% rat~78% + cbal0; MrBeast celeb meta narr3/5; age~36m MC~$202k liq~$34k m5~+8% wash-like buys/sells~1613/1579
 2026-11-06T01:44:34Z,6jUEK6NeVB7apaMsU6r4C36pTQ9DdzAryX6gv25gpump,GTA 6 Coin,GTA6,missed,111626,0.0001116,25010,7m,,skip (b)+(d) bun~57% + GTA6 copy swarm no clear leader (4kjruq ~$10M); narr 3/5: live GTA6 meta; age~6m MC~$110k liq~$25k
-2026-11-06T02:02:00Z,Fyff8ZbT3omcwoqmAgLbXH25tzqQp1FoM4UYWtePpump,Chika,The Market Chan,missed,85538,0.00008561,22565,9m,100,"skip (b)+(d) entrap~56% top10~40% + copy swarm vs larger Chika pairs (Bhy41~$95k liq, 7RSJA~$197k); Chika anime/meta narr3/5; age~9m MC~$86k liq~$23k holders~302; h1~+125% wash-like m5 buys/sells~572/360; no strong unique catalyst"
+2026-11-06T02:02:00Z,Fyff8ZbT3omcwoqmAgLbXH25tzqQp1FoM4UYWtePpump,Chika,The Market Chan,missed,85538,0.00008561,22565,9m,100,skip (b)+(d) entrap~56% top10~40% + copy swarm vs larger Chika pairs (Bhy41~$95k liq"," 7RSJA~$197k); Chika anime/meta narr3/5; age~9m MC~$86k liq~$23k holders~302; h1~+125% wash-like m5 buys/sells~572/360; no strong unique catalyst"""
 2026-11-06T02:14:49Z,78ThnYbKk5dquDUbMEwg4XURvK1RdkctiHivyeUEpump,Kimchi,Kimchi,missed,167634,0.0001678,31715,5m,,v2 skip (d) equal copy vs Kimchi DpX3hk~$40.8M; age~5m MC~$168k liq~$32k; food meme narr~2/5 no fresh catalyst
 2026-11-06T02:14:50Z,YRUDb5EoQtKRw9tUmX5L2xGcWeCkdkxNmxmp1oBpump,FOMO,FOMO,missed,180944,0.0001810,32309,1m,,v2 skip (e) m5~+55% max chase +(d) FOMO swarm; age~1m MC~$181k liq~$32k; narr~2/5 generic FOMO
 2026-11-06T02:41:30Z,CkQamF6TpKcWoE9J6JSBPhsqHNkdNnZQRRktb9Jdpump,GTA6,GTA VI,missed,149473,0.0001495,29267,23m,100,"v2 skip (b)+(d) entrap~78% GTA6 copy swarm no clear leader; age~23m MC~cd /tmp/scan1138
-2026-11-06T02:41:32Z,6kN5Z6N8JJYoN8zgcrXvYKgTUfwoKFnSKRDScoaypump,GTA 6 Coin,GTA6,missed,163153,0.0001632,30650,29m,100,"v2 skip (b)+(d) entrap~80% GTA6 copy swarm no clear leader; age~29m MC~cd /tmp/scan1138
+2026-11-06T02:41:32Z,6kN5Z6N8JJYoN8zgcrXvYKgTUfwoKFnSKRDScoaypump,GTA 6 Coin,GTA6,missed,163153,0.0001632,30650,29m,100,v2 skip (b)+(d) entrap~80% GTA6 copy swarm no clear leader; age~29m MC~cd /tmp/scan1138"
 2026-11-06T02:59:11Z,oCZHH8HnEBCPipEGdEcP3f45pQAaM7nh7P6EkRPpump,AMD,A Meme Dacity,missed,336215,0.0003363,45462,28m,100,v2 skip (d) AMD A-Meme-* copy vs A Meme Dog DDmG… ~$670k leader; age~28m MC~$336k liq~$45k m5~+19%; narr 2/5 ticker swarm no unique catalyst
 2026-11-06T02:59:12Z,wKjmjpWVYaAvU3t4TTeeEqCudo6VQjFi26GzMQUpump,Speed,IShowSpeed,missed,81421,0.00008248,21407,38m,100,v2 skip (b) entrap~85% IShowSpeed celeb copy; age~38m MC~$81k liq~$21k m5~-74%; narr 3/5 celeb meta
 2026-11-06T02:59:14Z,Fs1Tk9vW2PSn8ZiJT4gnzs6J9QxVHxWLpeuKkB1spump,CocaCola,CocaCola,missed,125364,0.0001267,26893,46m,100,v2 skip (b) entrap~79% brand/imgdup CocaCola copy; age~46m MC~$125k liq~$27k m5~+6%; narr 2/5 brand meme
@@ -326,16 +326,16 @@ alert_time_utc,ca,symbol,name,alert_type,mc_usd,price_usd,liq_usd,age_min,bondin
 2026-11-06T04:44:53Z,peJMuY4PKQqJ7qNjYAFpueqCsT9TEEw245KTycepump,Claude,Be Nice To Claude,missed,126782,0.0001268,26696.29,7m,100,v2 skip (b) entrap~58% nosocial; age~7m MC~$127k liq~$27k m5~+10% top10~0.3%; narr 3/5 Claude/Anthropic AI meta
 2026-11-06T05:01:36Z,FvEyhDNCyUfahKvbejoqfDvAbudG1QZiMknp78qeNR8d,YAHU,LORD BIG YAHU,missed,131949,0.0001317,1585,4m,88,"v2 skip (a) creator_close + meteora_virtual_curve bonding thin liq~# Log YAHU as missed
 2026-11-06T05:15:17Z,G6L6KBS6wPDzFgzqxtiBq9jz64m5XuTQ1nBMe8Cupump,Robinhood,ROBINHOOD,missed,109032,0.0001090,24616,4m,,v2 skip (b)+(e) bun~53% m5~+194% entrap~40% nosocial; age~4m MC~$109k liq~$24.6k migrated
-2026-11-06T05:15:19Z,i9xQm6MAHDFmfZhDJwKzDvYwHvWvLE9g8mzcJwZpump,AMAZON,"Amazon.com, Inc.",missed,137274,0.0001373,28066,6m,,v2 skip (b)+(e) bun~88% top10~85% holders~27 m5~+33%; age~6m MC~$137k liq~$28k migrated
+2026-11-06T05:15:19Z,i9xQm6MAHDFmfZhDJwKzDvYwHvWvLE9g8mzcJwZpump,AMAZON,Amazon.com"," Inc.""",missed,137274,0.0001373,28066,6m,,v2 skip (b)+(e) bun~88% top10~85% holders~27 m5~+33%; age~6m MC~$137k liq~$28k migrated
 2026-11-06T05:30:10Z,DfQQ81frDoXz1Qppo4oMXXfGLAvRPgwLkbeyecdEpump,A,Coin A,missed,52543,0.00005254,18349,1m,,v2 skip (a)+(e) creator_close/dev out + chase vs discovery (~+35% from ~$39k trench MC) image_dup2; age~1m MC~$52k liq~$18.3k m5_dex~+17% gmgn_m5~+152%; narr weak generic Coin A
 2026-11-06T05:44:26Z,7F5RbFJ4Qx1TNfUia3WCLDs7LyG9eVJaTBNkdmsapump,BPCATE,Looksmax CATE,missed,218777,0.0002187,13782,18m,35,v2 skip (d)+(e) image_dup493 copy + chase vs first_trigger (~$32k→~$219k / vs signal~$159k→+$38%); age~18m MC~$219k gmgn_liq~$13.8k holders~3-4 nosocial; narr weak looksmax cate clone
 2026-11-06T05:44:28Z,CUm7ANEPrmBuH5Dk1v9KEA6psfT9uWhFhDfjQQ4D43DS,TIKTOK,TikTok,missed,94106,0.00009410,1919,15m,98,v2 skip (b) entrap~98% image_dup5231 thin meteora liq~$1.9k nosocial; age~15m MC~$94k; narr weak TikTok name-grab
 2026-11-06T05:44:29Z,3hU5kv4XRBcCm3MfURUxT56Sy1Ln2DkArJGMazEJpump,MCH,MoonChacha,missed,51443,0.00005144,5644,14m,3,v2 skip (a) creator_close + image_dup2632 holders~2-3 bonding thin; age~14m MC~$51k nosocial; narr weak MoonChacha clone
 2026-11-06T06:00:52Z,FKga8jGa9QA1b35Bmf46RuFXg2ixxtCnE6NL33kpump,Claude,Be Nice To Claude,missed,162902,0.0001629,30609,11m,,"v2 skip (a) creator_close bal0 + entrap~58% + image_dup42 + sniper/dev_team~87%; Claude/Anthropic relaunch swarm narr3/5; age~11m MC~NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-2026-11-06T06:00:54Z,AqgiqQfr4LEUkEehtjxA2tatLYQym5Y9ykQ9aJwcpump,GTA 6 Coin,GTA6,missed,103331,0.0001033,23974,16m,,"v2 skip (b)+(d) entrap~72% + insider~72% + washlike m5 buys/sells~971/994 + GTA6 copy swarm no clear leader; narr3/5 live GTA6 meta; age~16m MC~NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+2026-11-06T06:00:54Z,AqgiqQfr4LEUkEehtjxA2tatLYQym5Y9ykQ9aJwcpump,GTA 6 Coin,GTA6,missed,103331,0.0001033,23974,16m,,v2 skip (b)+(d) entrap~72% + insider~72% + washlike m5 buys/sells~971/994 + GTA6 copy swarm no clear leader; narr3/5 live GTA6 meta; age~16m MC~NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 2026-11-06T06:00:55Z,5BWHo2duxhkRR4ftnZWErnB8GoXpFgZ4ZR9UN8LDpump,fun,fun,missed,115095,0.0001150,29307,21m,,"v2 skip (a)+(b) creator_close bal0 + bot~53% + serial creator 13k tokens; weak 'fun' narr; age~21m MC~NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 2026-11-06T06:16:19Z,8toci8PGg3dB6qffaVkdXGpuCJwYYDAWfizcEgPupump,SOXL,SOXL,missed,172672,0.0001781,31931,12m,100,v2 skip (e) MAX CHASE m5_dex~+49% + chase vs first_trigger (~$151k→~$173k ~+15% at signal; later live dump) + vs discovery entry would be chase; semiconductor ETF ticker meta narr3/5 (live stock-ticker meta + memeable) but hard (e); age~12m MC~$173k liq~$32k nosocial; subsequently rugged to ~$1.6k
-2026-11-06T06:16:21Z,7YDDAmhEjVZe34ZXKi1H9q5E3mCbyAAQQwtQMrRNpump,SKHY,SK Hynix,missed,99759,0.00009981,23616,9m,100,"v2 skip narr2/5 gate (live semiconductor/stock-ticker meta with SOXL but no fresh catalyst, nosocial/kol0, top10~65% concentrated); age~9m MC~$100k liq~$24k m5~-3% no chase; fails narr≥3 + point1/2 strength"
+2026-11-06T06:16:21Z,7YDDAmhEjVZe34ZXKi1H9q5E3mCbyAAQQwtQMrRNpump,SKHY,SK Hynix,missed,99759,0.00009981,23616,9m,100,v2 skip narr2/5 gate (live semiconductor/stock-ticker meta with SOXL but no fresh catalyst", nosocial/kol0," top10~65% concentrated); age~9m MC~$100k liq~$24k m5~-3% no chase; fails narr≥3 + point1/2 strength"""
 2026-11-06T06:30:34Z,EDhr5RayKDCTuA6kWMD4ppmwXsPpurZ8JDm5Q9Jkpump,SOXL,SOXL,missed,135278,0.0001353,27678.96,13m,100,v2 skip (e) MAX CHASE vs first_trigger (~$106k→~$135k ~+27%) + entrap/insider~78% washlike m5 buys/sells~1634/1606 nosocial; age~13m MC~$135k liq~$28k m5~+11%; live semi/stock-ticker meta (SOXL/SKHY) but ticker-grab
 2026-11-06T06:43:39Z,12oxcwkm85vkbd5YJ7z4Kv4S8xR2Wykq9FvYj4RTpump,BANGS,Bangs Cat,missed,135424,0.0001354,17663,3m,,v2 skip (b)+(e) bun~85% + chase vs first_trigger (~$107k→~$135k ~+26%) + nosocial holders~1 top10~63%; Bangs Cat weak narr1/5; live DS later ~$57k m5~-47%
 2026-11-06T06:57:55Z,3CazLYF1i8orP3etPjzZF7A3c33hqs2LEqxdze2ypump,$GOAT,goat coin,missed,51726,0.00005172,5393,14m,3,v2 skip (a) creator_close + image_dup4376 holders~3 bonding thin liq~$5.3k; age~14m MC~$52k narr1/5 no socials
@@ -1305,52 +1305,6 @@ wait $PID3; echo FOMO_LOG:$?
 2026-11-06T19:27:43Z,2WZfXZQNiHHwzTCZTC9vfAn3Ma5pUwKDf5DS9xzSpump,Trump,Trump Coin,missed,116974,0.000117,25661,11m,100,v2 skip (d): brand-copy vs OFFICIAL TRUMP 6p6xgHyF ~$367M; age~11m MC~$117k liq~$26k m5~+5%; creator_hold
 2026-11-06T19:27:45Z,5v298tAgNiZQsMxEXG3jQ8hWjwYAZCH7X2Koqfv9pump,Microsoft,Microsoft,missed,112887,0.000113,25211,2m,100,v2 skip (b)+(d)+(e): bun~76% + Microsoft brand-copy + m5~+200%; age~2m MC~$113k liq~$25k; creator_hold
 2026-11-06T19:27:47Z,RCAEvp1mnWJgLb4pyhXr4D5PqekNvcBEqVNReQFpump,WHITE,WHITE MONSTER,missed,182424,0.000182,17956,20m,100,v2 skip (a)+(b)+(c)+(e): DEV_OUT + bot~72% + offATH~35% + chase~49% first_trig~$123k→~$182k; age~20m MC~$182k liq~$18k
-2026-11-06T20:01:44Z,AD2TBq5fP6mmGFnciRbofH93PJwkpd2mYTFBY3eRpump,SQRL,Squirrelcoin,missed,157763,0.0001578,35910,26m,100,"v2 skip (a)+(b): DEV_OUT creator_close + bot~69–85% bun~30%; age~26m MC~# Log 3 missed (subprocess each - don't import)
-python3 /home/box/trading-bot/log_alert.py \
-  --ca AD2TBq5fP6mmGFnciRbofH93PJwkpd2mYTFBY3eRpump \
-  --symbol SQRL --name Squirrelcoin --type missed \
-  --mc 157763 --price 0.0001578 --liq 35910 --age 26 \
-  --bonding 100 \
-  --reason ""v2 skip (a)+(b): DEV_OUT creator_close + bot~69–85% bun~30%; age~26m MC~$158k liq~$36k m5~+18%; ATH~$264k""
-
-python3 /home/box/trading-bot/log_alert.py \
-  --ca Cy6F9HUKj29dTS9hUWopk2RkRLXRhcRaysrsQiXQpump \
-  --symbol GLITCHPEPE --name GLITCHPEPE --type missed \
-  --mc 224323 --price 0.0002246 --liq 80230 --age 28 \
-  --bonding 100 \
-  --reason ""v2 skip narrative 2/5: no fresh catalyst/live meta; X org weak (dev @GLITCHPEPEEEEE 13 foll, airdrop spam); liquid leader vs dead AorGS copy; age~28m MC~$224k liq~$80k m5~+13% bot~25% bun~5% creator_hold; sec burn+renounced ok""
-
-python3 /home/box/trading-bot/log_alert.py \
-  --ca HrDmoHCFLrv7hSg7TjcKoFGSFpG8NF2P65Tvdj7ypump \
-  --symbol Grok --name Grok --type missed \
-  --mc 109245 --price 0.0001092 --liq 24777 --age 16 \
-  --bonding 100 \
-  --reason ""v2 skip (d): xAI Grok brand-copy; age~16m MC~$109k liq~$25k m5~+17% bot~14% bun~6% creator_hold""
-
-tail -3 /home/box/trading-bot/alerts.csv
-58k liq~6k m5~+18%; ATH~64k"
-2026-11-06T20:01:45Z,Cy6F9HUKj29dTS9hUWopk2RkRLXRhcRaysrsQiXQpump,GLITCHPEPE,GLITCHPEPE,missed,224323,0.0002246,80230,28m,100,"v2 skip narrative 2/5: no fresh catalyst/live meta; X org weak (dev @GLITCHPEPEEEEE 13 foll, airdrop spam); liquid leader vs dead AorGS copy; age~28m MC~24k liq~0k m5~+13% bot~25% bun~5% creator_hold; sec burn+renounced ok"
-2026-11-06T20:01:46Z,HrDmoHCFLrv7hSg7TjcKoFGSFpG8NF2P65Tvdj7ypump,Grok,Grok,missed,109245,0.0001092,24777,16m,100,"v2 skip (d): xAI Grok brand-copy; age~16m MC~# Log 3 missed (subprocess each - don't import)
-python3 /home/box/trading-bot/log_alert.py \
-  --ca AD2TBq5fP6mmGFnciRbofH93PJwkpd2mYTFBY3eRpump \
-  --symbol SQRL --name Squirrelcoin --type missed \
-  --mc 157763 --price 0.0001578 --liq 35910 --age 26 \
-  --bonding 100 \
-  --reason ""v2 skip (a)+(b): DEV_OUT creator_close + bot~69–85% bun~30%; age~26m MC~$158k liq~$36k m5~+18%; ATH~$264k""
-
-python3 /home/box/trading-bot/log_alert.py \
-  --ca Cy6F9HUKj29dTS9hUWopk2RkRLXRhcRaysrsQiXQpump \
-  --symbol GLITCHPEPE --name GLITCHPEPE --type missed \
-  --mc 224323 --price 0.0002246 --liq 80230 --age 28 \
-  --bonding 100 \
-  --reason ""v2 skip narrative 2/5: no fresh catalyst/live meta; X org weak (dev @GLITCHPEPEEEEE 13 foll, airdrop spam); liquid leader vs dead AorGS copy; age~28m MC~$224k liq~$80k m5~+13% bot~25% bun~5% creator_hold; sec burn+renounced ok""
-
-python3 /home/box/trading-bot/log_alert.py \
-  --ca HrDmoHCFLrv7hSg7TjcKoFGSFpG8NF2P65Tvdj7ypump \
-  --symbol Grok --name Grok --type missed \
-  --mc 109245 --price 0.0001092 --liq 24777 --age 16 \
-  --bonding 100 \
-  --reason ""v2 skip (d): xAI Grok brand-copy; age~16m MC~$109k liq~$25k m5~+17% bot~14% bun~6% creator_hold""
-
-tail -3 /home/box/trading-bot/alerts.csv
-09k liq~5k m5~+17% bot~14% bun~6% creator_hold"
+2026-11-06T20:01:44Z,AD2TBq5fP6mmGFnciRbofH93PJwkpd2mYTFBY3eRpump,SQRL,Squirrelcoin,missed,157763,0.0001578,35910,26m,100,v2 skip (a)+(b): DEV_OUT creator_close + bot~69-85% bun~30%; age~26m MC~$158k liq~$36k m5~+18%; ATH~$264k
+2026-11-06T20:01:45Z,Cy6F9HUKj29dTS9hUWopk2RkRLXRhcRaysrsQiXQpump,GLITCHPEPE,GLITCHPEPE,missed,224323,0.0002246,80230,28m,100,"v2 skip narrative 2/5: no fresh catalyst/live meta; X org weak (dev @GLITCHPEPEEEEE 13 foll, airdrop spam); liquid leader vs dead AorGS copy; age~28m MC~$224k liq~$80k m5~+13% bot~25% bun~5% creator_hold; sec burn+renounced ok"
+2026-11-06T20:01:46Z,HrDmoHCFLrv7hSg7TjcKoFGSFpG8NF2P65Tvdj7ypump,Grok,Grok,missed,109245,0.0001092,24777,16m,100,v2 skip (d): xAI Grok brand-copy; age~16m MC~$109k liq~$25k m5~+17% bot~14% bun~6% creator_hold
