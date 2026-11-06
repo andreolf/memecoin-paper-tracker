@@ -1062,3 +1062,46 @@ python3 -c ""import json;s=json.load(open('/home/box/trading-bot/state.json'));p
 2026-11-06T15:36:07Z,BNHAfUV21odrcFDKrqLmBDr6JREXE7c3yhuWBSNJpump,401kat,401kat,missed,97569,9.762e-05,23962,7m,100,v2 skip (b)+(d): bun~53% top10~40% + not leader vs AhbW… liq~$113k; age~7m MC~$98k liq~$24k chase~-1% 401kat meta narr3
 2026-11-06T15:36:09Z,5vc5WCU4v1RsrXeWXmTEzbGRzVDWa5rR2qThVVJepump,Gemini,Google Gemini,missed,191996,0.0001951,33764,38m,100,v2 skip (e): chase first_trig~$150k->dex~$192k (~+28%) m5+7%; age~38m MC~$192k liq~$34k entrap~73% Google Gemini AI meta narr3
 2026-11-06T15:36:10Z,3M8Nndh1bYN6RDGecM5fHMgQDEcGKVSh59M2qqNRpump,POPO,Mr. Popo,missed,81528,8.16e-05,21740,9m,100,v2 skip (a)+(b)+(e): creator_close DEV_OUT + bot~74% + chase first_trig~$35k->dex~$82k (~+131%) m5+41%; age~9m MC~$82k liq~$22k Mr Popo swarm narr3
+2026-11-06T15:47:40Z,Cgs33XVwju57dToPZSRxAiEMxj9qWGxR7CT8j44pump,PICASSO,PICASSO,missed,135520,0.0001355,30039,14m,,"v2 skip (d)+(e): PICASSO copy swarm (CXcQ~129k/Bhp73~48k) + m5~+35%>30% chase; first_trig~2k->dex~OUT=/tmp/scan-20261106T1539
+# Log up to 3 notable misses
+python3 /home/box/trading-bot/log_alert.py \
+  --ca Cgs33XVwju57dToPZSRxAiEMxj9qWGxR7CT8j44pump \
+  --symbol PICASSO --name PICASSO \
+  --type missed --mc 135520 --price 0.0001355 --liq 30039 --age 14m \
+  --reason ""v2 skip (d)+(e): PICASSO copy swarm (CXcQ~129k/Bhp73~48k) + m5~+35%>30% chase; first_trig~$92k->dex~$135k (~+47%); age~14m MC~$135k liq~$30k top10~7% security clean; narr 3/5 live Picasso-meme meta"" \
+  2>&1 | tail -20
+
+python3 /home/box/trading-bot/log_alert.py \
+  --ca BBBPsUnLayenNC23XpCYrRm2uqKJnERQYbGVodxUpump \
+  --symbol ""GTA 6 Coin"" --name GTA6 \
+  --type missed --mc 224526 --price 0.0002284 --liq 36637 --age 57m \
+  --reason ""v2 skip (d)+(e): GTA6 brand-copy vs \$10M+ leader 4kjruq… + chase first_trig~$135k->dex~$224k (~+65%); age~57m MC~$224k liq~$36k; narr 3/5 live GTA6 meta not leader"" \
+  2>&1 | tail -20
+
+python3 /home/box/trading-bot/log_alert.py \
+  --ca FLgZb2BiMTYxoHLPVY6EtZBDoXS9vydfxyEqXf2epump \
+  --symbol 401kat --name 401kat \
+  --type missed --mc 55378 --price 0.00005672 --liq 18468 --age 61m \
+  --reason ""v2 skip (c)+(d): ~56% off ATH (ath~$127k) + not leader vs BNHAf~$152k / AhbW liq~$115k; age~61m MC~$55k liq~$18k; narr 3/5 live 401kat meta"" \
+  2>&1 | tail -2035k (~+47%); age~14m MC~OUT=/tmp/scan-20261106T1539
+# Log up to 3 notable misses
+python3 /home/box/trading-bot/log_alert.py \
+  --ca Cgs33XVwju57dToPZSRxAiEMxj9qWGxR7CT8j44pump \
+  --symbol PICASSO --name PICASSO \
+  --type missed --mc 135520 --price 0.0001355 --liq 30039 --age 14m \
+  --reason ""v2 skip (d)+(e): PICASSO copy swarm (CXcQ~129k/Bhp73~48k) + m5~+35%>30% chase; first_trig~$92k->dex~$135k (~+47%); age~14m MC~$135k liq~$30k top10~7% security clean; narr 3/5 live Picasso-meme meta"" \
+  2>&1 | tail -20
+
+python3 /home/box/trading-bot/log_alert.py \
+  --ca BBBPsUnLayenNC23XpCYrRm2uqKJnERQYbGVodxUpump \
+  --symbol ""GTA 6 Coin"" --name GTA6 \
+  --type missed --mc 224526 --price 0.0002284 --liq 36637 --age 57m \
+  --reason ""v2 skip (d)+(e): GTA6 brand-copy vs \$10M+ leader 4kjruq… + chase first_trig~$135k->dex~$224k (~+65%); age~57m MC~$224k liq~$36k; narr 3/5 live GTA6 meta not leader"" \
+  2>&1 | tail -20
+
+python3 /home/box/trading-bot/log_alert.py \
+  --ca FLgZb2BiMTYxoHLPVY6EtZBDoXS9vydfxyEqXf2epump \
+  --symbol 401kat --name 401kat \
+  --type missed --mc 55378 --price 0.00005672 --liq 18468 --age 61m \
+  --reason ""v2 skip (c)+(d): ~56% off ATH (ath~$127k) + not leader vs BNHAf~$152k / AhbW liq~$115k; age~61m MC~$55k liq~$18k; narr 3/5 live 401kat meta"" \
+  2>&1 | tail -2035k liq~0k top10~7% security clean; narr 3/5 live Picasso-meme meta"
