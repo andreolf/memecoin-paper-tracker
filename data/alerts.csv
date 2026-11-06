@@ -515,3 +515,4 @@ python3 /home/box/trading-bot/log_alert.py \
 2026-11-06T02:59:14Z,Fs1Tk9vW2PSn8ZiJT4gnzs6J9QxVHxWLpeuKkB1spump,CocaCola,CocaCola,missed,125364,0.0001267,26893,46m,100,v2 skip (b) entrap~79% brand/imgdup CocaCola copy; age~46m MC~$125k liq~$27k m5~+6%; narr 2/5 brand meme
 2026-11-06T03:18:04Z,8rxgUXhpmPMCz5g1VzoHoJ9oqkoCcYE6xy3UUDK8pump,GTA 6 Coin,GTA6,missed,125079,0.0001251,26625,15m,100,v2 skip (b)+(d) entrap~71% GTA copy vs leaders + prior GTA6; narr 3/5 game meta
 2026-11-06T03:18:06Z,xswHNygvd8a9jwGfztaQ5PytEPnurofDTmVGFhFpump,Dacity,Dacity Coin,missed,105646,0.0001057,24332,8m,100,v2 skip (b)+(d) entrap~80% Dacity copy vs ~$21M + AMD meta; narr 2/5 ticker swarm
+2026-11-06T03:29:06Z,fF44qzhsdUR5VQuQAHYxxt25iHCrKadWM3fABAApump,callinu,callinu,missed,135024,0.0001351,32095,19m,100,skip (a)+(b)+(e)+(d) creator_close bot~61% m5~+48% image_dup swarm
