@@ -641,3 +641,409 @@ echo DONE
 date -u +%Y-%m-%dT%H:%M:%SZ
 # verify last_run
 python3 -c ""import json;s=json.load(open('/home/box/trading-bot/state.json'));print(s['last_run_utc'], s['v2'], s['breaker']['on'], s['breaker'].get('current_streak_stops'), s['gmgn_run_counter'], s['gmgn_last_security'])""79k (~+65%) + entrap~77% Anthropic brand-copy prestock; no socials"
+2026-11-06T13:52:50Z,BfbwJ2mkiMaPz5jie7CbbGJbxp36VnHmtuu9yDqtpump,GTA 6 Coin,GTA6,missed,165635,0.0001656,30896,26m,100,"v2 skip (d)+entrap~73%: GTA6 brand-copy swarm washlike; first~set -e
+OUT=/tmp/scan-2026-11-06
+NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+echo ""NOW=$NOW""
+
+# Log 3 missed (silent on push fail for missed - instruction says Silent)
+python3 /home/box/trading-bot/log_alert.py \
+  --ca 4D35EPY2Pbihp5QvQH4ohpUCrVXNRhinHoWLqix2pump \
+  --symbol ANTHROPIC --name ""Anthropic PreStocks"" \
+  --type missed --mc 179152 --price 0.0001792 --age 33m --liq 32211 --bonding 100 \
+  --reason ""v2 skip (e)+(d): chase first~$108k→dex~$179k (~+65%) + entrap~77% Anthropic brand-copy prestock; no socials"" \
+  ; echo ANTHROPIC_LOG:$?
+
+python3 /home/box/trading-bot/log_alert.py \
+  --ca BfbwJ2mkiMaPz5jie7CbbGJbxp36VnHmtuu9yDqtpump \
+  --symbol ""GTA 6 Coin"" --name GTA6 \
+  --type missed --mc 165635 --price 0.0001656 --age 26m --liq 30896 --bonding 100 \
+  --reason ""v2 skip (d)+entrap~73%: GTA6 brand-copy swarm washlike; first~$151k→dex~$166k; age~26m MC~$166k migrated"" \
+  ; echo GTA6_LOG:$?
+
+python3 /home/box/trading-bot/log_alert.py \
+  --ca aRNPo5iJZ1bfTzhWY8KFSxe7o41bBtYAupwg5fxpump \
+  --symbol Trump --name ""Trump Coin"" \
+  --type missed --mc 76936 --price 0.00007793 --age 36m --liq 20693 --bonding 100 \
+  --reason ""v2 skip (c)+(d): ~63% off ATH + entrap~82% Trump brand-copy; age~36m MC~$77k"" \
+  ; echo TRUMP_LOG:$?
+
+# Update state.json
+python3 << PY
+import json, shutil
+from pathlib import Path
+from datetime import datetime, timezone
+p = Path('/home/box/trading-bot/state.json')
+now = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+# backup
+bak = Path(f""/home/box/trading-bot/state.json.bak-scan-{now.replace(':','')[:15]}"")
+# simpler bak name
+bak = Path('/home/box/trading-bot/state.json.bak-scan-2026-11-06T1349')
+shutil.copy2(p, bak)
+st = json.loads(p.read_text())
+
+misses = [
+  {
+    ""ca"": ""4D35EPY2Pbihp5QvQH4ohpUCrVXNRhinHoWLqix2pump"",
+    ""symbol"": ""ANTHROPIC"", ""name"": ""Anthropic PreStocks"",
+    ""reason"": ""v2 skip (e)+(d): chase first~$108k→dex~$179k (~+65%) + entrap~77% Anthropic brand-copy prestock; no socials"",
+    ""mc"": 179152, ""missed_utc"": now, ""price"": 0.0001792, ""narrative"": 3,
+  },
+  {
+    ""ca"": ""BfbwJ2mkiMaPz5jie7CbbGJbxp36VnHmtuu9yDqtpump"",
+    ""symbol"": ""GTA 6 Coin"", ""name"": ""GTA6"",
+    ""reason"": ""v2 skip (d)+entrap~73%: GTA6 brand-copy swarm washlike; first~$151k→dex~$166k; age~26m MC~$166k migrated"",
+    ""mc"": 165635, ""missed_utc"": now, ""price"": 0.0001656, ""narrative"": 3,
+  },
+  {
+    ""ca"": ""aRNPo5iJZ1bfTzhWY8KFSxe7o41bBtYAupwg5fxpump"",
+    ""symbol"": ""Trump"", ""name"": ""Trump Coin"",
+    ""reason"": ""v2 skip (c)+(d): ~63% off ATH + entrap~82% Trump brand-copy; age~36m MC~$77k"",
+    ""mc"": 76936, ""missed_utc"": now, ""price"": 0.00007793, ""narrative"": 3,
+  },
+]
+missed = st.setdefault('missed', {})
+for m in misses:
+    missed[m['ca']] = m
+
+rh = st.setdefault('rh_watch', {})
+rh['0x64dCd53A468d7748C0b9e9B69C19e3c180eE954c'] = {
+    ""symbol"": ""RM"", ""status"": ""seen"", ""seen_utc"": now,
+    ""note"": ""RM ~0.6h liq~$63k mc~$146k mc/liq~2.3; desc 'red morning' + Elon status link; 5m~-14% dump; narr unclear/tweet-parasite → no WATCH""
+}
+rh['0xcf1d48b0a41ed18e8969f5f2ee40b9dd9654c73a'] = {
+    ""status"": ""seen"", ""seen_utc"": now,
+    ""note"": ""profile AI agent optimization; no Dex pair in robinhood batch → no WATCH""
+}
+# GOO too old >2h already
+
+st['gmgn_run_counter'] = int(st.get('gmgn_run_counter') or 0) + 1
+st['gmgn_last_security'] = False  # skipped this run (alternate)
+st['last_run_utc'] = now
+st['discovery'] = {
+    ""utc"": now,
+    ""last_scan_utc"": now,
+    ""gmgn_weight"": 4,
+    ""ban"": False,
+    ""sources"": [""trenches_pf_empty"", ""signal_300k"", ""trenches_broad"", ""signal_50_300""],
+    ""security"": ""skipped_alternate"",
+    ""fresh_in_range"": [""ANTHROPIC"", ""GTA6 Bfbw"", ""ROCCO"", ""Trump aRNP"", ""ELIZABETH""],
+    ""note"": ""PF empty; broad ELIZABETH only; no ban; PF API 403""
+}
+st['recent_skips'] = [
+    ""ANTHROPIC 4D35 (e)+(d) chase+entrap77% brand-copy"",
+    ""GTA6 Bfbw (d)+entrap73% brand-copy"",
+    ""Trump aRNP (c)+(d) offATH63% entrap82%"",
+    ""ROCCO bun84%; ELIZABETH creator_close image_dup; GREEN/$CCOW/NK/kittylick/sol thin; StonkFun 25/0 Dex≥$40k; RH RM narr unclear + cf1d no pair; PF 403""
+]
+st['last_run_note'] = f""QUIET V2 {st['v2']['alerts']}/50 breaker OFF streak {st['breaker'].get('current_streak_stops',0)}/3 gmgn_w4 no ban""
+st['last_scan_note'] = st['last_run_note']
+
+# atomic write
+tmp = p.with_suffix('.json.tmp')
+tmp.write_text(json.dumps(st, indent=2, ensure_ascii=False) + '\n')
+tmp.replace(p)
+print('state written', now)
+print('v2', st['v2'])
+print('breaker on', st['breaker']['on'], 'streak', st['breaker'].get('current_streak_stops'))
+print('gmgn_run_counter', st['gmgn_run_counter'])
+print('missed_now', [m['symbol'] for m in misses])
+PY
+
+# scan log
+python3 << 'PY'
+from pathlib import Path
+from datetime import datetime, timezone, timedelta
+# IST = UTC+5:30
+now = datetime.now(timezone.utc)
+ist = now + timedelta(hours=5, minutes=30)
+wita = now + timedelta(hours=8)
+zur = now + timedelta(hours=1)  # CET approx Nov - actually Zurich Nov is CET UTC+1
+# Zurich in Nov 2026: CET = UTC+1
+name = ist.strftime('%Y-%m-%dT%H%M-IST.md')
+logdir = Path('/home/box/trading-bot/research/scan-logs')
+logdir.mkdir(parents=True, exist_ok=True)
+body = f""""""# Memecoin scan {now.strftime('%Y-%m-%dT%H:%M:%SZ')} (~{wita.strftime('%H:%M')} WITA / {zur.strftime('%H:%M')} Zurigo) — PAPER V2 6/50
+Watcher ok (pid 15046); watch.json; 0 open V2; breaker OFF streak 2/3. GMGN 4 (trenches PF empty + signal 300k + trenches broad + signal 50–300k; security skipped alternate; no ban).
+NO_ALERT. Missed logged: ANTHROPIC 4D35… (e)+(d) chase+entrap77%; GTA6 Bfbw… (d)+entrap73%; Trump aRNP… (c)+(d) offATH+entrap.
+Skipped: ROCCO bun84%; ELIZABETH creator_close image_dup2287; GREEN/$CCOW/NORTHKOREA/kittylick/sol thin/dup; priors APPLEPAID/PHILCOIN. StonkFun 25 / 0 Dex ≥$40k. RH: RM ~0.6h numeric OK but narr unclear/5m dump + cf1d no pair → seen, no WATCH. pump.fun Cloudflare 403.
+Raw: /tmp/scan-2026-11-06
+""""""
+(logdir/name).write_text(body)
+print('log', logdir/name)
+PY
+
+echo DONE
+date -u +%Y-%m-%dT%H:%M:%SZ
+# verify last_run
+python3 -c ""import json;s=json.load(open('/home/box/trading-bot/state.json'));print(s['last_run_utc'], s['v2'], s['breaker']['on'], s['breaker'].get('current_streak_stops'), s['gmgn_run_counter'], s['gmgn_last_security'])""51k→dex~set -e
+OUT=/tmp/scan-2026-11-06
+NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+echo ""NOW=$NOW""
+
+# Log 3 missed (silent on push fail for missed - instruction says Silent)
+python3 /home/box/trading-bot/log_alert.py \
+  --ca 4D35EPY2Pbihp5QvQH4ohpUCrVXNRhinHoWLqix2pump \
+  --symbol ANTHROPIC --name ""Anthropic PreStocks"" \
+  --type missed --mc 179152 --price 0.0001792 --age 33m --liq 32211 --bonding 100 \
+  --reason ""v2 skip (e)+(d): chase first~$108k→dex~$179k (~+65%) + entrap~77% Anthropic brand-copy prestock; no socials"" \
+  ; echo ANTHROPIC_LOG:$?
+
+python3 /home/box/trading-bot/log_alert.py \
+  --ca BfbwJ2mkiMaPz5jie7CbbGJbxp36VnHmtuu9yDqtpump \
+  --symbol ""GTA 6 Coin"" --name GTA6 \
+  --type missed --mc 165635 --price 0.0001656 --age 26m --liq 30896 --bonding 100 \
+  --reason ""v2 skip (d)+entrap~73%: GTA6 brand-copy swarm washlike; first~$151k→dex~$166k; age~26m MC~$166k migrated"" \
+  ; echo GTA6_LOG:$?
+
+python3 /home/box/trading-bot/log_alert.py \
+  --ca aRNPo5iJZ1bfTzhWY8KFSxe7o41bBtYAupwg5fxpump \
+  --symbol Trump --name ""Trump Coin"" \
+  --type missed --mc 76936 --price 0.00007793 --age 36m --liq 20693 --bonding 100 \
+  --reason ""v2 skip (c)+(d): ~63% off ATH + entrap~82% Trump brand-copy; age~36m MC~$77k"" \
+  ; echo TRUMP_LOG:$?
+
+# Update state.json
+python3 << PY
+import json, shutil
+from pathlib import Path
+from datetime import datetime, timezone
+p = Path('/home/box/trading-bot/state.json')
+now = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+# backup
+bak = Path(f""/home/box/trading-bot/state.json.bak-scan-{now.replace(':','')[:15]}"")
+# simpler bak name
+bak = Path('/home/box/trading-bot/state.json.bak-scan-2026-11-06T1349')
+shutil.copy2(p, bak)
+st = json.loads(p.read_text())
+
+misses = [
+  {
+    ""ca"": ""4D35EPY2Pbihp5QvQH4ohpUCrVXNRhinHoWLqix2pump"",
+    ""symbol"": ""ANTHROPIC"", ""name"": ""Anthropic PreStocks"",
+    ""reason"": ""v2 skip (e)+(d): chase first~$108k→dex~$179k (~+65%) + entrap~77% Anthropic brand-copy prestock; no socials"",
+    ""mc"": 179152, ""missed_utc"": now, ""price"": 0.0001792, ""narrative"": 3,
+  },
+  {
+    ""ca"": ""BfbwJ2mkiMaPz5jie7CbbGJbxp36VnHmtuu9yDqtpump"",
+    ""symbol"": ""GTA 6 Coin"", ""name"": ""GTA6"",
+    ""reason"": ""v2 skip (d)+entrap~73%: GTA6 brand-copy swarm washlike; first~$151k→dex~$166k; age~26m MC~$166k migrated"",
+    ""mc"": 165635, ""missed_utc"": now, ""price"": 0.0001656, ""narrative"": 3,
+  },
+  {
+    ""ca"": ""aRNPo5iJZ1bfTzhWY8KFSxe7o41bBtYAupwg5fxpump"",
+    ""symbol"": ""Trump"", ""name"": ""Trump Coin"",
+    ""reason"": ""v2 skip (c)+(d): ~63% off ATH + entrap~82% Trump brand-copy; age~36m MC~$77k"",
+    ""mc"": 76936, ""missed_utc"": now, ""price"": 0.00007793, ""narrative"": 3,
+  },
+]
+missed = st.setdefault('missed', {})
+for m in misses:
+    missed[m['ca']] = m
+
+rh = st.setdefault('rh_watch', {})
+rh['0x64dCd53A468d7748C0b9e9B69C19e3c180eE954c'] = {
+    ""symbol"": ""RM"", ""status"": ""seen"", ""seen_utc"": now,
+    ""note"": ""RM ~0.6h liq~$63k mc~$146k mc/liq~2.3; desc 'red morning' + Elon status link; 5m~-14% dump; narr unclear/tweet-parasite → no WATCH""
+}
+rh['0xcf1d48b0a41ed18e8969f5f2ee40b9dd9654c73a'] = {
+    ""status"": ""seen"", ""seen_utc"": now,
+    ""note"": ""profile AI agent optimization; no Dex pair in robinhood batch → no WATCH""
+}
+# GOO too old >2h already
+
+st['gmgn_run_counter'] = int(st.get('gmgn_run_counter') or 0) + 1
+st['gmgn_last_security'] = False  # skipped this run (alternate)
+st['last_run_utc'] = now
+st['discovery'] = {
+    ""utc"": now,
+    ""last_scan_utc"": now,
+    ""gmgn_weight"": 4,
+    ""ban"": False,
+    ""sources"": [""trenches_pf_empty"", ""signal_300k"", ""trenches_broad"", ""signal_50_300""],
+    ""security"": ""skipped_alternate"",
+    ""fresh_in_range"": [""ANTHROPIC"", ""GTA6 Bfbw"", ""ROCCO"", ""Trump aRNP"", ""ELIZABETH""],
+    ""note"": ""PF empty; broad ELIZABETH only; no ban; PF API 403""
+}
+st['recent_skips'] = [
+    ""ANTHROPIC 4D35 (e)+(d) chase+entrap77% brand-copy"",
+    ""GTA6 Bfbw (d)+entrap73% brand-copy"",
+    ""Trump aRNP (c)+(d) offATH63% entrap82%"",
+    ""ROCCO bun84%; ELIZABETH creator_close image_dup; GREEN/$CCOW/NK/kittylick/sol thin; StonkFun 25/0 Dex≥$40k; RH RM narr unclear + cf1d no pair; PF 403""
+]
+st['last_run_note'] = f""QUIET V2 {st['v2']['alerts']}/50 breaker OFF streak {st['breaker'].get('current_streak_stops',0)}/3 gmgn_w4 no ban""
+st['last_scan_note'] = st['last_run_note']
+
+# atomic write
+tmp = p.with_suffix('.json.tmp')
+tmp.write_text(json.dumps(st, indent=2, ensure_ascii=False) + '\n')
+tmp.replace(p)
+print('state written', now)
+print('v2', st['v2'])
+print('breaker on', st['breaker']['on'], 'streak', st['breaker'].get('current_streak_stops'))
+print('gmgn_run_counter', st['gmgn_run_counter'])
+print('missed_now', [m['symbol'] for m in misses])
+PY
+
+# scan log
+python3 << 'PY'
+from pathlib import Path
+from datetime import datetime, timezone, timedelta
+# IST = UTC+5:30
+now = datetime.now(timezone.utc)
+ist = now + timedelta(hours=5, minutes=30)
+wita = now + timedelta(hours=8)
+zur = now + timedelta(hours=1)  # CET approx Nov - actually Zurich Nov is CET UTC+1
+# Zurich in Nov 2026: CET = UTC+1
+name = ist.strftime('%Y-%m-%dT%H%M-IST.md')
+logdir = Path('/home/box/trading-bot/research/scan-logs')
+logdir.mkdir(parents=True, exist_ok=True)
+body = f""""""# Memecoin scan {now.strftime('%Y-%m-%dT%H:%M:%SZ')} (~{wita.strftime('%H:%M')} WITA / {zur.strftime('%H:%M')} Zurigo) — PAPER V2 6/50
+Watcher ok (pid 15046); watch.json; 0 open V2; breaker OFF streak 2/3. GMGN 4 (trenches PF empty + signal 300k + trenches broad + signal 50–300k; security skipped alternate; no ban).
+NO_ALERT. Missed logged: ANTHROPIC 4D35… (e)+(d) chase+entrap77%; GTA6 Bfbw… (d)+entrap73%; Trump aRNP… (c)+(d) offATH+entrap.
+Skipped: ROCCO bun84%; ELIZABETH creator_close image_dup2287; GREEN/$CCOW/NORTHKOREA/kittylick/sol thin/dup; priors APPLEPAID/PHILCOIN. StonkFun 25 / 0 Dex ≥$40k. RH: RM ~0.6h numeric OK but narr unclear/5m dump + cf1d no pair → seen, no WATCH. pump.fun Cloudflare 403.
+Raw: /tmp/scan-2026-11-06
+""""""
+(logdir/name).write_text(body)
+print('log', logdir/name)
+PY
+
+echo DONE
+date -u +%Y-%m-%dT%H:%M:%SZ
+# verify last_run
+python3 -c ""import json;s=json.load(open('/home/box/trading-bot/state.json'));print(s['last_run_utc'], s['v2'], s['breaker']['on'], s['breaker'].get('current_streak_stops'), s['gmgn_run_counter'], s['gmgn_last_security'])""66k; age~26m MC~set -e
+OUT=/tmp/scan-2026-11-06
+NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+echo ""NOW=$NOW""
+
+# Log 3 missed (silent on push fail for missed - instruction says Silent)
+python3 /home/box/trading-bot/log_alert.py \
+  --ca 4D35EPY2Pbihp5QvQH4ohpUCrVXNRhinHoWLqix2pump \
+  --symbol ANTHROPIC --name ""Anthropic PreStocks"" \
+  --type missed --mc 179152 --price 0.0001792 --age 33m --liq 32211 --bonding 100 \
+  --reason ""v2 skip (e)+(d): chase first~$108k→dex~$179k (~+65%) + entrap~77% Anthropic brand-copy prestock; no socials"" \
+  ; echo ANTHROPIC_LOG:$?
+
+python3 /home/box/trading-bot/log_alert.py \
+  --ca BfbwJ2mkiMaPz5jie7CbbGJbxp36VnHmtuu9yDqtpump \
+  --symbol ""GTA 6 Coin"" --name GTA6 \
+  --type missed --mc 165635 --price 0.0001656 --age 26m --liq 30896 --bonding 100 \
+  --reason ""v2 skip (d)+entrap~73%: GTA6 brand-copy swarm washlike; first~$151k→dex~$166k; age~26m MC~$166k migrated"" \
+  ; echo GTA6_LOG:$?
+
+python3 /home/box/trading-bot/log_alert.py \
+  --ca aRNPo5iJZ1bfTzhWY8KFSxe7o41bBtYAupwg5fxpump \
+  --symbol Trump --name ""Trump Coin"" \
+  --type missed --mc 76936 --price 0.00007793 --age 36m --liq 20693 --bonding 100 \
+  --reason ""v2 skip (c)+(d): ~63% off ATH + entrap~82% Trump brand-copy; age~36m MC~$77k"" \
+  ; echo TRUMP_LOG:$?
+
+# Update state.json
+python3 << PY
+import json, shutil
+from pathlib import Path
+from datetime import datetime, timezone
+p = Path('/home/box/trading-bot/state.json')
+now = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+# backup
+bak = Path(f""/home/box/trading-bot/state.json.bak-scan-{now.replace(':','')[:15]}"")
+# simpler bak name
+bak = Path('/home/box/trading-bot/state.json.bak-scan-2026-11-06T1349')
+shutil.copy2(p, bak)
+st = json.loads(p.read_text())
+
+misses = [
+  {
+    ""ca"": ""4D35EPY2Pbihp5QvQH4ohpUCrVXNRhinHoWLqix2pump"",
+    ""symbol"": ""ANTHROPIC"", ""name"": ""Anthropic PreStocks"",
+    ""reason"": ""v2 skip (e)+(d): chase first~$108k→dex~$179k (~+65%) + entrap~77% Anthropic brand-copy prestock; no socials"",
+    ""mc"": 179152, ""missed_utc"": now, ""price"": 0.0001792, ""narrative"": 3,
+  },
+  {
+    ""ca"": ""BfbwJ2mkiMaPz5jie7CbbGJbxp36VnHmtuu9yDqtpump"",
+    ""symbol"": ""GTA 6 Coin"", ""name"": ""GTA6"",
+    ""reason"": ""v2 skip (d)+entrap~73%: GTA6 brand-copy swarm washlike; first~$151k→dex~$166k; age~26m MC~$166k migrated"",
+    ""mc"": 165635, ""missed_utc"": now, ""price"": 0.0001656, ""narrative"": 3,
+  },
+  {
+    ""ca"": ""aRNPo5iJZ1bfTzhWY8KFSxe7o41bBtYAupwg5fxpump"",
+    ""symbol"": ""Trump"", ""name"": ""Trump Coin"",
+    ""reason"": ""v2 skip (c)+(d): ~63% off ATH + entrap~82% Trump brand-copy; age~36m MC~$77k"",
+    ""mc"": 76936, ""missed_utc"": now, ""price"": 0.00007793, ""narrative"": 3,
+  },
+]
+missed = st.setdefault('missed', {})
+for m in misses:
+    missed[m['ca']] = m
+
+rh = st.setdefault('rh_watch', {})
+rh['0x64dCd53A468d7748C0b9e9B69C19e3c180eE954c'] = {
+    ""symbol"": ""RM"", ""status"": ""seen"", ""seen_utc"": now,
+    ""note"": ""RM ~0.6h liq~$63k mc~$146k mc/liq~2.3; desc 'red morning' + Elon status link; 5m~-14% dump; narr unclear/tweet-parasite → no WATCH""
+}
+rh['0xcf1d48b0a41ed18e8969f5f2ee40b9dd9654c73a'] = {
+    ""status"": ""seen"", ""seen_utc"": now,
+    ""note"": ""profile AI agent optimization; no Dex pair in robinhood batch → no WATCH""
+}
+# GOO too old >2h already
+
+st['gmgn_run_counter'] = int(st.get('gmgn_run_counter') or 0) + 1
+st['gmgn_last_security'] = False  # skipped this run (alternate)
+st['last_run_utc'] = now
+st['discovery'] = {
+    ""utc"": now,
+    ""last_scan_utc"": now,
+    ""gmgn_weight"": 4,
+    ""ban"": False,
+    ""sources"": [""trenches_pf_empty"", ""signal_300k"", ""trenches_broad"", ""signal_50_300""],
+    ""security"": ""skipped_alternate"",
+    ""fresh_in_range"": [""ANTHROPIC"", ""GTA6 Bfbw"", ""ROCCO"", ""Trump aRNP"", ""ELIZABETH""],
+    ""note"": ""PF empty; broad ELIZABETH only; no ban; PF API 403""
+}
+st['recent_skips'] = [
+    ""ANTHROPIC 4D35 (e)+(d) chase+entrap77% brand-copy"",
+    ""GTA6 Bfbw (d)+entrap73% brand-copy"",
+    ""Trump aRNP (c)+(d) offATH63% entrap82%"",
+    ""ROCCO bun84%; ELIZABETH creator_close image_dup; GREEN/$CCOW/NK/kittylick/sol thin; StonkFun 25/0 Dex≥$40k; RH RM narr unclear + cf1d no pair; PF 403""
+]
+st['last_run_note'] = f""QUIET V2 {st['v2']['alerts']}/50 breaker OFF streak {st['breaker'].get('current_streak_stops',0)}/3 gmgn_w4 no ban""
+st['last_scan_note'] = st['last_run_note']
+
+# atomic write
+tmp = p.with_suffix('.json.tmp')
+tmp.write_text(json.dumps(st, indent=2, ensure_ascii=False) + '\n')
+tmp.replace(p)
+print('state written', now)
+print('v2', st['v2'])
+print('breaker on', st['breaker']['on'], 'streak', st['breaker'].get('current_streak_stops'))
+print('gmgn_run_counter', st['gmgn_run_counter'])
+print('missed_now', [m['symbol'] for m in misses])
+PY
+
+# scan log
+python3 << 'PY'
+from pathlib import Path
+from datetime import datetime, timezone, timedelta
+# IST = UTC+5:30
+now = datetime.now(timezone.utc)
+ist = now + timedelta(hours=5, minutes=30)
+wita = now + timedelta(hours=8)
+zur = now + timedelta(hours=1)  # CET approx Nov - actually Zurich Nov is CET UTC+1
+# Zurich in Nov 2026: CET = UTC+1
+name = ist.strftime('%Y-%m-%dT%H%M-IST.md')
+logdir = Path('/home/box/trading-bot/research/scan-logs')
+logdir.mkdir(parents=True, exist_ok=True)
+body = f""""""# Memecoin scan {now.strftime('%Y-%m-%dT%H:%M:%SZ')} (~{wita.strftime('%H:%M')} WITA / {zur.strftime('%H:%M')} Zurigo) — PAPER V2 6/50
+Watcher ok (pid 15046); watch.json; 0 open V2; breaker OFF streak 2/3. GMGN 4 (trenches PF empty + signal 300k + trenches broad + signal 50–300k; security skipped alternate; no ban).
+NO_ALERT. Missed logged: ANTHROPIC 4D35… (e)+(d) chase+entrap77%; GTA6 Bfbw… (d)+entrap73%; Trump aRNP… (c)+(d) offATH+entrap.
+Skipped: ROCCO bun84%; ELIZABETH creator_close image_dup2287; GREEN/$CCOW/NORTHKOREA/kittylick/sol thin/dup; priors APPLEPAID/PHILCOIN. StonkFun 25 / 0 Dex ≥$40k. RH: RM ~0.6h numeric OK but narr unclear/5m dump + cf1d no pair → seen, no WATCH. pump.fun Cloudflare 403.
+Raw: /tmp/scan-2026-11-06
+""""""
+(logdir/name).write_text(body)
+print('log', logdir/name)
+PY
+
+echo DONE
+date -u +%Y-%m-%dT%H:%M:%SZ
+# verify last_run
+python3 -c ""import json;s=json.load(open('/home/box/trading-bot/state.json'));print(s['last_run_utc'], s['v2'], s['breaker']['on'], s['breaker'].get('current_streak_stops'), s['gmgn_run_counter'], s['gmgn_last_security'])""66k migrated"
