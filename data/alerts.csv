@@ -633,3 +633,48 @@ python3 /home/box/trading-bot/log_alert.py \
 
 echo ""fun_log_exit:$?""
 63k liq~1k"
+2026-11-06T06:00:54Z,AqgiqQfr4LEUkEehtjxA2tatLYQym5Y9ykQ9aJwcpump,GTA 6 Coin,GTA6,missed,103331,0.0001033,23974,16m,,"v2 skip (b)+(d) entrap~72% + insider~72% + washlike m5 buys/sells~971/994 + GTA6 copy swarm no clear leader; narr3/5 live GTA6 meta; age~16m MC~NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+echo ""NOW=$NOW""
+
+# 1 Claude - (a) creator_close + entrap/imgdup relaunch
+python3 /home/box/trading-bot/log_alert.py \
+  --type missed \
+  --ca FKga8jGa9QA1b35Bmf46RuFXg2ixxtCnE6NL33kpump \
+  --symbol Claude \
+  --name ""Be Nice To Claude"" \
+  --mc 162902 \
+  --price 0.0001629 \
+  --liq 30609 \
+  --age 11m \
+  --reason ""v2 skip (a) creator_close bal0 + entrap~58% + image_dup42 + sniper/dev_team~87%; Claude/Anthropic relaunch swarm narr3/5; age~11m MC~$163k liq~$31k""
+
+echo ""claude_log_exit:$?""
+
+# 2 GTA - (b)+(d) entrap + copy
+python3 /home/box/trading-bot/log_alert.py \
+  --type missed \
+  --ca AqgiqQfr4LEUkEehtjxA2tatLYQym5Y9ykQ9aJwcpump \
+  --symbol ""GTA 6 Coin"" \
+  --name GTA6 \
+  --mc 103331 \
+  --price 0.0001033 \
+  --liq 23974 \
+  --age 16m \
+  --reason ""v2 skip (b)+(d) entrap~72% + insider~72% + washlike m5 buys/sells~971/994 + GTA6 copy swarm no clear leader; narr3/5 live GTA6 meta; age~16m MC~$103k liq~$24k""
+
+echo ""gta_log_exit:$?""
+
+# 3 fun - (a)+(b)
+python3 /home/box/trading-bot/log_alert.py \
+  --type missed \
+  --ca 5BWHo2duxhkRR4ftnZWErnB8GoXpFgZ4ZR9UN8LDpump \
+  --symbol fun \
+  --name fun \
+  --mc 115095 \
+  --price 0.0001150 \
+  --liq 29307 \
+  --age 21m \
+  --reason ""v2 skip (a)+(b) creator_close bal0 + bot~53% + serial creator 13k tokens; weak 'fun' narr; age~21m MC~$115k liq~$29k""
+
+echo ""fun_log_exit:$?""
+03k liq~4k"
