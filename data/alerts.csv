@@ -588,3 +588,48 @@ PY32k holders~67 twitter lordbigyahu; narr unverified"
 2026-11-06T05:44:26Z,7F5RbFJ4Qx1TNfUia3WCLDs7LyG9eVJaTBNkdmsapump,BPCATE,Looksmax CATE,missed,218777,0.0002187,13782,18m,35,v2 skip (d)+(e) image_dup493 copy + chase vs first_trigger (~$32k→~$219k / vs signal~$159k→+$38%); age~18m MC~$219k gmgn_liq~$13.8k holders~3-4 nosocial; narr weak looksmax cate clone
 2026-11-06T05:44:28Z,CUm7ANEPrmBuH5Dk1v9KEA6psfT9uWhFhDfjQQ4D43DS,TIKTOK,TikTok,missed,94106,0.00009410,1919,15m,98,v2 skip (b) entrap~98% image_dup5231 thin meteora liq~$1.9k nosocial; age~15m MC~$94k; narr weak TikTok name-grab
 2026-11-06T05:44:29Z,3hU5kv4XRBcCm3MfURUxT56Sy1Ln2DkArJGMazEJpump,MCH,MoonChacha,missed,51443,0.00005144,5644,14m,3,v2 skip (a) creator_close + image_dup2632 holders~2-3 bonding thin; age~14m MC~$51k nosocial; narr weak MoonChacha clone
+2026-11-06T06:00:52Z,FKga8jGa9QA1b35Bmf46RuFXg2ixxtCnE6NL33kpump,Claude,Be Nice To Claude,missed,162902,0.0001629,30609,11m,,"v2 skip (a) creator_close bal0 + entrap~58% + image_dup42 + sniper/dev_team~87%; Claude/Anthropic relaunch swarm narr3/5; age~11m MC~NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+echo ""NOW=$NOW""
+
+# 1 Claude - (a) creator_close + entrap/imgdup relaunch
+python3 /home/box/trading-bot/log_alert.py \
+  --type missed \
+  --ca FKga8jGa9QA1b35Bmf46RuFXg2ixxtCnE6NL33kpump \
+  --symbol Claude \
+  --name ""Be Nice To Claude"" \
+  --mc 162902 \
+  --price 0.0001629 \
+  --liq 30609 \
+  --age 11m \
+  --reason ""v2 skip (a) creator_close bal0 + entrap~58% + image_dup42 + sniper/dev_team~87%; Claude/Anthropic relaunch swarm narr3/5; age~11m MC~$163k liq~$31k""
+
+echo ""claude_log_exit:$?""
+
+# 2 GTA - (b)+(d) entrap + copy
+python3 /home/box/trading-bot/log_alert.py \
+  --type missed \
+  --ca AqgiqQfr4LEUkEehtjxA2tatLYQym5Y9ykQ9aJwcpump \
+  --symbol ""GTA 6 Coin"" \
+  --name GTA6 \
+  --mc 103331 \
+  --price 0.0001033 \
+  --liq 23974 \
+  --age 16m \
+  --reason ""v2 skip (b)+(d) entrap~72% + insider~72% + washlike m5 buys/sells~971/994 + GTA6 copy swarm no clear leader; narr3/5 live GTA6 meta; age~16m MC~$103k liq~$24k""
+
+echo ""gta_log_exit:$?""
+
+# 3 fun - (a)+(b)
+python3 /home/box/trading-bot/log_alert.py \
+  --type missed \
+  --ca 5BWHo2duxhkRR4ftnZWErnB8GoXpFgZ4ZR9UN8LDpump \
+  --symbol fun \
+  --name fun \
+  --mc 115095 \
+  --price 0.0001150 \
+  --liq 29307 \
+  --age 21m \
+  --reason ""v2 skip (a)+(b) creator_close bal0 + bot~53% + serial creator 13k tokens; weak 'fun' narr; age~21m MC~$115k liq~$29k""
+
+echo ""fun_log_exit:$?""
+63k liq~1k"
