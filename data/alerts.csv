@@ -421,3 +421,30 @@ python3 /home/box/trading-bot/log_alert.py \
   --reason ""skip (a) creator_close/cbal0; mayhem 'Pumpfun Ruined my Life' reverse-name meta narr3/5; age~7m MC~$163k bonding liq~$4k m5~+20%; launchpad meteora_virtual_curve"" \
   2>&1 | tee /tmp/scan-20261106-0026/log_missed_efil.txt
 08k liq~4k m5~+7% cbal~0"
+2026-11-06T00:29:09Z,9PoXLpV5vMutnk9Hh9KGNBy5qdH6P4VugxhQtFE8puSH,EFIL,efiL ym deniuR nufpmuP,missed,163502,0.0001635,4177,7m,94,"skip (a) creator_close/cbal0; mayhem 'Pumpfun Ruined my Life' reverse-name meta narr3/5; age~7m MC~# Log missed GTA6 DiHr + EFIL; then patch state
+python3 /home/box/trading-bot/log_alert.py \
+  --type missed \
+  --ca DiHr8eYwqiwY61yUqKGiuGmtRYKFKbtGd5yXW8rqpump \
+  --symbol ""GTA 6 Coin"" \
+  --name ""GTA6"" \
+  --mc 108206 \
+  --price 0.0001082 \
+  --liq 24618 \
+  --age 7m \
+  --bonding 100 \
+  --reason ""skip (b)+(d) bun~64% top10~64% + GTA6 copy swarm no clear leader; narr 3/5: live GTA6 meta; age~7m MC~$108k liq~$24k m5~+7% cbal~0"" \
+  2>&1 | tee /tmp/scan-20261106-0026/log_missed_gta6.txt
+
+python3 /home/box/trading-bot/log_alert.py \
+  --type missed \
+  --ca 9PoXLpV5vMutnk9Hh9KGNBy5qdH6P4VugxhQtFE8puSH \
+  --symbol ""EFIL"" \
+  --name ""efiL ym deniuR nufpmuP"" \
+  --mc 163502 \
+  --price 0.0001635 \
+  --liq 4177 \
+  --age 7m \
+  --bonding 94 \
+  --reason ""skip (a) creator_close/cbal0; mayhem 'Pumpfun Ruined my Life' reverse-name meta narr3/5; age~7m MC~$163k bonding liq~$4k m5~+20%; launchpad meteora_virtual_curve"" \
+  2>&1 | tee /tmp/scan-20261106-0026/log_missed_efil.txt
+63k bonding liq~k m5~+20%; launchpad meteora_virtual_curve"
