@@ -1326,3 +1326,4 @@ wait $PID3; echo FOMO_LOG:$?
 2026-11-06T21:28:16Z,CQ1napYmWJ3ucHkbKzkXsd4EXexb4sX2UUu48wvpump,SQRL,Squirrelcoin,missed,251896,0.0002518,38402,17m,,v2 skip (a)+(b): DEV_OUT creator_close + entrap~80%; age~17m MC~$252k liq~$38k bot0 m5~+18%
 2026-11-06T21:28:17Z,Tnq4TtgfHp8HBUdpgevxKRDaobS8sXJ8Df1CRUupump,BMW,BMW,missed,68443,0.00006936,19462,41m,,v2 skip (a)+(b): DEV_OUT creator_close + entrap~83%; age~41m MC~$68k liq~$19k bot~3% m5~-26% brand-copy
 2026-11-06T21:46:44Z,JATk4idqfAyU21F6w3xf2Rbyj9j8FnYxVWLMfoweqExh,WHITE,WHITE MONSTER,missed,222790,0.0002227,97443,25m,,v2 skip (a)+(b)+(d): DEV_OUT creator_close + bot~71% + Monster Energy brand-copy/not leader; age~25m MC~$223k liq~$97k m5~+5%
+2026-11-06T21:46:45Z,GX7dUn5M4TYp35frrHG26LvbxWAVLyafzxnNJW6Fpump,IphoneDuo,IphoneDuo,missed,100614,0.0001006,23719,17m,,v2 skip (b)+(d): entrap~78% + iPhone brand-copy/not leader; age~17m MC~$101k liq~$24k bot0 bun~4% m5~+22%
