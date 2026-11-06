@@ -1212,3 +1212,4 @@ python3 /home/box/trading-bot/log_alert.py \
   --type missed --mc 55378 --price 0.00005672 --liq 18468 --age 61m \
   --reason ""v2 skip (c)+(d): ~56% off ATH (ath~$127k) + not leader vs BNHAf~$152k / AhbW liq~$115k; age~61m MC~$55k liq~$18k; narr 3/5 live 401kat meta"" \
   2>&1 | tail -208k; narr 3/5 live 401kat meta"
+2026-11-06T15:58:28Z,zhyHSPTtZ9gCKGezHVnMcMcx9rtPanShXkfDc4xpump,ChatGPT,ChatGPT,missed,143332,0.0001433,28642,7m,,"v2 skip (d): OpenAI ChatGPT brand-copy (tradeable leader among name swarm but pure trademark impersonation, no unique angle); age~7m MC~$143k liq~$29k m5~+21%; sec top10~9% burn ok; narr 3/5 AI meta"
