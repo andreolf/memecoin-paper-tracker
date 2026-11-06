@@ -1051,3 +1051,4 @@ python3 -c ""import json;s=json.load(open('/home/box/trading-bot/state.json'));p
 2026-11-06T14:09:24Z,74qfhVUsG1sdUoPH2CjdkgDMmqhoR7BPddxVNqaWpump,Qubit,Qubіt,missed,69706,6.97e-05,,16m,100,v2 skip (a)+(b): creator_close DEV_OUT + bot~82% entrap~65%; age~16m MC~$70k liq~$20k
 2026-11-06T14:09:25Z,mV9kZc5WEcsupy9KYZo1c7x52Ys1A5CDK73Ysg6pump,ROCCO,ROCCO,missed,165468,0.0001654,,28m,100,v2 skip (b): bun~78% (bot0); age~28m MC~$165k liq~$31k top10~66%
 2026-11-06T14:09:26Z,2LAdBotmbdpGc8GSoBQKwm5DfAqffkHCupP3w1kvpump,$GOOGL,$GOOGL,missed,67735,6.773e-05,,14m,,v2 skip (d): Google ticker brand-copy equal no leader; still pump.fun bonding liq~0; age~14m MC~$68k
+2026-11-06T14:19:22Z,MWwpztHKL672aaf3Jw8uz1hFJpCRh7ojKxFq5Gbpump,Rocco,Rocco,missed,102000,0.0001023,23900,6m,100,v2 skip (d): Rocco brand-copy vs ~$900k HZbi… leader; top10~86%; age~6m MC~$102k liq~$24k; live Rocco meta narr3
