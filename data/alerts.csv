@@ -511,3 +511,4 @@ python3 /home/box/trading-bot/log_alert.py \
   2>&1 | tee log_missed_gta6coin.txt
 63k liq~1k m5~+8%; narr 3/5 live GTA VI meta"
 2026-11-06T02:59:11Z,oCZHH8HnEBCPipEGdEcP3f45pQAaM7nh7P6EkRPpump,AMD,A Meme Dacity,missed,336215,0.0003363,45462,28m,100,v2 skip (d) AMD A-Meme-* copy vs A Meme Dog DDmG… ~$670k leader; age~28m MC~$336k liq~$45k m5~+19%; narr 2/5 ticker swarm no unique catalyst
+2026-11-06T02:59:12Z,wKjmjpWVYaAvU3t4TTeeEqCudo6VQjFi26GzMQUpump,Speed,IShowSpeed,missed,81421,0.00008248,21407,38m,100,v2 skip (b) entrap~85% IShowSpeed celeb copy; age~38m MC~$81k liq~$21k m5~-74%; narr 3/5 celeb meta
