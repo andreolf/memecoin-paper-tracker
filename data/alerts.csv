@@ -1315,3 +1315,4 @@ wait $PID3; echo FOMO_LOG:$?
 2026-11-06T20:28:39Z,DznhKKXhSxhtH8zcdhafsug1NDiH1Ejjw8QS1MZipump,GrokBot,GrokBot,missed,64543,0.00006457,18689,24m,,v2 skip (d): brand-copy of Grok leader HrDmoHCF~\$111k; age~23m MC~$65k liq~$19k bot0 creator_hold entr~78%
 2026-11-06T20:42:56Z,8DSisNcg5heTppeG99v8WxChXyztxGEo6iSkYUmApump,CR7,Cristiano Ronaldo,missed,90553,9.06e-05,22375,4m,,v2 skip (b)+(d)+(e): bun~82% + CR7/Ronaldo brand-copy + m5~+142%; age~4m MC~$91k liq~$22k bot~0% creator_hold
 2026-11-06T20:42:58Z,HGHJCdysTaaYDJKwwQ3UmcodCw9xjpfFDvcShVVBpump,sexcoin,sexcoin,missed,52801,5.288e-05,17801,7m,,v2 skip (b)+(e): bun~46% + m5~+-2.95%; age~7m MC~$53k liq~$18k bot~0% status=unknown
+2026-11-06T20:43:00Z,8nWACy8hVLR4ykmHqugthaUSjRUP5dcKTHaVGMyzoUix,TIKTOK,TikTok,missed,96326,9.632e-05,1945,78m,,v2 skip (d)+age: TikTok brand-copy + age~78m>1h; MC~$96k liq~$1.9k meteora_virtual_curve creator_hold bot0
