@@ -740,3 +740,79 @@ echo ""fun_log_exit:$?""
 2026-11-06T11:36:10Z,Rudo79FXU2EM9knFuAiJA3D9yfkjYHeNJ18kBM9pump,ChatGPT,ChatGPT,missed,145242,0.0001452,28820,26m,,v2 skip (e)+(d): chase first~$84–106k→dex~$145k (~+37–72%) + entrap~85% washlike + ChatGPT brand-copy narr1/5; age~26m MC~$145k liq~$29k
 2026-11-06T11:36:12Z,rAxD9RpFienq6zfq8yZSakZXjewZqTXD9jRd2UEpump,ATM,GTA6ATM,missed,50188,0.00005023,20565,23m,,v2 skip narr2/5 + ~49% off ATH: GTA6ATM weak ATM angle on GTA6 meta; m5 was -35% then -8%; age~23m MC~$50k liq~$21k bot14% creator_hold
 2026-11-06T11:36:13Z,G9iZw3g9TFvuGt9Zt2QogETMoGN4VBbhNMfJvWsVpump,Microsoft,Microsoft,missed,82222,0.00008226,21351,36m,,v2 skip (d) + entrap~79%: Microsoft brand-copy narr1/5 no fresh catalyst; age~36m MC~$82k liq~$21k bot2% creator_hold
+2026-11-06T11:52:17Z,WkbCL6GUq8ywhyLG1upJBAivMteXSBbwqtNB1supump,Trump,Trump Coin,missed,197421,0.0001974,33863,8m,,"(b)+(e) bun~88% + chase first~cd /home/box/trading-bot && \
+cp state.json state.json.bak-scan-20261106-1948 && \
+# log missed Trump + MrBeast
+python3 log_alert.py \
+  --ca WkbCL6GUq8ywhyLG1upJBAivMteXSBbwqtNB1supump \
+  --symbol Trump \
+  --name ""Trump Coin"" \
+  --type missed \
+  --mc 197421 \
+  --price 0.0001974 \
+  --liq 33863 \
+  --age 8m \
+  --reason ""(b)+(e) bun~88% + chase first~$111k→dex~$197k (~+77%) m5+57%; Trump brand-copy narr1/5; age~8m MC~$197k liq~$34k"" && \
+sleep 1 && \
+python3 log_alert.py \
+  --ca AtYniGvPcG11XfMhwcAXA9bgccWvdRB3LNwWkJskpump \
+  --symbol MrBeast \
+  --name MrBeast \
+  --type missed \
+  --mc 151286 \
+  --price 0.0001512 \
+  --liq 29473 \
+  --age 24m \
+  --reason ""(e)+(d) chase first~$108k→dex~$151k (~+40%) + entrap~77% MrBeast brand-copy narr1/5; age~24m MC~$151k liq~$29k"" 
+echo LOG_DONE:$?
+11k→dex~cd /home/box/trading-bot && \
+cp state.json state.json.bak-scan-20261106-1948 && \
+# log missed Trump + MrBeast
+python3 log_alert.py \
+  --ca WkbCL6GUq8ywhyLG1upJBAivMteXSBbwqtNB1supump \
+  --symbol Trump \
+  --name ""Trump Coin"" \
+  --type missed \
+  --mc 197421 \
+  --price 0.0001974 \
+  --liq 33863 \
+  --age 8m \
+  --reason ""(b)+(e) bun~88% + chase first~$111k→dex~$197k (~+77%) m5+57%; Trump brand-copy narr1/5; age~8m MC~$197k liq~$34k"" && \
+sleep 1 && \
+python3 log_alert.py \
+  --ca AtYniGvPcG11XfMhwcAXA9bgccWvdRB3LNwWkJskpump \
+  --symbol MrBeast \
+  --name MrBeast \
+  --type missed \
+  --mc 151286 \
+  --price 0.0001512 \
+  --liq 29473 \
+  --age 24m \
+  --reason ""(e)+(d) chase first~$108k→dex~$151k (~+40%) + entrap~77% MrBeast brand-copy narr1/5; age~24m MC~$151k liq~$29k"" 
+echo LOG_DONE:$?
+97k (~+77%) m5+57%; Trump brand-copy narr1/5; age~8m MC~cd /home/box/trading-bot && \
+cp state.json state.json.bak-scan-20261106-1948 && \
+# log missed Trump + MrBeast
+python3 log_alert.py \
+  --ca WkbCL6GUq8ywhyLG1upJBAivMteXSBbwqtNB1supump \
+  --symbol Trump \
+  --name ""Trump Coin"" \
+  --type missed \
+  --mc 197421 \
+  --price 0.0001974 \
+  --liq 33863 \
+  --age 8m \
+  --reason ""(b)+(e) bun~88% + chase first~$111k→dex~$197k (~+77%) m5+57%; Trump brand-copy narr1/5; age~8m MC~$197k liq~$34k"" && \
+sleep 1 && \
+python3 log_alert.py \
+  --ca AtYniGvPcG11XfMhwcAXA9bgccWvdRB3LNwWkJskpump \
+  --symbol MrBeast \
+  --name MrBeast \
+  --type missed \
+  --mc 151286 \
+  --price 0.0001512 \
+  --liq 29473 \
+  --age 24m \
+  --reason ""(e)+(d) chase first~$108k→dex~$151k (~+40%) + entrap~77% MrBeast brand-copy narr1/5; age~24m MC~$151k liq~$29k"" 
+echo LOG_DONE:$?
+97k liq~4k"
