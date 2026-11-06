@@ -1214,3 +1214,4 @@ python3 /home/box/trading-bot/log_alert.py \
   2>&1 | tail -208k; narr 3/5 live 401kat meta"
 2026-11-06T15:58:28Z,zhyHSPTtZ9gCKGezHVnMcMcx9rtPanShXkfDc4xpump,ChatGPT,ChatGPT,missed,143332,0.0001433,28642,7m,,"v2 skip (d): OpenAI ChatGPT brand-copy (tradeable leader among name swarm but pure trademark impersonation, no unique angle); age~7m MC~$143k liq~$29k m5~+21%; sec top10~9% burn ok; narr 3/5 AI meta"
 2026-11-06T15:58:30Z,BKSny2Z2MzyyVqvHkhHSq8YZy2EwSakRxZqe5ispump,PIKACHU,Pikachu Strategy,missed,81101,0.0000811,21184,13m,,v2 skip (e): m5~+40%>+30% chase at eval (MC~$81k liq~$21k) then dumped to ~$1.7k; Pokemon Pikachu meta leader-by-MC; age~13m; narr 3/5
+2026-11-06T15:58:31Z,A8Daneu2FRzP68KAYBdCvCYabmwDu4YiivGgyX7Wpump,kfc,kfc,missed,120270,0.0001202,5500,9m,26,v2 skip (a): creator_close DEV_OUT; age~9m MC~$120k bonding~26% holders~3 KFC brand; narr 3/5
