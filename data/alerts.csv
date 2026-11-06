@@ -1305,3 +1305,27 @@ wait $PID3; echo FOMO_LOG:$?
 2026-11-06T19:27:43Z,2WZfXZQNiHHwzTCZTC9vfAn3Ma5pUwKDf5DS9xzSpump,Trump,Trump Coin,missed,116974,0.000117,25661,11m,100,v2 skip (d): brand-copy vs OFFICIAL TRUMP 6p6xgHyF ~$367M; age~11m MC~$117k liq~$26k m5~+5%; creator_hold
 2026-11-06T19:27:45Z,5v298tAgNiZQsMxEXG3jQ8hWjwYAZCH7X2Koqfv9pump,Microsoft,Microsoft,missed,112887,0.000113,25211,2m,100,v2 skip (b)+(d)+(e): bun~76% + Microsoft brand-copy + m5~+200%; age~2m MC~$113k liq~$25k; creator_hold
 2026-11-06T19:27:47Z,RCAEvp1mnWJgLb4pyhXr4D5PqekNvcBEqVNReQFpump,WHITE,WHITE MONSTER,missed,182424,0.000182,17956,20m,100,v2 skip (a)+(b)+(c)+(e): DEV_OUT + bot~72% + offATH~35% + chase~49% first_trig~$123k→~$182k; age~20m MC~$182k liq~$18k
+2026-11-06T20:01:44Z,AD2TBq5fP6mmGFnciRbofH93PJwkpd2mYTFBY3eRpump,SQRL,Squirrelcoin,missed,157763,0.0001578,35910,26m,100,"v2 skip (a)+(b): DEV_OUT creator_close + bot~69–85% bun~30%; age~26m MC~# Log 3 missed (subprocess each - don't import)
+python3 /home/box/trading-bot/log_alert.py \
+  --ca AD2TBq5fP6mmGFnciRbofH93PJwkpd2mYTFBY3eRpump \
+  --symbol SQRL --name Squirrelcoin --type missed \
+  --mc 157763 --price 0.0001578 --liq 35910 --age 26 \
+  --bonding 100 \
+  --reason ""v2 skip (a)+(b): DEV_OUT creator_close + bot~69–85% bun~30%; age~26m MC~$158k liq~$36k m5~+18%; ATH~$264k""
+
+python3 /home/box/trading-bot/log_alert.py \
+  --ca Cy6F9HUKj29dTS9hUWopk2RkRLXRhcRaysrsQiXQpump \
+  --symbol GLITCHPEPE --name GLITCHPEPE --type missed \
+  --mc 224323 --price 0.0002246 --liq 80230 --age 28 \
+  --bonding 100 \
+  --reason ""v2 skip narrative 2/5: no fresh catalyst/live meta; X org weak (dev @GLITCHPEPEEEEE 13 foll, airdrop spam); liquid leader vs dead AorGS copy; age~28m MC~$224k liq~$80k m5~+13% bot~25% bun~5% creator_hold; sec burn+renounced ok""
+
+python3 /home/box/trading-bot/log_alert.py \
+  --ca HrDmoHCFLrv7hSg7TjcKoFGSFpG8NF2P65Tvdj7ypump \
+  --symbol Grok --name Grok --type missed \
+  --mc 109245 --price 0.0001092 --liq 24777 --age 16 \
+  --bonding 100 \
+  --reason ""v2 skip (d): xAI Grok brand-copy; age~16m MC~$109k liq~$25k m5~+17% bot~14% bun~6% creator_hold""
+
+tail -3 /home/box/trading-bot/alerts.csv
+58k liq~6k m5~+18%; ATH~64k"
