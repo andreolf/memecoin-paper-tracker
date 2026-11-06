@@ -1229,3 +1229,4 @@ python3 /home/box/trading-bot/log_alert.py \
 2026-11-06T17:16:08Z,EXeyEAhUXrwCf5PDvqVqWkFubQNJPwJd36NiUBHapump,HODL,DIAMOND HANDS,missed,102635,0.0001026,30,78m,,v2 skip (a): DEV_OUT creator_close; age~78m MC~$103k liq~$30 (thin); narr insufficient without catalyst
 2026-11-06T17:27:48Z,8TFVH4tiFWkvrWpUK6sLjaMm8g2kLgjn76Rqhs8spump,MrBeast,MrBeast,missed,115705,0.0001157,25568,9m,100,"skip (d) brand-copy/not leader vs MrBeast ~$546k, narr 2/5: celebrity name no fresh catalyst, not clear leader"
 2026-11-06T17:27:49Z,DqLdfu4DVD77bGH34tdXgSeazXxg9sxQ9CAYb8Wzpump,ASML,ASMLcompany,missed,119525,0.0001195,26013,11m,100,"skip (d) brand-copy ASML semiconductor ticker, narr 2/5: stock-ticker copy no organic leader claim"
+2026-11-06T17:27:51Z,HSUVjgv7nLdnWHMp1kxFAKR8FadisPqa55LJf6M4pump,JOHN,John Stockman,missed,62613,0.0000626,18484,16m,100,"skip (b) bun~40%, narr 3/5: live name chatter thin, creator_hold else ok"
