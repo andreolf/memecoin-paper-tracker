@@ -1295,3 +1295,4 @@ wait $PID3; echo FOMO_LOG:$?
 2026-11-06T18:27:41Z,8XLS8ViymbBpLNHPW82D6v7ATYA5JjbmckiWbyQmpump,$GTA6,GTA6,missed,68340,6.834e-05,0,5m,2,v2 (d)+(e) brand-copy vs GTA6 leaders + m5 chase ~+2599%
 2026-11-06T18:27:43Z,4UYUvMA6vL3uHBnRDSYXfazedV4kvyG5dPnKeb7fLoat,Pooh,Xi Xing Pooh,missed,63004,,0,16m,52,v2 (a)+(b)+(e) DEV_OUT+bot~54%+chase~+180%
 2026-11-06T18:44:25Z,4XZMmP8tvGhcYyiA6PBRsne9niSNSB71r1UjEMp5pump,Whale,depths Whale,missed,94386,0.00009454,23255,21m,100,v2 skip (a)+(b)+(e)+(d): DEV_OUT creator_close + bot~50% + m5~+36% chase; not leader vs WhiteWhale a3W4quto ~$780k–$836k; age~21m MC~$94k liq~$23k; White Whale live meta
+2026-11-06T18:44:27Z,JBr7nNJdYYuSYfWYGUVRmb8Eoe1Edc64zE8sUcNCNPxM,BALL,buy & call,missed,56736,0.00005684,19978,8m,100,v2 skip (a)+(b)+(e): DEV_OUT creator_close + bot~55% bun~26% + m5~+61% chase; age~8m MC~$57k liq~$20k; buy&call narr weak/unclear leader
