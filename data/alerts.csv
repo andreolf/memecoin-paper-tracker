@@ -1225,3 +1225,4 @@ python3 /home/box/trading-bot/log_alert.py \
 2026-11-06T17:00:18Z,4QDPF5TtNAKtU5p5pvcq9h9b44nRSikRzNrKzsUfLoat,FI,Finance Inu,missed,222917,0.0002229,94121,28m,100,v2 skip (b)+(e)+(a): bot~58% + m5~+33.5% chase + DEV_OUT (creator_close); age~28m MC~23k liq~4k; Finance Inu live meta
 2026-11-06T17:00:20Z,5do6LBiSP7hnm5nRndRe14fMMoYb9JA7aw272YHfMTT5,FI,Finance Inu,missed,80768,0.00008424,23930,43m,100,v2 skip (b): bot~64%; age~43m MC~1k liq~4k m5~-38%; Finance Inu copy swarm
 2026-11-06T17:16:06Z,R8z7JdTiJVjUqRZMDfHdf4EW2ufL19NJ3tGCTNGpump,FI,Finance Inu,missed,246594,0.0002467,38140,16m,,v2 skip (a)+(e): DEV_OUT creator_close + m5~+40% chase; age~16m MC~$247k liq~$38k; Finance Inu live meta/copy swarm
+2026-11-06T17:16:07Z,GAMiPgBnyW9RJ3TBobpzUC8UAa8CidBJ348A7uHEpump,Chicxu,CHICXU,missed,166840,0.0001691,34471,67m,,v2 skip (b)+(c)+(e): bot~76% bun~49% + ATH dump mc/ath~0.20 + m5~+32% chase; age~67m MC~$167k liq~$34k
