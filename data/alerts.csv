@@ -1337,3 +1337,4 @@ wait $PID3; echo FOMO_LOG:$?
 2026-11-06T22:45:30Z,AJxSiK2e2Kkx1iocjyXSBZLtz8szyDBFiUkepUzkpump,WHITE,WHITE MONSTER,missed,92134,0.00009213,5418,24m,3,"skip brand-copy (d), narr 3/5: live WHITE MONSTER meta but not leader vs ~$471k 2XCfvnMisH…"
 2026-11-06T22:45:31Z,9UWhBFgtgRfzr6RDTH8ageBTLuAsgDeaU6cY4485pump,MrBeast,MrBeast,missed,132100,0.0001321,27405,17m,100,"skip not-leader (d), narr 3/5: celebrity MrBeast meta but bigger rivals ~$546k / ~$138k"
 2026-11-06T22:45:32Z,9tWgEbVX9Zi4yRbASc41jScKUvoWoRbavqTwb8Y1pump,USOE,United States Oil Exchange,missed,110407,0.0001104,24946,1m,100,"skip (b)+(d)+(e), narr 3/5: top10~88% + not leader vs multimillion USOE + m5~+193% chase"
+2026-11-06T23:16:50Z,5NRzuqfyd4r7dHHKDpMY9HdGM2BMgSQhcZAbXTcfLoat,Jose,Be Like José,missed,111455,0,63000,27m,76,v2 (a)+(b): DEV_OUT creator_close + bot~44-53%/bun~36%; Jose live meta
