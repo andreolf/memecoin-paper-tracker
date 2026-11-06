@@ -1330,3 +1330,4 @@ wait $PID3; echo FOMO_LOG:$?
 2026-11-06T21:46:47Z,3ZLd9DvbQkhWqehHp1XRm4oZXhJeAnmE14hadNQJpump,/DREAM,/DREAM,missed,101429,0.0001015,24330,23m,,v2 skip (a)+(b): DEV_OUT creator_close + bot~65%; age~23m MC~$101k liq~$24k bun~1% m5~+25%
 2026-11-06T21:58:53Z,Hy4iuJwuo9hAUMgMsNpFXANvKSnGmFFqcjBZuiCFpJCP,PI,Privacy Inu,missed,252547,0.0002525,107956,9m,,v2 skip (e): m5~+60% chase at discovery (now~+23% h1~+69%); age~9m MC~$253k liq~$108k Privacy Inu / privacy meta; top10~12%
 2026-11-06T21:58:54Z,J33uScHUpA2vqUK2UxtMd7tgsLTJrCB5ZZcYcwjNpump,GTA 6 Coin,GTA 6 Coin,missed,106052,0.0001061,24364,7m,,v2 skip (d): GTA6 brand-copy not leader vs ~$12.5M GTA6; age~7m MC~$106k liq~$24k m5~+3%
+2026-11-06T22:16:24Z,G9MtqPnSyieTdM96Ai5qcu867kG1kaQcPrUAG9JVpump,GTA 6 Coin,GTA6,missed,115166,0.0001152,25509,9m,,v2 skip (b)+(d): entrap~71% + GTA6 brand-copy not leader vs ~$13.3M GTA VI; age~9m MC~$115k liq~$26k m5~+8% bun~9% creator_hold
