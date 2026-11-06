@@ -1343,3 +1343,4 @@ wait $PID3; echo FOMO_LOG:$?
 2026-11-06T23:28:16Z,D7eCYXewMoJ94xiXtbsiGu6XjyBEimwSpVyxYodnpump,GTA 6 Coin,GTA 6 Coin,missed,89666,8.972e-05,22301,10m,,v2 (b)+(d)+(e): entrap~69% + GTA6 brand-copy not leader + m5~+179% chase; live meta GTA6
 2026-11-06T23:28:20Z,AFVqABds2LBMWR2WjVgCBkUoZg4NSzt5SzcwBkn2pump,IphoneDuo,IphoneDuo,missed,67138,6.716e-05,19124,8m,,v2 (b)+(d): entrap~79% wash + iPhone brand-copy; age/MC/liq otherwise ok
 2026-11-06T23:28:22Z,9grujRgBDPyZaWqWAhz6AxXLJZjhZMwiQKf96hVVpump,Ondo,Ondo,missed,129258,0.0001293,27055,9m,,v2 (b)+(d): entrap~79% + Ondo Finance brand-copy not leader; live brand meta
+2026-11-06T23:44:42Z,46r5vJSK4vZWvU4roBXoQYoBZE8d4nmN3b6wRa6Gpump,HATCH,Hatch,missed,60231,6.213e-05,18613,43m,,v2 (a)+(b)+(e): DEV_OUT + bot~52% + m5~+71% chase; hatchmind.fun present but hard skips
