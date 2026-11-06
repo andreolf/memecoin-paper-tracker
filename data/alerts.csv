@@ -1332,3 +1332,4 @@ wait $PID3; echo FOMO_LOG:$?
 2026-11-06T21:58:54Z,J33uScHUpA2vqUK2UxtMd7tgsLTJrCB5ZZcYcwjNpump,GTA 6 Coin,GTA 6 Coin,missed,106052,0.0001061,24364,7m,,v2 skip (d): GTA6 brand-copy not leader vs ~$12.5M GTA6; age~7m MC~$106k liq~$24k m5~+3%
 2026-11-06T22:16:24Z,G9MtqPnSyieTdM96Ai5qcu867kG1kaQcPrUAG9JVpump,GTA 6 Coin,GTA6,missed,115166,0.0001152,25509,9m,,v2 skip (b)+(d): entrap~71% + GTA6 brand-copy not leader vs ~$13.3M GTA VI; age~9m MC~$115k liq~$26k m5~+8% bun~9% creator_hold
 2026-11-06T22:16:26Z,PgKNd27UcZCdawjzyUCXLsest4kDtiCFQskojU9pump,Leonida,State of Leonida,missed,87991,0.0000880,22098,16m,,v2 skip (a)+(b): DEV_OUT creator_close + entrap~80%; age~16m MC~$88k liq~$22k m5~-5% GTA Leonida meta bun0
+2026-11-06T22:28:04Z,FJ8YMaW5kZY23DjCmFU1UCGCMqtmA16qG7PkVKfpump,Diamond,Diamond,missed,198513,0.0001985,33929,19m,,v2 skip (a)+(b)+(d): DEV_OUT creator_close + entrap~80% + not leader vs ~$640k Diamond; age~19m MC~$199k liq~$34k m5~+21% bun~9% bot~0
