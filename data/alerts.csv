@@ -1324,3 +1324,4 @@ wait $PID3; echo FOMO_LOG:$?
 2026-11-06T21:16:15Z,4cJmQze3dDHU7cd9o5ZZNMwuYquo6r7RYTP8Eit6pump,GTA6,GTA VI,missed,99046,0.00009907,23479,5m,100,v2 skip (b)+(d)+(e): entrap~76% + GTA6 brand-copy not leader vs multi-M GTA VI + earlier m5 chase~+139%; age~5m MC~$99k liq~$23k bun~12% creator_hold
 2026-11-06T21:28:15Z,AbSkPVL67xyiM9TgjkAKSFiYcrzyXpXoYJArnNTwpump,HODL,Diamond Hands,missed,288254,0.0002882,41571,5m,,v2 skip (e): m5~+482% chase; age~5m MC~$288k liq~$42k bot0 entrap~7% creator_hold top10~53%
 2026-11-06T21:28:16Z,CQ1napYmWJ3ucHkbKzkXsd4EXexb4sX2UUu48wvpump,SQRL,Squirrelcoin,missed,251896,0.0002518,38402,17m,,v2 skip (a)+(b): DEV_OUT creator_close + entrap~80%; age~17m MC~$252k liq~$38k bot0 m5~+18%
+2026-11-06T21:28:17Z,Tnq4TtgfHp8HBUdpgevxKRDaobS8sXJ8Df1CRUupump,BMW,BMW,missed,68443,0.00006936,19462,41m,,v2 skip (a)+(b): DEV_OUT creator_close + entrap~83%; age~41m MC~$68k liq~$19k bot~3% m5~-26% brand-copy
