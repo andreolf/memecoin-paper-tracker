@@ -1230,3 +1230,31 @@ python3 /home/box/trading-bot/log_alert.py \
 2026-11-06T17:27:48Z,8TFVH4tiFWkvrWpUK6sLjaMm8g2kLgjn76Rqhs8spump,MrBeast,MrBeast,missed,115705,0.0001157,25568,9m,100,"skip (d) brand-copy/not leader vs MrBeast ~$546k, narr 2/5: celebrity name no fresh catalyst, not clear leader"
 2026-11-06T17:27:49Z,DqLdfu4DVD77bGH34tdXgSeazXxg9sxQ9CAYb8Wzpump,ASML,ASMLcompany,missed,119525,0.0001195,26013,11m,100,"skip (d) brand-copy ASML semiconductor ticker, narr 2/5: stock-ticker copy no organic leader claim"
 2026-11-06T17:27:51Z,HSUVjgv7nLdnWHMp1kxFAKR8FadisPqa55LJf6M4pump,JOHN,John Stockman,missed,62613,0.0000626,18484,16m,100,"skip (b) bun~40%, narr 3/5: live name chatter thin, creator_hold else ok"
+2026-11-06T17:44:43Z,5nMbMFxkzCEUbStJQsjreiYco46bJWqzfer23Xwcpump,TURTUR,Tur Tur Baton,missed,142871,0.0001430,33246,27m,,"v2 skip (e): m5~+48% chase (Dex live); age~27m MC~# Log 3 notable misses
+python3 /home/box/trading-bot/log_alert.py \
+  --ca 5nMbMFxkzCEUbStJQsjreiYco46bJWqzfer23Xwcpump \
+  --symbol TURTUR --name ""Tur Tur Baton"" \
+  --type missed --mc 142871 --price 0.0001430 --liq 33246 \
+  --age 27 --bonding """" \
+  --reason ""v2 skip (e): m5~+48% chase (Dex live); age~27m MC~$143k liq~$33k; bot~33% bun~8% creator_hold; ath_r~0.74; narr unclear baton meme"" &
+PID1=$!
+sleep 1
+python3 /home/box/trading-bot/log_alert.py \
+  --ca 4izrpFiuxGXv9vSGxX8RoWQUgXCFMwK5KmbaEhLspump \
+  --symbol CRVL --name ""Crypto Revenue Leaders ETF"" \
+  --type missed --mc 108862 --price 0.0001089 --liq 27989 \
+  --age 23 --bonding """" \
+  --reason ""v2 skip (a)+(b): DEV_OUT creator_close + bot~54% bun~36%; age~23m MC~$109k liq~$28k; ETF-copy narr weak"" &
+PID2=$!
+sleep 1
+python3 /home/box/trading-bot/log_alert.py \
+  --ca 2XHe8XaNzbKEPmiZWqqBLhDKEKYa9xFdros6DFbrpump \
+  --symbol FOMO --name ""Fomo Skeleton"" \
+  --type missed --mc 50499 --price 0.0000505 --liq 18208 \
+  --age 6 --bonding """" \
+  --reason ""v2 skip (e): m5~+35–400% chase + MC borderline ~$37–50k; age~6m; skeleton meme weak leader unclear"" &
+PID3=$!
+wait $PID1; echo TURTUR_LOG:$?
+wait $PID2; echo CRVL_LOG:$?
+wait $PID3; echo FOMO_LOG:$?
+43k liq~3k; bot~33% bun~8% creator_hold; ath_r~0.74; narr unclear baton meme"
