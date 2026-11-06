@@ -510,3 +510,4 @@ python3 /home/box/trading-bot/log_alert.py \
   --reason ""v2 skip (b)+(d) entrap~80% GTA6 copy swarm no clear leader; age~29m MC~$163k liq~$31k m5~+8%; narr 3/5 live GTA VI meta"" \
   2>&1 | tee log_missed_gta6coin.txt
 63k liq~1k m5~+8%; narr 3/5 live GTA VI meta"
+2026-11-06T02:59:11Z,oCZHH8HnEBCPipEGdEcP3f45pQAaM7nh7P6EkRPpump,AMD,A Meme Dacity,missed,336215,0.0003363,45462,28m,100,v2 skip (d) AMD A-Meme-* copy vs A Meme Dog DDmG… ~$670k leader; age~28m MC~$336k liq~$45k m5~+19%; narr 2/5 ticker swarm no unique catalyst
