@@ -1223,3 +1223,4 @@ python3 /home/box/trading-bot/log_alert.py \
 2026-11-06T16:45:00Z,WA3mM1vhL5deDMZQK6pst7dfoZiYZnR8EJM3MmCpump,Grok,Grok,missed,283326,0.0002833,39518,34m,100,"skip (a) DEV_OUT creator_close, narr 3/5: Grok/xAI live meta, memeable ticker, not clear original vs X lore"
 2026-11-06T17:00:17Z,8NfWsguFZMzemSL8XqhwovSYL8bNxWaksYPczbQXpump,KoriMu,KoriMu,missed,253030,0.0002565,39487,43m,100,v2 skip (c): ~43% off ATH (athMC~45k) + m5 sells dominating (235/284) m5~-23%; age~43m MC~53k liq~9k; narr 3/5 story+site+X leader
 2026-11-06T17:00:18Z,4QDPF5TtNAKtU5p5pvcq9h9b44nRSikRzNrKzsUfLoat,FI,Finance Inu,missed,222917,0.0002229,94121,28m,100,v2 skip (b)+(e)+(a): bot~58% + m5~+33.5% chase + DEV_OUT (creator_close); age~28m MC~23k liq~4k; Finance Inu live meta
+2026-11-06T17:00:20Z,5do6LBiSP7hnm5nRndRe14fMMoYb9JA7aw272YHfMTT5,FI,Finance Inu,missed,80768,0.00008424,23930,43m,100,v2 skip (b): bot~64%; age~43m MC~1k liq~4k m5~-38%; Finance Inu copy swarm
