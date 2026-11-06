@@ -1049,3 +1049,4 @@ date -u +%Y-%m-%dT%H:%M:%SZ
 python3 -c ""import json;s=json.load(open('/home/box/trading-bot/state.json'));print(s['last_run_utc'], s['v2'], s['breaker']['on'], s['breaker'].get('current_streak_stops'), s['gmgn_run_counter'], s['gmgn_last_security'])""66k migrated"
 2026-11-06T13:52:51Z,aRNPo5iJZ1bfTzhWY8KFSxe7o41bBtYAupwg5fxpump,Trump,Trump Coin,missed,76936,0.00007793,20693,36m,100,v2 skip (c)+(d): ~63% off ATH + entrap~82% Trump brand-copy; age~36m MC~7k
 2026-11-06T14:09:24Z,74qfhVUsG1sdUoPH2CjdkgDMmqhoR7BPddxVNqaWpump,Qubit,Qubіt,missed,69706,6.97e-05,,16m,100,v2 skip (a)+(b): creator_close DEV_OUT + bot~82% entrap~65%; age~16m MC~$70k liq~$20k
+2026-11-06T14:09:25Z,mV9kZc5WEcsupy9KYZo1c7x52Ys1A5CDK73Ysg6pump,ROCCO,ROCCO,missed,165468,0.0001654,,28m,100,v2 skip (b): bun~78% (bot0); age~28m MC~$165k liq~$31k top10~66%
