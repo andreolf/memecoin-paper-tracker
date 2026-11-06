@@ -1330,3 +1330,27 @@ python3 /home/box/trading-bot/log_alert.py \
 tail -3 /home/box/trading-bot/alerts.csv
 58k liq~6k m5~+18%; ATH~64k"
 2026-11-06T20:01:45Z,Cy6F9HUKj29dTS9hUWopk2RkRLXRhcRaysrsQiXQpump,GLITCHPEPE,GLITCHPEPE,missed,224323,0.0002246,80230,28m,100,"v2 skip narrative 2/5: no fresh catalyst/live meta; X org weak (dev @GLITCHPEPEEEEE 13 foll, airdrop spam); liquid leader vs dead AorGS copy; age~28m MC~24k liq~0k m5~+13% bot~25% bun~5% creator_hold; sec burn+renounced ok"
+2026-11-06T20:01:46Z,HrDmoHCFLrv7hSg7TjcKoFGSFpG8NF2P65Tvdj7ypump,Grok,Grok,missed,109245,0.0001092,24777,16m,100,"v2 skip (d): xAI Grok brand-copy; age~16m MC~# Log 3 missed (subprocess each - don't import)
+python3 /home/box/trading-bot/log_alert.py \
+  --ca AD2TBq5fP6mmGFnciRbofH93PJwkpd2mYTFBY3eRpump \
+  --symbol SQRL --name Squirrelcoin --type missed \
+  --mc 157763 --price 0.0001578 --liq 35910 --age 26 \
+  --bonding 100 \
+  --reason ""v2 skip (a)+(b): DEV_OUT creator_close + bot~69–85% bun~30%; age~26m MC~$158k liq~$36k m5~+18%; ATH~$264k""
+
+python3 /home/box/trading-bot/log_alert.py \
+  --ca Cy6F9HUKj29dTS9hUWopk2RkRLXRhcRaysrsQiXQpump \
+  --symbol GLITCHPEPE --name GLITCHPEPE --type missed \
+  --mc 224323 --price 0.0002246 --liq 80230 --age 28 \
+  --bonding 100 \
+  --reason ""v2 skip narrative 2/5: no fresh catalyst/live meta; X org weak (dev @GLITCHPEPEEEEE 13 foll, airdrop spam); liquid leader vs dead AorGS copy; age~28m MC~$224k liq~$80k m5~+13% bot~25% bun~5% creator_hold; sec burn+renounced ok""
+
+python3 /home/box/trading-bot/log_alert.py \
+  --ca HrDmoHCFLrv7hSg7TjcKoFGSFpG8NF2P65Tvdj7ypump \
+  --symbol Grok --name Grok --type missed \
+  --mc 109245 --price 0.0001092 --liq 24777 --age 16 \
+  --bonding 100 \
+  --reason ""v2 skip (d): xAI Grok brand-copy; age~16m MC~$109k liq~$25k m5~+17% bot~14% bun~6% creator_hold""
+
+tail -3 /home/box/trading-bot/alerts.csv
+09k liq~5k m5~+17% bot~14% bun~6% creator_hold"
