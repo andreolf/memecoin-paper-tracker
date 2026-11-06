@@ -1305,4 +1305,3 @@ wait $PID3; echo FOMO_LOG:$?
 2026-11-06T19:27:43Z,2WZfXZQNiHHwzTCZTC9vfAn3Ma5pUwKDf5DS9xzSpump,Trump,Trump Coin,missed,116974,0.000117,25661,11m,100,v2 skip (d): brand-copy vs OFFICIAL TRUMP 6p6xgHyF ~$367M; age~11m MC~$117k liq~$26k m5~+5%; creator_hold
 2026-11-06T19:27:45Z,5v298tAgNiZQsMxEXG3jQ8hWjwYAZCH7X2Koqfv9pump,Microsoft,Microsoft,missed,112887,0.000113,25211,2m,100,v2 skip (b)+(d)+(e): bun~76% + Microsoft brand-copy + m5~+200%; age~2m MC~$113k liq~$25k; creator_hold
 2026-11-06T19:27:47Z,RCAEvp1mnWJgLb4pyhXr4D5PqekNvcBEqVNReQFpump,WHITE,WHITE MONSTER,missed,182424,0.000182,17956,20m,100,v2 skip (a)+(b)+(c)+(e): DEV_OUT + bot~72% + offATH~35% + chase~49% first_trig~$123k→~$182k; age~20m MC~$182k liq~$18k
-2026-11-06T20:01:08Z,,,,new,,,,,,
