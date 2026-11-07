@@ -1562,3 +1562,18 @@ echo TRUMP_LOG:$?
 2026-11-07T03:00:19Z,GTWQEQBsuaNcZFVjRox5qvT3bFHZmjzKgsxV1KAmpump,Trump,Trump Coin,missed,94197,0.00009423,22901,8m,,v2 skip (b)+(d): entrap~75% + Trump brand-copy not leader vs OFFICIAL TRUMP 6p6xgHy… multi-M; age~8m MC~4k liq~3k holders~2145 top10~10% m5~+10% creator_hold bun~9%
 2026-11-07T03:12:42Z,C89aVBvoZjSGuXQzhsLvNzekDuJrhezzR58rEN9RMk4u,STM,StonkMarket,missed,73580,0.00007357,23040,15m,100,v2 skip (e): m5~+22% max-chase; age~15m MC~$74k liq~$23k StonkMarket multi-copy (DrCVqk/Fqu7) leader-ish but chase hard; site stonkmarket.tech
 2026-11-07T03:12:44Z,BdouwEr3mwXkT6S6EmHNCjn9oEtykRKCKiUSTRF9pump,Alice,Alice The Nvidia Spy,missed,59857,0.00005997,21782,7m,100,v2 skip (a)+(b)+(e): DEV_OUT creator_close + bot~70% + m5~+50% chase; age~7m MC~$60k liq~$22k Nvidia Spy narr weak
+2026-11-07T03:26:46Z,emtRZ3Cvz5V4SFNs9JKzJP11Ckbwe45gtXGKBF5pump,Amazon,Amazon,missed,99906,0.00009997,,15m,,"skip (e)+(d): m5 was +37% chase at filter (now -38% dump) + Amazon brand-copy not clear leader vs multi AMAZON pairs; age~15m MC~# Log missed Amazon + BARRON
+python3 /home/box/trading-bot/log_alert.py \
+  --ca emtRZ3Cvz5V4SFNs9JKzJP11Ckbwe45gtXGKBF5pump \
+  --symbol Amazon --name Amazon --type missed \
+  --mc 99906 --price 0.00009997 --age 15m \
+  --reason ""skip (e)+(d): m5 was +37% chase at filter (now -38% dump) + Amazon brand-copy not clear leader vs multi AMAZON pairs; age~15m MC~$100k liq~$24k""
+echo AMAZON_LOG:$?
+python3 /home/box/trading-bot/log_alert.py \
+  --ca KeeX8JFBi8cUZeszp7kzP6R93vY7MxvNQdSKudXpump \
+  --symbol BARRON --name BARRON --type missed \
+  --mc 145226 --price 0.0001452 --age 17m \
+  --reason ""skip (e)+(d): m5=+55% chase + not-leader vs older BARRON multi-M (ECY31…/84JQeu…); age~17m MC~$145k liq~$29k""
+echo BARRON_LOG:$?
+# Check telegram script / PAUSED
+ls /home/box/trading-bot/*telegram* /home/box/trading-bot/**/telegram* 2>/dev/null; ls /home/box/bin/*telegram* 2>/dev/null; find /home/box/trading-bot -name '*telegram*' -o -name '*PAUSED*' 2>/dev/null | head00k liq~4k"
