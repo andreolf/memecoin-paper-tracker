@@ -1400,3 +1400,4 @@ python3 log_alert.py --type missed \
   --mc 56718 --price 0.00005671 --liq 19322 --age 5 \
   --reason ""v2 skip (a)+(e): DEV_OUT creator_close + m5~+36% chase; age~5m MC~$57k liq~$19k"" 
 echo DONE_LOGS9k"
+2026-11-07T01:14:47Z,FzmSx4UuG8Jhsrxvyt1xNtk6qFxo7KY4zGwPifKZpump,Busted,Busted,missed,261506,0.0002641,40191,50m,100,v2 skip (a): DEV_OUT creator_close (CTO flag); age~50m MC~$262k liq~$40k m5~-8% top10~5% GTA BUSTED meta leader vs copies; no alert
