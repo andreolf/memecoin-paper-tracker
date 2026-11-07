@@ -1414,3 +1414,24 @@ echo DONE_LOGS9k"
 2026-11-07T02:18:39Z,ZFtb1eDmcDmkWtmyqSjVQDfGS7tdshyzzuJoTeEpump,scamsem,scamsem,missed,181962,0.0001822,33401,33m,100,"v2 skip (d)+(e): not-leader vs scamsem 41WpXn15 @~$930k + m5~+45% max-chase; age~33m MC~$182k liq~$33k live scam meta, security clean"
 2026-11-07T02:18:40Z,yKKtcgHeyWULU53yxFfDmZ6M9MU4KpgyjC8CtG7pump,Microsoft,Microsoft,missed,202727,0.0002028,34368,16m,100,"v2 skip (a)+(b): DEV_OUT creator_close + entrap~89%; age~16m MC~$203k liq~$34k m5~+15% Microsoft brand-copy, narr 2/5"
 2026-11-07T02:18:41Z,7DGm8jYhi3aJY1at1uGxpUoZDWeBhkuoeZDDn2vXhcp5,EGOD,EGOD,missed,133761,0.0001337,1550,4m,85,"v2 skip (a): DEV_OUT creator_close + liq~$1.5k (<$8k migrated/virtual); age~4m MC~$134k meteora_virtual_curve, narr 2/5"
+2026-11-07T02:31:07Z,14JVWBDYvsMSXMfpwVE59E7SvdF76aQZTCJZ8u7Gpump,Dacity,Dacity Coin,missed,125137,0.0001251,26634,4m,,"v2 skip (e): m5~+233% max-chase; age~4m MC~cp /home/box/trading-bot/state.json /home/box/trading-bot/state.json.bak-scan-2026-11-07T023053Z
+
+# Log missed via log_alert.py
+python3 /home/box/trading-bot/log_alert.py \
+  --ca 14JVWBDYvsMSXMfpwVE59E7SvdF76aQZTCJZ8u7Gpump \
+  --symbol Dacity --name ""Dacity Coin"" --type missed \
+  --mc 125137 --price 0.0001251 --liq 26634 --age 4 \
+  --reason ""v2 skip (e): m5~+233% max-chase; age~4m MC~$125k liq~$27k holders~2005 top10~62% fresh migrate pumpswap""
+
+python3 /home/box/trading-bot/log_alert.py \
+  --ca 9ripiapoJ5EGTs5DpJ5aQeAsYAkJ3onLNUqT1Tnmpump \
+  --symbol Diamond --name Diamond --type missed \
+  --mc 67824 --price 0.00006785 --liq 19294 --age 11 \
+  --reason ""v2 skip (d): not-leader vs Diamond Hands HODL DKtofLM6… @~$3.5M; age~11m MC~$68k liq~$19k m5~-55% dumping""
+
+python3 /home/box/trading-bot/log_alert.py \
+  --ca FhtLRwmMfuZAghT8HQ3hhvFYBV3Cw7duGyvjnU7Apump \
+  --symbol SCAMCHI --name Scamchi --type missed \
+  --mc 58633 --price 0.00005869 --liq 17756 --age 2 \
+  --reason ""v2 skip (e): m5~+53% max-chase + scam-meta name; age~2m MC~$59k liq~$18k holders~29 top10~78%""
+25k liq~7k holders~2005 top10~62% fresh migrate pumpswap"
