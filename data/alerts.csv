@@ -1577,3 +1577,18 @@ python3 /home/box/trading-bot/log_alert.py \
 echo BARRON_LOG:$?
 # Check telegram script / PAUSED
 ls /home/box/trading-bot/*telegram* /home/box/trading-bot/**/telegram* 2>/dev/null; ls /home/box/bin/*telegram* 2>/dev/null; find /home/box/trading-bot -name '*telegram*' -o -name '*PAUSED*' 2>/dev/null | head00k liq~4k"
+2026-11-07T03:26:47Z,KeeX8JFBi8cUZeszp7kzP6R93vY7MxvNQdSKudXpump,BARRON,BARRON,missed,145226,0.0001452,,17m,,"skip (e)+(d): m5=+55% chase + not-leader vs older BARRON multi-M (ECY31…/84JQeu…); age~17m MC~# Log missed Amazon + BARRON
+python3 /home/box/trading-bot/log_alert.py \
+  --ca emtRZ3Cvz5V4SFNs9JKzJP11Ckbwe45gtXGKBF5pump \
+  --symbol Amazon --name Amazon --type missed \
+  --mc 99906 --price 0.00009997 --age 15m \
+  --reason ""skip (e)+(d): m5 was +37% chase at filter (now -38% dump) + Amazon brand-copy not clear leader vs multi AMAZON pairs; age~15m MC~$100k liq~$24k""
+echo AMAZON_LOG:$?
+python3 /home/box/trading-bot/log_alert.py \
+  --ca KeeX8JFBi8cUZeszp7kzP6R93vY7MxvNQdSKudXpump \
+  --symbol BARRON --name BARRON --type missed \
+  --mc 145226 --price 0.0001452 --age 17m \
+  --reason ""skip (e)+(d): m5=+55% chase + not-leader vs older BARRON multi-M (ECY31…/84JQeu…); age~17m MC~$145k liq~$29k""
+echo BARRON_LOG:$?
+# Check telegram script / PAUSED
+ls /home/box/trading-bot/*telegram* /home/box/trading-bot/**/telegram* 2>/dev/null; ls /home/box/bin/*telegram* 2>/dev/null; find /home/box/trading-bot -name '*telegram*' -o -name '*PAUSED*' 2>/dev/null | head45k liq~9k"
