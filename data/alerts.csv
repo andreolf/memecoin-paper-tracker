@@ -1621,3 +1621,4 @@ echo EXIT:$?7k m5~-55% dump"
 2026-11-07T05:11:33Z,ChFpJQkWCbsirgEMDV1yzxrsLgxNfvBp8Nnw9s3pump,USDF,USDF,missed,115182,0.0001152,25423,1m,migrated,(a)+(b)+(e) DEV_OUT + bun~88% + m5=+209%
 2026-11-07T05:11:34Z,GoqdpMVvqawNUvdfTmqXvvoSaDRrqDQexzG7wzf2pump,SLINGFOLIO,Slingfolio,missed,97275,0.00009745,23931,30m,migrated,(a)+(b)+(d)+(e) DEV_OUT + bot~49% + copy swarm + m5=+75%
 2026-11-07T06:01:50Z,DTuG18xCtXTLe3nWSsL96Ehe8au6NiuBRG4MwvVipump,Hakutaku,Hakutaku,missed,86707,0.00008674,22787,3m,100,v2 skip (b)+(e): bun~73% + m5=+128% chase; narr 3/5: live Hakutaku meta (copy swarm) but bundled pump leader
+2026-11-07T06:01:51Z,EgsY9jNCkGiojJ6jrNht2DDXA4fvQR9tfDxgBn27pump,GTA 6 Coin,GTA6,missed,144187,0.0001442,28717,14m,100,v2 skip (b)+(d): entrap~71% + GTA6 brand-copy not leader vs multi-M GTA6; narr 3/5: live GTA6 meta
