@@ -1348,3 +1348,4 @@ wait $PID3; echo FOMO_LOG:$?
 2026-11-06T23:44:44Z,BP4qdM5bcbWCL9op3riSShB5ua4GCLxFiGRoJkFpump,VETO,VETO,missed,117634,0.0001176,25768,10m,,v2 (b): entrap~80% wash (gmgn holders=1 vs dex liq); narr weak no socials
 2026-11-07T00:00:37Z,2rwNfv9tS82uvjZU9QCLUWcfUvPpAxsHFhiKYyBHpump,Memecoin,Memecoin,missed,93689,0.00009379,23584,2m,,"v2 (d)+(e): not leader vs ~$219k/$192k ""just a memecoin"" + m5~+146% chase; no socials"
 2026-11-07T00:00:39Z,9TpRtDXB42rpjnCYMCihYepBko91BKWKVJbNp8Dmpump,XTO,XTO,missed,74267,0.00007431,22738,8m,,v2 (b)+(e): entrap~79% wash + m5 was ~+35% chase at discovery (now dumping); xtruthoil twitter thin
+2026-11-07T00:00:42Z,EnhQUtU1EwwnvpMLmTWhBKfq9yR3NCZdtbXpWNe8pump,ELON,Official Elon Musk,missed,133525,0.0001336,27914,3m,,v2 (a)+(b)+(d)+(e): DEV_OUT + bot~74-85% + Elon brand-copy + m5~+253% chase
