@@ -1518,3 +1518,44 @@ python3 /home/box/trading-bot/log_alert.py \
   --reason ""v2 skip (b)+(d): entrap~75% + Trump brand-copy not leader vs OFFICIAL TRUMP 6p6xgHy… multi-M; age~8m MC~$94k liq~$23k holders~2145 top10~10% m5~+10% creator_hold bun~9%""
 echo TRUMP_LOG:$?
 06k liq~4k holders~2309 top10~14% m5~+26%; chase disc→live ~+31% from ~$80k trigger"
+2026-11-07T03:00:18Z,6dNSFCipwW9ZBsSeTNRRAjKGzwuTdC1FvcjFfsgkpump,CATE,CATE,missed,189372,0.0001894,33207,13m,,"v2 skip (b)+(d): entrap~78% + not-leader vs Catecoin Ai66LHZG… @~$33M / CATE 89x86Bx9… @~$74M; age~13m MC~cd /tmp/meme-scan-20261107T0255 && NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ) && echo ""NOW=$NOW""
+
+# 1 YouTube
+python3 /home/box/trading-bot/log_alert.py \
+  --ca 12SvW8geY7jmZ9dJJyGrNRjWeddKZ4pTHdZeDffapump \
+  --symbol YouTube \
+  --name YouTube \
+  --type missed \
+  --mc 105805 \
+  --price 0.0001058 \
+  --liq 24420 \
+  --age 29 \
+  --reason ""v2 skip (a)+(b)+(d): DEV_OUT creator_close + entrap~82% + YouTube brand-copy; age~29m MC~$106k liq~$24k holders~2309 top10~14% m5~+26%; chase disc→live ~+31% from ~\$80k trigger"" 
+echo YT_LOG:$?
+
+# 2 CATE  
+python3 /home/box/trading-bot/log_alert.py \
+  --ca 6dNSFCipwW9ZBsSeTNRRAjKGzwuTdC1FvcjFfsgkpump \
+  --symbol CATE \
+  --name CATE \
+  --type missed \
+  --mc 189372 \
+  --price 0.0001894 \
+  --liq 33207 \
+  --age 13 \
+  --reason ""v2 skip (b)+(d): entrap~78% + not-leader vs Catecoin Ai66LHZG… @~\$33M / CATE 89x86Bx9… @~\$74M; age~13m MC~$189k liq~$33k holders~2265 top10~9% m5~+11% creator_hold bun~7%""
+echo CATE_LOG:$?
+
+# 3 Trump
+python3 /home/box/trading-bot/log_alert.py \
+  --ca GTWQEQBsuaNcZFVjRox5qvT3bFHZmjzKgsxV1KAmpump \
+  --symbol Trump \
+  --name ""Trump Coin"" \
+  --type missed \
+  --mc 94197 \
+  --price 0.00009423 \
+  --liq 22901 \
+  --age 8 \
+  --reason ""v2 skip (b)+(d): entrap~75% + Trump brand-copy not leader vs OFFICIAL TRUMP 6p6xgHy… multi-M; age~8m MC~$94k liq~$23k holders~2145 top10~10% m5~+10% creator_hold bun~9%""
+echo TRUMP_LOG:$?
+89k liq~3k holders~2265 top10~9% m5~+11% creator_hold bun~7%"
