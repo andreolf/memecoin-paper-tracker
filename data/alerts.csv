@@ -1410,3 +1410,4 @@ echo DONE_LOGS9k"
 2026-11-07T02:02:17Z,9C3jRtAaEXKtiZeLSG47i6zbWBkHzyi2YE3MzRqYQPZE,LUCKY,LuckyCoin,missed,299221,0.0002992,32646,39m,migrated,v2 skip (e): m5~+84% max-chase + discovery→live ~+59% (disc~0.000189→0.000299); age~39m MC~$299k liq~$33k LuckyCoin meta leader vs copies but chase; narr would be 3/5 live-meta
 2026-11-07T02:02:19Z,C1w2cSCc4GmXfUL2y5amkGLhDPsJT7Ts7VyS71inpump,BTC,Bitcoin,missed,115905,0.0001159,25652,3m,migrated,v2 skip (b)+(e)+(d): bun~83% + m5~+198% chase + BTC brand-copy; age~3m MC~$116k liq~$26k
 2026-11-07T02:02:22Z,F1gKV5QEV4xtC2jeNVpump,GTA6,GTA 6 Coin,missed,192717,0.0001927,33452,27m,migrated,v2 skip (b): entrap~62%; age~27m MC~$193k liq~$33k GTA 6 Coin
+2026-11-07T02:03:18Z,F1gKV5QEV4xtC2jeNVJufx9AKAkre5qucvkszCZ4Qynq,GTA6,GTA 6 Coin,missed,192717,0.0001927,33452,27m,migrated,v2 skip (b): entrap~62%; age~27m MC~$193k liq~$33k GTA 6 Coin (correct CA; prior row had truncated CA)
