@@ -1592,3 +1592,16 @@ python3 /home/box/trading-bot/log_alert.py \
 echo BARRON_LOG:$?
 # Check telegram script / PAUSED
 ls /home/box/trading-bot/*telegram* /home/box/trading-bot/**/telegram* 2>/dev/null; ls /home/box/bin/*telegram* 2>/dev/null; find /home/box/trading-bot -name '*telegram*' -o -name '*PAUSED*' 2>/dev/null | head45k liq~9k"
+2026-11-07T03:59:37Z,xNG4NySJ2M7GoYNTsrcWqiFkjGk5BR31pbsZWBYpump,MUSKX,MuskX,missed,54842,0.00005484,17079,8m,100,"v2 skip (a)+(b)+(d): DEV_OUT creator_close + entrap~81% + Musk brand-copy; age~8m MC~5k liq~# Log MUSKX as missed
+python3 /home/box/trading-bot/log_alert.py \
+  --ca xNG4NySJ2M7GoYNTsrcWqiFkjGk5BR31pbsZWBYpump \
+  --symbol MUSKX \
+  --name MuskX \
+  --type missed \
+  --mc 54842 \
+  --price 0.00005484 \
+  --liq 17079 \
+  --age 8 \
+  --bonding 100 \
+  --reason ""v2 skip (a)+(b)+(d): DEV_OUT creator_close + entrap~81% + Musk brand-copy; age~8m MC~$55k liq~$17k m5~-55% dump"" 2>&1
+echo EXIT:$?7k m5~-55% dump"
