@@ -1631,3 +1631,38 @@ echo EXIT:$?7k m5~-55% dump"
 2026-11-07T08:41:14Z,7jpQyywZm2KD9NTZX7DoZkcvETWCEf56wb1nmfJmpump,lucky,dont ignore this kitten,missed,58771,0.00005877,18604,11m,,(e) chase m5+30% + (a) cre=0 ~$59k MC age~11m Pump.fun
 2026-11-07T08:41:16Z,6gsWCP6Lwb42891yswBwmzxHczEtjQkG9JSohY4Upump,DONPEPE,DON PEPE GODFATHER,missed,176178,0.0001761,,12m,0.066,(a) creator_close cre=0 hold=4 thin curve mayhem ~$176k MC age~12m
 2026-11-07T08:59:50Z,EU6fsQeoKbEWSFrqFk4y2bzXidAtEJueBHkeWfNfpump,Trump,Trump Coin,missed,125349,0.0001253,26659.92,12m,100,v2 skip (a)+(b)+(d): cre=0 + entrap~78%/insider~78% + Trump brand-copy not leader vs OFFICIAL TRUMP; age~12m MC~$122k liq~$26k m5~+6% creator_hold bun~9% bot0
+2026-11-07T09:14:30Z,BKUfxu6qYXnUU7fmzS4V2UX1em1ewBfkSuceXnGpump,ChatGPT,ChatGPT,missed,68189,0.00006818,19234,9m,,"v2 skip (d): OpenAI ChatGPT brand-copy (tradeable leader among name swarm, image_dup=28, pure trademark impersonation); age~9m MC~8k liq~# Live re-fetch ChatGPT for accurate missed log numbers
+python3 <<'PY'
+import json,urllib.request,time
+ca='BKUfxu6qYXnUU7fmzS4V2UX1em1ewBfkSuceXnGpump'
+req=urllib.request.Request(f'https://api.dexscreener.com/latest/dex/tokens/{ca}', headers={'User-Agent':'Mozilla/5.0'})
+d=json.load(urllib.request.urlopen(req,timeout=15))
+pairs=[p for p in (d.get('pairs') or []) if p.get('chainId')=='solana']
+best=max(pairs, key=lambda x:(x.get('liquidity') or {}).get('usd') or 0)
+now=time.time()
+age_m=(now*1000-best['pairCreatedAt'])/60000
+print(json.dumps({
+  'symbol': best['baseToken']['symbol'],
+  'name': best['baseToken']['name'],
+  'mc': best.get('marketCap') or best.get('fdv'),
+  'price': float(best['priceUsd']),
+  'liq': (best.get('liquidity') or {}).get('usd'),
+  'm5': (best.get('priceChange') or {}).get('m5'),
+  'h1': (best.get('priceChange') or {}).get('h1'),
+  'age_m': round(age_m,1),
+  'dex': best.get('dexId'),
+}, indent=2))
+PY
+# log missed
+python3 /home/box/trading-bot/log_alert.py \
+  --ca BKUfxu6qYXnUU7fmzS4V2UX1em1ewBfkSuceXnGpump \
+  --symbol ChatGPT \
+  --name ChatGPT \
+  --type missed \
+  --mc 68189 \
+  --price 0.00006818 \
+  --liq 19234 \
+  --age 9m \
+  --reason ""v2 skip (d): OpenAI ChatGPT brand-copy (tradeable leader among name swarm, image_dup=28, pure trademark impersonation); age~9m MC~$68k liq~$19k m5~+21%; narr 3/5 (AI meta / swarm leader, no fresh catalyst)""
+echo log_exit:$?
+9k m5~+21%; narr 3/5 (AI meta / swarm leader, no fresh catalyst)"
