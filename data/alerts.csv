@@ -1456,3 +1456,24 @@ python3 /home/box/trading-bot/log_alert.py \
   --mc 58633 --price 0.00005869 --liq 17756 --age 2 \
   --reason ""v2 skip (e): m5~+53% max-chase + scam-meta name; age~2m MC~$59k liq~$18k holders~29 top10~78%""
 9k m5~-55% dumping"
+2026-11-07T02:31:10Z,FhtLRwmMfuZAghT8HQ3hhvFYBV3Cw7duGyvjnU7Apump,SCAMCHI,Scamchi,missed,58633,0.00005869,17756,2m,,"v2 skip (e): m5~+53% max-chase + scam-meta name; age~2m MC~9k liq~cp /home/box/trading-bot/state.json /home/box/trading-bot/state.json.bak-scan-2026-11-07T023053Z
+
+# Log missed via log_alert.py
+python3 /home/box/trading-bot/log_alert.py \
+  --ca 14JVWBDYvsMSXMfpwVE59E7SvdF76aQZTCJZ8u7Gpump \
+  --symbol Dacity --name ""Dacity Coin"" --type missed \
+  --mc 125137 --price 0.0001251 --liq 26634 --age 4 \
+  --reason ""v2 skip (e): m5~+233% max-chase; age~4m MC~$125k liq~$27k holders~2005 top10~62% fresh migrate pumpswap""
+
+python3 /home/box/trading-bot/log_alert.py \
+  --ca 9ripiapoJ5EGTs5DpJ5aQeAsYAkJ3onLNUqT1Tnmpump \
+  --symbol Diamond --name Diamond --type missed \
+  --mc 67824 --price 0.00006785 --liq 19294 --age 11 \
+  --reason ""v2 skip (d): not-leader vs Diamond Hands HODL DKtofLM6… @~$3.5M; age~11m MC~$68k liq~$19k m5~-55% dumping""
+
+python3 /home/box/trading-bot/log_alert.py \
+  --ca FhtLRwmMfuZAghT8HQ3hhvFYBV3Cw7duGyvjnU7Apump \
+  --symbol SCAMCHI --name Scamchi --type missed \
+  --mc 58633 --price 0.00005869 --liq 17756 --age 2 \
+  --reason ""v2 skip (e): m5~+53% max-chase + scam-meta name; age~2m MC~$59k liq~$18k holders~29 top10~78%""
+8k holders~29 top10~78%"
