@@ -1396,3 +1396,47 @@ python3 /home/box/trading-bot/log_alert.py \
   --bonding """" \
   --reason ""v2 (d): not-leader vs 2Egtmg ~\$244k / 7pp6oop ~\$224k; José live meta; age~40m MC~$130k liq~$25k""
 30k liq~5k"
+2026-11-07T00:47:11Z,4fgUDg5JvZDUedieoYAa5ZNAqHjRo9o9yb7Eve77pump,Trump,Trump Coin,missed,105983,0.000106,24356,3m,,"v2 (b)+(e): bun~87%/top10~87% + m5~+183% chase; Trump brand-copy; age~3m MC~UTC=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+echo ""UTC=$UTC""
+
+# Backup state
+cp /home/box/trading-bot/state.json ""/home/box/trading-bot/state.json.bak-scan-${UTC}""
+
+# Miss 1: Trump (b)+(e) brand
+python3 /home/box/trading-bot/log_alert.py \
+  --type missed \
+  --ca ""4fgUDg5JvZDUedieoYAa5ZNAqHjRo9o9yb7Eve77pump"" \
+  --symbol ""Trump"" \
+  --name ""Trump Coin"" \
+  --mc 105983 \
+  --price 0.000106 \
+  --liq 24356 \
+  --age 3 \
+  --reason ""v2 (b)+(e): bun~87%/top10~87% + m5~+183% chase; Trump brand-copy; age~3m MC~$106k liq~$24k""
+
+# Miss 2: ADA All Dat Ass (b)
+python3 /home/box/trading-bot/log_alert.py \
+  --type missed \
+  --ca ""grJMBfFJpyy7CyQsZVnVMNFDavRr457V1Eqo94hpump"" \
+  --symbol ""ADA"" \
+  --name ""All Dat Ass"" \
+  --mc 83888 \
+  --price 0.00008388 \
+  --liq 21506 \
+  --age 20 \
+  --reason ""v2 (b): entrap~84% wash; age~20m MC~$84k liq~$22k holders~2k m5~+11%""
+
+# Miss 3: ELON (b)+(d)
+python3 /home/box/trading-bot/log_alert.py \
+  --type missed \
+  --ca ""2siCH2nVcKWaf6nVAJEW1X7dtieWvtjYtWUkmqSBpump"" \
+  --symbol ""ELON"" \
+  --name ""Elon Musk"" \
+  --mc 69556 \
+  --price 0.0000696 \
+  --liq 19518 \
+  --age 10 \
+  --reason ""v2 (b)+(d): entrap~74% + ELON brand-copy; age~10m MC~$70k liq~$20k m5~-59%""
+
+echo DONE_LOGS
+tail -3 /home/box/trading-bot/alerts.csv | cut -c1-20006k liq~4k"
