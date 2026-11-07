@@ -1404,3 +1404,4 @@ echo DONE_LOGS9k"
 2026-11-07T01:14:48Z,YcS6TX6pxpFKesq5RXyDshzSfdqcS4EJ52b3Uywpump,HODL,Hold Oversized Diamond Lady,missed,167420,0.0001675,31085,35m,100,v2 skip (d): not-leader vs Diamond Hands HODL ~$3M + other HODL ~$1.4M; age~35m MC~$167k liq~$31k m5~+10%; Hold Oversized Diamond Lady
 2026-11-07T01:14:49Z,6fCxHyqHPb4TKx9V5VkikU5SWWrhg8s58f9QouEUpump,RETARDO,Retardo the Donkey,missed,72118,0.00007223,21789,7m,100,v2 skip (e): m5~+117% max-chase; age~7m MC~$72k liq~$22k Retardo the Donkey name-leader but chase
 2026-11-07T01:26:44Z,6osiW6CspiXRZnrJpJiT8ae6pHffec7csGFfRxg7JGkP,LUCKY,LuckyCoin,missed,191451,0.0001914,28843,14m,100,v2 skip (e): m5~+146% max-chase; age~14m MC~$191k liq~$29k LuckyCoin meta leader vs copies; chase
+2026-11-07T01:26:45Z,CoQUQ3oHF9yFwpfR685rCXFsfP6fyFjPckVeU4e65yAW,LUCKY,LuckyCoin,missed,163427,0.0001634,34630,24m,100,v2 skip (a): DEV_OUT creator_close; age~24m MC~$163k liq~$35k m5~+5% LuckyCoin copy vs ~$191k leader
