@@ -1616,3 +1616,4 @@ echo EXIT:$?7k m5~-55% dump"
 2026-11-07T04:45:26Z,47NX4Tv6hMFYttwr346guC2kLA4tyq8VpbAw23Jspump,Slingfolio,Slingfolio,missed,81780.73,8.178072929411988e-05,31263.2449101558,10m,,v2 skip (a)+(d): DEV_OUT creator_close + Slingfolio copy swarm (leader FftPJ… also DEV_OUT); age~10m MC~$82k liq~$31k
 2026-11-07T05:00:19Z,Fmu6ykGrbaBRsDHn4NZZYgsAwLnXTkjqWyMbn3XBpump,Twizter,Twizter,missed,81197,8.1197e-05,21692,41m,,"v2 skip (a): DEV_OUT creator_close (sm4, entrap~19%, h1 +127%); age~41m MC~$81k liq~$22k"
 2026-11-07T05:00:20Z,B55bSkgJ7BZDf1gkbo6wjAmkg9g9Vms9byciAQ1pZVL4,SLINGFOLIO,SLINGFOLIO,missed,106526,0.0001374,20764,2m,,v2 skip (d)+(e): Slingfolio copy swarm no leader + m5=+162% max-chase; non-pump CA; age~2m MC~$107k liq~$21k
+2026-11-07T05:00:22Z,8kuUr4cC2iQBvbKNpoLs2yu4sPC9Xck6WXYhRMGtpump,Trump,Trump,missed,139837,0.000139837,28221,17m,,v2 skip (b)+(d): entrap~78% + Trump brand-copy (prior Trump 4gJDP also skipped); age~17m MC~$140k liq~$28k
