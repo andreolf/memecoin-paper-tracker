@@ -1690,3 +1690,4 @@ echo log_exit:$?
 2026-11-07T19:13:26Z,4pJQA93vfF9ebaJSHCuSKJjVDbHvRwC8ctbC5Sxspump,BARRON,OFFICIAL BARRON,missed,105563,0.0001056,24233.71,1m,100,v2 skip (b)+(e): bun~88%/top10~88% + m5~+183% chase; age~1m MC~$106k→live~$106k liq~$24k pumpswap; creator_hold; thin holders; OFFICIAL BARRON
 2026-11-07T19:40:50Z,RwGMxw4LzU5ZjtdxA7S4qLwLtCT4xHZUHeAtupCpump,FOMO,Fomo Family,missed,154834,0.0001549,29735,26m,100,v2 hard skip (a) dev out creator_close; rat 61%; no socials; m5+25% h1+316%
 2026-11-07T20:12:01Z,65FQ4ByLVzKGpt7TrtgkHnRoi18oZAd6fg19pNtpump,Baddy,BaddyDeadpool,missed,145202,0.0001452,28680,6m,1,(a) dev out creator_close + (e) m5 +32% + rat 64%; copies present
+2026-11-07T20:44:03Z,HgRk5aPDzwDCrdcuD2KoavBHBrNYbUdmUPXusnyapump,José,José Musk,missed,186481,0.0001864,33205.77,11m,100,(b) bun~43% hard skip; age~11m MC~$186k liq~$33k pumpswap migrated; creator_hold; José Musk live meta narr~3/5 but bundler≥40%; copies on StonkFun
