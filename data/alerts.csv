@@ -1441,3 +1441,4 @@ python3 /home/box/trading-bot/log_alert.py \
 echo DONE_LOGS
 tail -3 /home/box/trading-bot/alerts.csv | cut -c1-20006k liq~4k"
 2026-11-07T00:47:13Z,grJMBfFJpyy7CyQsZVnVMNFDavRr457V1Eqo94hpump,ADA,All Dat Ass,missed,83888,0.00008388,21506,20m,,v2 (b): entrap~84% wash; age~20m MC~4k liq~2k holders~2k m5~+11%
+2026-11-07T00:47:14Z,2siCH2nVcKWaf6nVAJEW1X7dtieWvtjYtWUkmqSBpump,ELON,Elon Musk,missed,69556,0.0000696,19518,10m,,v2 (b)+(d): entrap~74% + ELON brand-copy; age~10m MC~0k liq~0k m5~-59%
