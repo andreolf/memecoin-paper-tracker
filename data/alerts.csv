@@ -1372,3 +1372,17 @@ python3 log_alert.py --type missed \
   --mc 56718 --price 0.00005671 --liq 19322 --age 5 \
   --reason ""v2 skip (a)+(e): DEV_OUT creator_close + m5~+36% chase; age~5m MC~$57k liq~$19k"" 
 echo DONE_LOGS32k liq~7k"
+2026-11-07T00:59:01Z,6ReB3hFZEf2tLPx7unA4YuenTWGv7LWkJaEFKPRDpump,MUTTAPE,Muttape,missed,122036,0.0001221,26394,16m,,"v2 skip (a)+(b)+(e): DEV_OUT creator_close + bun~63%/top10~72% + m5~+31% chase; age~16m MC~cd /home/box/trading-bot && \
+python3 log_alert.py --type missed \
+  --ca Kb1woftK8f95SgrFo8w9uH53SZWn9zPWifj4VK4pump --symbol VETO --name Veto \
+  --mc 132432 --price 0.0001325 --liq 27407 --age 5 \
+  --reason ""v2 skip (a)+(b)+(e): DEV_OUT creator_close + bun~75%/top10~75% + m5~+254% chase; age~5m MC~$132k liq~$27k"" && \
+python3 log_alert.py --type missed \
+  --ca 6ReB3hFZEf2tLPx7unA4YuenTWGv7LWkJaEFKPRDpump --symbol MUTTAPE --name Muttape \
+  --mc 122036 --price 0.0001221 --liq 26394 --age 16 \
+  --reason ""v2 skip (a)+(b)+(e): DEV_OUT creator_close + bun~63%/top10~72% + m5~+31% chase; age~16m MC~$122k liq~$26k socials"" && \
+python3 log_alert.py --type missed \
+  --ca 4ARa3aXu9v53P3i87rcnoj2UXzGhWfVFZy56VrSdaxhM --symbol STARRY --name Starry \
+  --mc 56718 --price 0.00005671 --liq 19322 --age 5 \
+  --reason ""v2 skip (a)+(e): DEV_OUT creator_close + m5~+36% chase; age~5m MC~$57k liq~$19k"" 
+echo DONE_LOGS22k liq~6k socials"
