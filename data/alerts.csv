@@ -1411,3 +1411,4 @@ echo DONE_LOGS9k"
 2026-11-07T02:02:19Z,C1w2cSCc4GmXfUL2y5amkGLhDPsJT7Ts7VyS71inpump,BTC,Bitcoin,missed,115905,0.0001159,25652,3m,migrated,v2 skip (b)+(e)+(d): bun~83% + m5~+198% chase + BTC brand-copy; age~3m MC~$116k liq~$26k
 2026-11-07T02:02:22Z,F1gKV5QEV4xtC2jeNVpump,GTA6,GTA 6 Coin,missed,192717,0.0001927,33452,27m,migrated,v2 skip (b): entrap~62%; age~27m MC~$193k liq~$33k GTA 6 Coin
 2026-11-07T02:03:18Z,F1gKV5QEV4xtC2jeNVJufx9AKAkre5qucvkszCZ4Qynq,GTA6,GTA 6 Coin,missed,192717,0.0001927,33452,27m,migrated,v2 skip (b): entrap~62%; age~27m MC~$193k liq~$33k GTA 6 Coin (correct CA; prior row had truncated CA)
+2026-11-07T02:18:39Z,ZFtb1eDmcDmkWtmyqSjVQDfGS7tdshyzzuJoTeEpump,scamsem,scamsem,missed,181962,0.0001822,33401,33m,100,"v2 skip (d)+(e): not-leader vs scamsem 41WpXn15 @~$930k + m5~+45% max-chase; age~33m MC~$182k liq~$33k live scam meta, security clean"
