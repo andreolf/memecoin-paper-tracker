@@ -1353,3 +1353,4 @@ wait $PID3; echo FOMO_LOG:$?
 2026-11-07T00:15:05Z,EvRJSc2DttVEuWPvEu2Y6eNfm5jYqokNcng2zXCypump,PUMP,THE PUMP BULL,missed,166188,0.0001662,30985,7m,,v2 (b)+(d): entrap~78% wash + PUMP brand-adjacent not-leader vs ~$4B PUMP; age~7m MC~$166k liq~$31k m5~+27%
 2026-11-07T00:15:07Z,132SMEMzArQLbvrswy6Qh5gySwdFLgRbp7uQPR59pump,Memecoin,Memecoin,missed,103330,0.0001033,24047,8m,,v2 (a)+(b): DEV_OUT creator_close + entrap~85%; age~8m MC~$103k liq~$24k m5~-15%
 2026-11-07T00:28:44Z,2EgtmgGcSRi6Rpbkw3dcrV9Ljf2fg7rsMipjxRbSLMpv,José,Be Like José,missed,244369,0.0002443,37127,49m,,v2 (a): DEV_OUT creator_close; José live meta; age~49m MC~44k liq~7k m5~-20%
+2026-11-07T00:28:45Z,7pp6oopPbkgJ5PfnbsC5XqJdeQdkuB2hyfyvqHdiMEg5,José,Be Like José,missed,224170,0.0002241,40253,63m,,v2 (d)+(e): not-leader vs 2Egtmg ~$244k + m5~+97% chase; José live meta; age~63m MC~24k liq~0k
