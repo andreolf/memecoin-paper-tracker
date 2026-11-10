@@ -1722,40 +1722,4 @@ echo log_exit:$?
 2026-11-10T14:59:46Z,BeD9XGnNPec9nPzCgfhwV8qzZbFLLKHbe23uFyDhpump,HCAT,Privacy Cat,missed,53386,0.00005344,20264,22m,100,"skip dev-out + chase, narr 3/5: live Privacy Cat/HCAT copy swarm, this was the liquid leader; creator_close balance 0 (a) serial creator_open_count 82; m5 was +48-94% at discovery (e) then dumped to m5 -71% MC ~$176k→~$53k; age~22m MC~$53k liq~$20.3k PumpSwap"
 2026-11-10T14:59:53Z,HzLVUNuPGfx8TFAxewquK6zE22WcJ4XwzLT2jPFupump,X,apeonx,missed,100260,0.0001003,24438,22m,100,"skip dev-out + copy, narr 2/5: live apeonx meta but late copy of 9VZerdNL apeonx ~$444k ~6.2h; creator_close (a); also +32% vs first discovery 8.939e-05 (e); age~22m MC~$100k liq~$24.4k PumpSwap m5 -20%"
 2026-11-10T15:09:55Z,7J3tbWbTeFZoSdu7sCn3KMLgY8K3pREBWsSr8TDDpump,GTA 6,GTA 6 Updates,missed,116332,0.0001163,24858,3m,100,"skip chase + bundle + copy, narr 2/5: live GTA 6 meta but bundled sniper farm (bun ~87.8%, top10 ~87.8%) + DS m5 +192-230% chase; late name-copy of the GTA 6 Updates swarm (prior CPBpMN/B21GQAi rugged) and not leader vs 4kjruq GTA VI ~$9.4M liq ~$396k; age~2-3m MC~$106-116k liq~$24-25k PumpSwap (migrated) creator_hold bot 0% holders~100 no socials"
-2026-11-10T15:34:18Z,FWkhdYzU2YFhd7YcobL7aQCQzaZUqix6XGVqKTgMdVTM,RCAT,Ring Cat,missed,111979,0.0001119,21102,9m,100,"skip dev-out, narr 3/5: live Ring Cat/RCAT copy swarm, MC leader vs HQu2/5FJL8, memeable; creator_close hold=0 (a); bot~2.5% bun~9% not (b); Dex m5 now +16% (e cooled from +84.7% at first print); age~9m MC~python3 << 'PY'
-import json
-st=json.load(open(""/home/box/trading-bot/state.json""))
-cas=[
-""FWkhdYzU2YFhd7YcobL7aQCQzaZUqix6XGVqKTgMdVTM"",
-""HQu2Y6WAKSYbr7soSooNHf3QAwVHd1LWXKJ32Dafwiyx"",
-""5FJL8DuBLMavVE1W5BYL8jRcSdcphGjpLURd9kaHpump"",
-""GFmMghCWrW47UfTvE5far9ocDEhPCMDKjvAJ2UGMZ4F"",
-""QVfMTGKWFRRMP1wuU4sBziXQwZwo7EoKqboAutTSYNH"",
-""H1hf45NSXe7QMaHsdgaNHCVbx9wHJZd9iqQB3K3uY7a"",
-""CUArGuUSHUKYvSMgyTLcJPnoehFypdxQbnycDWMw5N2"",
-""2JXeyd1RsBv7rmbadaqwUWnW4pNAZNwUU7XgZDSnpump"",
-""J1HwvLzBStvX83ystjogrFVF9FbwkjxJsciJh6mFb1qW"",
-""9NEKTLhxGACSgThi2kNfftxvBwSq3jH564TEuu2mPXzM"",
-""FU7VEqbH6bgcobX4zCp1R34CQYNEnV9QrLfhSGcN1ZzJ"",
-""GhfCz6oB1V4CniPSS7SCMiYdeMoc3hRCfGdFLpBpump"",
-]
-for ca in cas:
-    flags=[]
-    for k in (""missed"",""alerted"",""discovery_prices"",""seen"",""seen_skipped""):
-        if ca in (st.get(k) or {}):
-            flags.append(k)
-    print(ca[:12], flags or ""NEW"")
-PY
-# run missed log
-python3 /home/box/trading-bot/log_alert.py \
-  --ca FWkhdYzU2YFhd7YcobL7aQCQzaZUqix6XGVqKTgMdVTM \
-  --symbol RCAT \
-  --name ""Ring Cat"" \
-  --type missed \
-  --mc 111979 \
-  --price 0.0001119 \
-  --liq 21102 \
-  --age 9m \
-  --bonding 100 \
-  --reason ""skip dev-out, narr 3/5: live Ring Cat/RCAT copy swarm, MC leader vs HQu2/5FJL8, memeable; creator_close hold=0 (a); bot~2.5% bun~9% not (b); Dex m5 now +16% (e cooled from +84.7% at first print); age~9m MC~$112k liq~$21k""
-12k liq~1k"
+2026-11-10T15:34:18Z,FWkhdYzU2YFhd7YcobL7aQCQzaZUqix6XGVqKTgMdVTM,RCAT,Ring Cat,missed,111979,0.0001119,21102,9m,100,"skip dev-out, narr 3/5: live Ring Cat/RCAT copy swarm, MC leader vs HQu2/5FJL8, memeable; creator_close hold=0 (a); bot~2.5% bun~9% not (b); Dex m5 now +16% (e cooled from +84.7% at first print); age~9m MC ~112k liq ~21k"
