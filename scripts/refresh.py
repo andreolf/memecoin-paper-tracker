@@ -1030,7 +1030,8 @@ def generate_dashboard():
     print("Generating dashboard...")
     
     # Load data
-    alerts_df = pd.read_csv(ALERTS_CSV)
+    # Tolerate a malformed alerts row (warn and skip) instead of failing the whole dashboard refresh
+    alerts_df = pd.read_csv(ALERTS_CSV, engine='python', on_bad_lines='warn')
     calls_df = pd.read_csv(CALLS_CSV)
     
     # Merge
