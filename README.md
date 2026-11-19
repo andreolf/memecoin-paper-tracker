@@ -6,7 +6,7 @@
 
 This dashboard tracks theoretical P&L from Solana memecoin alerts. **No actual trades are executed.**
 
-**Last Updated:** 2026-11-19 02:31 CET
+**Last Updated:** 2026-11-19 04:57 CET
 
 **Tracked:** 20 pre-V2 real alerts + 6 Rules V2 trades + 559 missed (filtered out)
 
@@ -49,8 +49,8 @@ Pre-V2 real alerts only (before 2026-10-28T08:39Z). All strategies use:
 |----------|-------------|--------------|-----------|----------|---------|------------|-------------|
 | ⭐ A: Sell ALL at 2x | Sell all at 2x, -30% stop | 20 | **$-4.92** | 25.0% | $-0.25 | $9.03 | $-3.34 |
 | B: Sell ALL at +50% | Sell all at 1.5x, -50% stop | 20 | **$-47.74** | 30.0% | $-2.39 | $4.27 | $-5.24 |
-| C: Sell HALF at 2x | Sell half at 2x, hold rest, -50% stop | 20 | **$-79.65** | 5.0% | $-3.98 | $0.22 | $-5.24 |
-| D: Hold 24h | Hold 24h then sell | 20 | **$-185.71** | 0.0% | $-9.29 | $-7.89 | $-9.94 |
+| C: Sell HALF at 2x | Sell half at 2x, hold rest, -50% stop | 20 | **$-79.64** | 5.0% | $-3.98 | $0.22 | $-5.24 |
+| D: Hold 24h | Hold 24h then sell | 20 | **$-185.69** | 0.0% | $-9.28 | $-7.89 | $-9.94 |
 | E: 2x + moonbag | Sell 85% at 2x, keep 15% moonbag (narr ≥4, marked at current price, not at peak), -30% stop before 2x | 20 | **$-13.31** | 25.0% | $-0.67 | $9.03 | $-3.34 |
 | A (−50%, old) | A with the old -50% stop (comparison) | 20 | **$-33.47** | 25.0% | $-1.67 | $9.03 | $-5.24 |
 | E (−50%, old) | E with the old -50% stop (comparison) | 20 | **$-41.86** | 25.0% | $-2.09 | $9.03 | $-5.24 |
@@ -75,13 +75,13 @@ Pre-V2 real alerts only (before 2026-10-28T08:39Z). All strategies use:
 
 | Type | Count | Total P&L | Realized | Unrealized | Win Rate | Avg Max Multiple |
 |------|-------|-----------|----------|------------|----------|------------------|
-| new | 20 | $-79.65 | $-56.05 | $-23.60 | 5.0% | 1.85x |
+| new | 20 | $-79.64 | $-56.05 | $-23.59 | 5.0% | 1.85x |
 
 ### Strategy D: Hold 24h
 
 | Type | Count | Total P&L | Win Rate | Avg Max Multiple |
 |------|-------|-----------|----------|------------------|
-| new | 20 | $-185.71 | 0.0% | 1.85x |
+| new | 20 | $-185.69 | 0.0% | 1.85x |
 
 ---
 
